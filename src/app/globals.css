@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8f4ea;
+  --surface: #fffdf7;
+  --foreground: #1f2a24;
+  --muted: #5d685f;
+  --line: #ddd5c2;
+  --accent: #14553f;
+  --accent-contrast: #fffdf7;
+  --gold: #8f6a1f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #101a16;
+    --surface: #17231e;
+    --foreground: #ece7da;
+    --muted: #a5ad9f;
+    --line: #2f3e36;
+    --accent: #7cc7a4;
+    --accent-contrast: #101a16;
+    --gold: #d6b05c;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-gold: var(--gold);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-title);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-title), Georgia, serif;
+  font-weight: 700;
+}
+
+.field {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 0.55rem 0.75rem;
+  color: inherit;
+}
+
+.button {
+  display: inline-block;
+  border-radius: 6px;
+  background: var(--accent);
+  padding: 0.55rem 1rem;
+  color: var(--accent-contrast);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button-quiet {
+  display: inline-block;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+}
+
+.tree ul {
+  margin-inline-start: 0.6rem;
+  border-inline-start: 1px solid var(--line);
+  padding-inline-start: 1.1rem;
+}
+
+.tree li {
+  margin-top: 0.4rem;
+}
