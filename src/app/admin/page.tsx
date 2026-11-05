@@ -1,27 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  addMouqaddam,
-  closeReport,
-  hideReportedPerson,
-  linkMouqaddam,
-  resolveRequest,
-} from "@/app/actions";
-import { isChoosableMouqaddam } from "@/lib/chain";
+import { closeReport, hideReportedPerson, resolveRequest } from "@/app/actions";
 import { getStore } from "@/lib/data";
-import type { PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";
 
 export const metadata: Metadata = { title: t.admin.title };
-
-function MouqaddamOptions({ persons }: { persons: PublicPerson[] }) {
-  return persons.map((person) => (
-    <option key={person.id} value={person.id}>
-      {person.displayName}
-    </option>
-  ));
-}
 
 export default async function AdminPage({
   searchParams,
@@ -33,26 +17,19 @@ export default async function AdminPage({
   const session = await store.getSession();
   if (!session) redirect("/connexion");
   if (!session.isAdmin) redirect("/");
+  // Avec un seul utilisateur, il n'y a ni demande ni signalement à traiter.
+  if (session.local) redirect("/admin/mouqaddams");
 
-  const [persons, requests, reports] = await Promise.all([
-    store.listPersons(),
-    store.listRequests(),
-    store.listReports(),
-  ]);
-  const candidates = persons
-    .filter(isChoosableMouqaddam)
-    .sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
-  const parents = persons.filter((person) => person.kind === "prophet").concat(candidates);
-  const unlinked = candidates.filter((person) => !person.mouqaddamId);
+  const [requests, reports] = await Promise.all([store.listRequests(), store.listReports()]);
 
   return (
     <>
-      <h1 className="text-4xl">{t.admin.title}</h1>
+      <h1>{t.admin.title}</h1>
       {ok && <p role="status" className="mt-4 text-accent">{t.admin.done}</p>}
       {erreur && <p role="alert" className="mt-4 text-gold">{t.errors.invalid}</p>}
 
       <section className="mt-8">
-        <h2 className="text-2xl">{t.admin.requests}</h2>
+        <h2>{t.admin.requests}</h2>
         {requests.length === 0 && <p className="mt-2 text-muted">{t.admin.noRequests}</p>}
         <ul className="mt-3 space-y-3">
           {requests.map((request) => (
@@ -73,7 +50,7 @@ export default async function AdminPage({
       </section>
 
       <section className="mt-10">
-        <h2 className="text-2xl">{t.admin.reports}</h2>
+        <h2>{t.admin.reports}</h2>
         {reports.length === 0 && <p className="mt-2 text-muted">{t.admin.noReports}</p>}
         <ul className="mt-3 space-y-3">
           {reports.map((report) => (
@@ -87,48 +64,6 @@ export default async function AdminPage({
                 <input type="hidden" name="personId" value={report.personId} />
                 <button formAction={closeReport} className="button-quiet">{t.admin.close}</button>
                 <button formAction={hideReportedPerson} className="button-quiet">{t.admin.hide}</button>
-              </form>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="mt-10 max-w-lg">
-        <h2 className="text-2xl">{t.admin.addTitle}</h2>
-        <form action={addMouqaddam} className="mt-3 space-y-3">
-          <label className="block">
-            {t.admin.name}
-            <input name="name" required minLength={2} maxLength={120} className="field mt-1" />
-          </label>
-          <label className="block">
-            {t.admin.city}
-            <input name="city" maxLength={120} className="field mt-1" />
-          </label>
-          <label className="block">
-            {t.admin.parent}
-            <select name="mouqaddamId" className="field mt-1">
-              <option value="">{t.admin.none}</option>
-              <MouqaddamOptions persons={candidates} />
-            </select>
-          </label>
-          <button className="button">{t.admin.add}</button>
-        </form>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="text-2xl">{t.admin.linksTitle}</h2>
-        {unlinked.length === 0 && <p className="mt-2 text-muted">{t.admin.noLinks}</p>}
-        <ul className="mt-3 space-y-3">
-          {unlinked.map((person) => (
-            <li key={person.id}>
-              <form action={linkMouqaddam} className="flex max-w-xl flex-wrap items-center gap-2">
-                <input type="hidden" name="personId" value={person.id} />
-                <span className="min-w-48 flex-1">{person.displayName}</span>
-                <select name="mouqaddamId" required aria-label={`${t.admin.parent} : ${person.displayName}`} className="field w-auto">
-                  <option value="">{t.admin.none}</option>
-                  <MouqaddamOptions persons={parents.filter((parent) => parent.id !== person.id)} />
-                </select>
-                <button className="button-quiet">{t.admin.link}</button>
               </form>
             </li>
           ))}

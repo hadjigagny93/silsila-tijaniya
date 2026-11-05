@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requestMouqaddam, saveProfile } from "@/app/actions";
+import { Icon } from "@/components/Icon";
+import { Notice } from "@/components/Notice";
+import { PersonPicker } from "@/components/PersonPicker";
+import { Segmented } from "@/components/Segmented";
+import { ThemePreference } from "@/components/ThemePreference";
 import { isChoosableMouqaddam } from "@/lib/chain";
 import { getStore } from "@/lib/data";
+import { personDetails } from "@/lib/personDetails";
 import { t } from "@/messages/fr";
 
 export const metadata: Metadata = { title: t.account.title };
@@ -18,92 +25,119 @@ export default async function AccountPage({
   const session = await store.getSession();
   if (!session) redirect("/connexion");
 
+  const saved = (await cookies()).get("theme")?.value;
+  const theme = saved === "light" || saved === "dark" ? saved : "system";
   const profile = session.profile;
-  const mouqaddams = (await store.listPersons())
+  const persons = await store.listPersons();
+  const mouqaddams = persons
     .filter((person) => isChoosableMouqaddam(person) && person.id !== profile?.id)
     .sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-4xl">{t.account.title}</h1>
-      <p className="mt-1 text-muted">{session.email}</p>
+    <div className="max-w-5xl">
+      <h1 className="page-title">{t.account.title}</h1>
+      {session.email && <p className="page-intro">{session.email}</p>}
+      {ok && <Notice tone="success">{ok === "demande" ? t.account.missingSent : t.account.saved}</Notice>}
+      {erreur && <Notice tone="error">{t.errors.invalid}</Notice>}
 
-      {ok && (
-        <p role="status" className="mt-4 text-accent">
-          {ok === "demande" ? t.account.missingSent : t.account.saved}
-        </p>
-      )}
-      {erreur && <p role="alert" className="mt-4 text-gold">{t.errors.invalid}</p>}
-
-      <section className="mt-8">
-        <h2 className="text-2xl">{t.account.profile}</h2>
-        <form action={saveProfile} className="mt-3 space-y-4">
-          <label className="block">
-            {t.account.fullName}
-            <input name="fullName" required minLength={2} maxLength={120} defaultValue={profile?.fullName} className="field mt-1" />
-          </label>
-
-          <fieldset>
-            <legend>{t.account.display}</legend>
-            <label className="mt-1 flex items-center gap-2">
-              <input type="radio" name="displayMode" value="full" defaultChecked={profile?.displayMode !== "short"} />
-              {t.account.displayFull}
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section className="panel">
+          <h2>{t.account.profile}</h2>
+          <form action={saveProfile} className="mt-4 space-y-5">
+            <label className="block">
+              <span className="field-label">{t.account.fullName}</span>
+              <input name="fullName" required minLength={2} maxLength={120} defaultValue={profile?.fullName} className="field" />
             </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="displayMode" value="short" defaultChecked={profile?.displayMode === "short"} />
-              {t.account.displayShort}
+
+            <div>
+              <span className="field-label">{t.account.display}</span>
+              <Segmented
+                name="displayMode"
+                label={t.account.display}
+                defaultValue={profile?.displayMode === "short" ? "short" : "full"}
+                options={[
+                  { value: "full", label: t.account.displayFull },
+                  { value: "short", label: t.account.displayShort },
+                ]}
+              />
+              <p className="field-help">{t.account.displayShortHelp}</p>
+            </div>
+
+            <label className="block">
+              <span className="field-label">{t.account.city}</span>
+              <input name="city" maxLength={120} defaultValue={profile?.city ?? ""} className="field" />
             </label>
-            <p className="text-sm text-muted">{t.account.displayShortHelp}</p>
-          </fieldset>
 
-          <label className="block">
-            {t.account.city}
-            <input name="city" maxLength={120} defaultValue={profile?.city ?? ""} className="field mt-1" />
-          </label>
+            <div>
+              <span className="field-label">{t.account.mouqaddam}</span>
+              <PersonPicker
+                name="mouqaddamId"
+                persons={mouqaddams}
+                defaultValue={profile?.mouqaddamId ?? ""}
+                label={t.account.mouqaddam}
+                emptyLabel={t.account.chooseMouqaddam}
+                details={personDetails(persons)}
+              />
+            </div>
 
-          <label className="block">
-            {t.account.mouqaddam}
-            <select name="mouqaddamId" defaultValue={profile?.mouqaddamId ?? ""} className="field mt-1">
-              <option value="">{t.account.chooseMouqaddam}</option>
-              {mouqaddams.map((person) => (
-                <option key={person.id} value={person.id}>
-                  {person.displayName}
-                  {person.city ? ` (${person.city})` : ""}
-                </option>
-              ))}
-            </select>
-          </label>
+            <div className="flex flex-wrap items-center gap-4">
+              <button className="button">{t.account.save}</button>
+              {profile && (
+                <Link href={`/silsila/${profile.id}`} className="profile-link mt-0">
+                  {t.account.viewChain}
+                  <Icon name="arrowR" size={16} />
+                </Link>
+              )}
+            </div>
+          </form>
+        </section>
 
-          <div className="flex items-center gap-4">
-            <button className="button">{t.account.save}</button>
-            {profile && (
-              <Link href={`/silsila/${profile.id}`} className="text-accent underline">
-                {t.account.viewChain}
-              </Link>
-            )}
+        <section className="panel self-start">
+          <h2>{t.account.preferences}</h2>
+          <div className="mt-4 space-y-5">
+            <div>
+              <span className="field-label">{t.account.theme}</span>
+              <ThemePreference initial={theme} />
+            </div>
+            <div>
+              <span className="field-label">{t.account.language}</span>
+              <Segmented
+                name="language"
+                label={t.account.language}
+                defaultValue="fr"
+                disabled
+                options={[
+                  { value: "fr", label: t.account.languageFrench },
+                  { value: "ar", label: <span lang="ar" className="saw">{t.account.languageArabic}</span> },
+                ]}
+              />
+              <p className="field-help">{t.account.languageSoon}</p>
+            </div>
           </div>
-        </form>
-      </section>
+        </section>
+      </div>
 
-      <section className="mt-10 border-t border-line pt-6">
-        <h2 className="text-2xl">{t.account.missingTitle}</h2>
-        <p className="mt-1 text-muted">{t.account.missingText}</p>
-        <form action={requestMouqaddam} className="mt-3 space-y-3">
-          <label className="block">
-            {t.account.missingName}
-            <input name="name" required minLength={2} maxLength={120} className="field mt-1" />
-          </label>
-          <label className="block">
-            {t.account.city}
-            <input name="city" maxLength={120} className="field mt-1" />
-          </label>
-          <label className="block">
-            {t.account.missingNote}
-            <textarea name="note" rows={2} maxLength={1000} className="field mt-1" />
-          </label>
-          <button className="button-quiet">{t.account.missingSend}</button>
-        </form>
-      </section>
+      {!session.local && (
+        <section className="panel mt-6 max-w-2xl">
+          <h2>{t.account.missingTitle}</h2>
+          <p className="mt-1 text-muted">{t.account.missingText}</p>
+          <form action={requestMouqaddam} className="mt-4 space-y-4">
+            <label className="block">
+              <span className="field-label">{t.account.missingName}</span>
+              <input name="name" required minLength={2} maxLength={120} className="field" />
+            </label>
+            <label className="block">
+              <span className="field-label">{t.account.city}</span>
+              <input name="city" maxLength={120} className="field" />
+            </label>
+            <label className="block">
+              <span className="field-label">{t.account.missingNote}</span>
+              <textarea name="note" rows={2} maxLength={1000} className="field" />
+            </label>
+            <button className="button-quiet">{t.account.missingSend}</button>
+          </form>
+        </section>
+      )}
     </div>
   );
 }

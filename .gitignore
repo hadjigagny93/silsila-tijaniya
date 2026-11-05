@@ -17,8 +17,9 @@
 /.next/
 /out/
 
-# production
-/build
+# production (l'icône de l'app Mac est gardée : electron-builder la lit dans build/)
+/build/*
+!/build/icon.png
 
 # misc
 .DS_Store
@@ -40,3 +41,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# base locale
+/data/
+# application de bureau
+/release/
+# app iPhone : pages construites par Vite (recopiées dans le projet iOS par « cap sync »)
+/mobile/dist/

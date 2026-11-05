@@ -1,0 +1,77 @@
+/* Propre à l'app iPhone : encoche et barre d'accueil, pastille de synchronisation, écran d'association. */
+body.mobile-app {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.mobile-app .theme-toggle {
+  top: calc(env(safe-area-inset-top) + 0.75rem);
+}
+
+/* En haut à droite, sous le bouton du thème : en bas, elle cacherait la barre des vues de la silsila. */
+.sync-badge {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 4.4rem);
+  right: 0.75rem;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  padding: 0.4rem 0.8rem;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.12);
+  color: var(--muted);
+  font-size: 0.8rem;
+  backdrop-filter: blur(8px);
+}
+
+.sync-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.sync-badge.is-syncing .sync-badge-dot {
+  background: var(--gold);
+  animation: sync-pulse 1s ease-in-out infinite;
+}
+
+.sync-badge.is-offline .sync-badge-dot {
+  background: #b4533a;
+}
+
+@keyframes sync-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.pairing-screen {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 2.5rem) 1.25rem 3rem;
+}
+
+.mobile-failure {
+  padding: calc(env(safe-area-inset-top) + 2rem) 1.25rem;
+}
+
+.text-danger {
+  color: #b4533a;
+}
+
+/* Derrière l'heure et la batterie : le contenu ne passe pas dessous en défilant. */
+body.mobile-app::before {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 40;
+  height: env(safe-area-inset-top);
+  background: var(--background);
+  content: "";
+}

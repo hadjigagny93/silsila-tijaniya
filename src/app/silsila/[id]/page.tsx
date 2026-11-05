@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { reportPerson } from "@/app/actions";
+import { Avatar } from "@/components/Avatar";
 import { chainOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";
 import { t } from "@/messages/fr";
@@ -26,18 +28,44 @@ export default async function PersonPage({ params, searchParams }: Props) {
   const person = chain.at(-1);
   if (!person) notFound();
 
+  const born = [person.birthDate, person.birthCity, person.birthCountry].filter(Boolean).join(", ");
+  const died = [person.deathDate, person.deathCity, person.deathCountry].filter(Boolean).join(", ");
+  const facts = [
+    [t.silsila.nicknames, person.nicknames.join(", ")],
+    [t.silsila.born, born],
+    [t.silsila.died, died],
+    [t.silsila.zawiya, person.zawiya],
+  ].filter(([, value]) => value);
+
   return (
     <>
-      <h1 className="text-4xl">{person.displayName}</h1>
+      <div className="flex items-center gap-4">
+        <Avatar person={person} size={72} />
+        <h1>{person.displayName}</h1>
+      </div>
       <p className="mt-1 text-muted">
-        {[t.kinds[person.kind], person.city].filter(Boolean).join(" · ")}
+        {[t.kinds[person.kind], person.kind === "member" && person.city].filter(Boolean).join(" · ")}
       </p>
-      {person.biographySlug && (
-        <p className="mt-3">
+      <p className="mt-3 flex flex-wrap gap-x-4">
+        <Link href={`/silsila?personne=${person.id}`} className="text-accent underline">
+          {t.silsila.viewInTree}
+        </Link>
+        {person.biographySlug && (
           <Link href={`/biographies/${person.biographySlug}`} className="text-accent underline">
             {t.silsila.biography}
           </Link>
-        </p>
+        )}
+      </p>
+
+      {facts.length > 0 && (
+        <dl className="mt-4 grid max-w-lg grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+          {facts.map(([label, value]) => (
+            <Fragment key={label}>
+              <dt className="text-muted">{label}</dt>
+              <dd>{value}</dd>
+            </Fragment>
+          ))}
+        </dl>
       )}
 
       {!complete && (
@@ -53,7 +81,8 @@ export default async function PersonPage({ params, searchParams }: Props) {
                 index === chain.length - 1 ? "bg-accent" : "bg-gold"
               }`}
             />
-            <Link href={`/silsila/${link.id}`} className="font-serif text-xl hover:underline">
+            <Link href={`/silsila/${link.id}`} className="flex items-center gap-2 font-semibold hover:underline">
+              <Avatar person={link} />
               {link.displayName}
             </Link>
             {t.kinds[link.kind] && <span className="block text-sm text-muted">{t.kinds[link.kind]}</span>}
@@ -61,7 +90,7 @@ export default async function PersonPage({ params, searchParams }: Props) {
         ))}
       </ol>
 
-      {person.kind !== "prophet" && (
+      {person.kind !== "prophet" && !session?.local && (
         <section className="mt-8 border-t border-line pt-6">
           {ok && <p role="status" className="mb-3 text-accent">{t.silsila.reportSent}</p>}
           {erreur && <p role="alert" className="mb-3 text-gold">{t.errors.invalid}</p>}

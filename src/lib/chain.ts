@@ -27,3 +27,24 @@ export function childrenOf(persons: PublicPerson[]) {
 export function isChoosableMouqaddam(person: PublicPerson) {
   return person.kind === "cheikh" || person.kind === "mouqaddam";
 }
+
+// Génération 1 : ceux qui ont pris de Cheikh Tijani ; 2 : ceux qui ont pris d'eux ; etc.
+// Le Prophète ﷺ, le Cheikh et les chaînes non reliées n'en ont pas.
+export function generationsOf(persons: PublicPerson[]) {
+  const tree = childrenOf(persons);
+  const generations = new Map<string, number>();
+  const prophet = persons.find((person) => person.kind === "prophet");
+
+  function descend(person: PublicPerson, generation: number) {
+    if (generations.has(person.id)) return;
+    generations.set(person.id, generation);
+    (tree.get(person.id) ?? []).forEach((child) => descend(child, generation + 1));
+  }
+
+  if (prophet) {
+    for (const founder of tree.get(prophet.id) ?? []) {
+      (tree.get(founder.id) ?? []).forEach((child) => descend(child, 1));
+    }
+  }
+  return generations;
+}

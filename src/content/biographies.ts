@@ -1,14 +1,12 @@
-export type Biography = {
+// Textes de départ, copiés dans la base à sa création. Ensuite, tout se modifie dans l'application.
+export const biographies: {
   slug: string;
   name: string;
   period: string;
   summary: string;
   paragraphs: string[];
-  // Tant que ce champ est vrai, la page annonce que le texte est en relecture.
   draft: boolean;
-};
-
-export const biographies: Biography[] = [
+}[] = [
   {
     slug: "ahmad-tijani",
     name: "Cheikh Ahmad Tijani",
@@ -80,7 +78,3 @@ export const biographies: Biography[] = [
     draft: true,
   },
 ];
-
-export function getBiography(slug: string) {
-  return biographies.find((biography) => biography.slug === slug);
-}

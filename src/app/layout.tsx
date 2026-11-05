@@ -1,13 +1,22 @@
 import type { Metadata } from "next";
-import { Amiri, Source_Sans_3 } from "next/font/google";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { signOut } from "@/app/actions";
+import { Icon, Star } from "@/components/Icon";
+import { NavLink } from "@/components/NavLink";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { generationsOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";
 import { t } from "@/messages/fr";
+// Polices intégrées à l'app : elle fonctionne aussi sans internet.
+import "@fontsource-variable/eb-garamond";
+import "@fontsource-variable/source-serif-4";
+import "@fontsource-variable/source-sans-3";
+import "@fontsource/amiri/400.css";
 import "./globals.css";
 
-const title = Amiri({ variable: "--font-title", subsets: ["latin"], weight: ["400", "700"] });
-const body = Source_Sans_3({ variable: "--font-body", subsets: ["latin"] });
+// Les données vivent en base : aucune page ne doit être figée au build.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { default: t.site.name, template: `%s · ${t.site.name}` },
@@ -15,32 +24,60 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const session = await getStore().getSession();
+  const store = getStore();
+  const [session, persons] = await Promise.all([store.getSession(), store.listPersons()]);
+  const generationCount = new Set(generationsOf(persons).values()).size;
+  const saved = (await cookies()).get("theme")?.value;
+  const theme = saved === "dark" || saved === "light" ? saved : undefined;
 
   return (
-    <html lang="fr" className={`${title.variable} ${body.variable}`}>
-      <body className="flex min-h-dvh flex-col">
-        <header className="border-b border-line">
-          <nav className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-4">
-            <Link href="/" className="me-auto font-serif text-xl font-bold text-accent">
-              {t.site.name}
+    <html lang="fr" data-theme={theme}>
+      <body className="min-h-dvh md:flex">
+        <ThemeToggle initialDark={theme === "dark"} />
+        <aside className="shrink-0 border-b border-line bg-surface md:sticky md:top-0 md:h-dvh md:w-(--sidebar-width) md:border-e md:border-b-0">
+          <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 p-3 pe-16 md:h-full md:flex-col md:flex-nowrap md:items-stretch md:gap-1 md:p-4">
+            <Link href="/" className="site-name me-auto px-3 py-2 md:me-0 md:mb-6">
+              <Star />
+              <span>
+                <strong>{t.site.short}</strong>
+                <small>{t.site.tagline}</small>
+              </span>
             </Link>
-            <Link href="/silsila">{t.nav.silsila}</Link>
-            <Link href="/biographies">{t.nav.biographies}</Link>
-            {session?.isAdmin && <Link href="/admin">{t.nav.admin}</Link>}
-            {session ? (
+            <NavLink href="/silsila" icon="tree">{t.nav.silsila}</NavLink>
+            <NavLink href="/biographies" icon="book">{t.nav.biographies}</NavLink>
+            <NavLink href="/suluk" icon="path">{t.nav.suluk}</NavLink>
+            {session?.isAdmin && (
               <>
-                <Link href="/mon-compte">{t.nav.account}</Link>
-                <form action={signOut}>
-                  <button className="cursor-pointer text-muted">{t.nav.signOut}</button>
-                </form>
+                <NavLink href="/admin/mouqaddams" icon="users">{t.nav.adminMouqaddams}</NavLink>
+                <NavLink href="/admin/silsila" icon="link">{t.nav.adminSilsila}</NavLink>
+                {!session.local && <NavLink href="/admin" icon="shield">{t.nav.adminModeration}</NavLink>}
               </>
-            ) : (
-              <Link href="/connexion">{t.nav.signIn}</Link>
             )}
+
+            <p className="sidebar-stats">
+              {t.nav.stats(persons.length, generationCount)}
+              {session?.local && <span className="block">{t.nav.offline}</span>}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-2 md:mt-3 md:flex-col md:items-stretch md:gap-1 md:border-t md:border-line md:pt-3">
+              {session ? (
+                <>
+                  <NavLink href="/mon-compte" icon="user">{t.nav.account}</NavLink>
+                  {!session.local && (
+                    <form action={signOut}>
+                      <button className="nav-link w-full cursor-pointer text-start text-muted">
+                        <Icon name="logout" />
+                        {t.nav.signOut}
+                      </button>
+                    </form>
+                  )}
+                </>
+              ) : (
+                <NavLink href="/connexion" icon="user">{t.nav.signIn}</NavLink>
+              )}
+            </div>
           </nav>
-        </header>
-        <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10">{children}</main>
+        </aside>
+        <main className="mx-auto w-full max-w-4xl min-w-0 flex-1 px-4 py-10">{children}</main>
       </body>
     </html>
   );
