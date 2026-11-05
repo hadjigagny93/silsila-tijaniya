@@ -349,6 +349,13 @@ export const t = {
         : `${detail} · ${minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`}`,
     soonTitle: "Dans les 30 prochaines minutes",
     checkAll: "Tout cocher",
+    previousDay: "Jour précédent",
+    nextDay: "Jour suivant",
+    calendar: "Calendrier du mois",
+    calendarTitle: "Mon mois",
+    calendarIntro: "Chaque jour, une flamme : plus elle est grande, plus la journée de Suluk a été remplie. Touche un jour pour le revoir.",
+    calendarDay: (day: string, percent: number) => `${day} : ${percent} %`,
+    calendarAverage: (percent: number, days: number) => `Moyenne : ${percent} % sur ${days} jour${days > 1 ? "s" : ""}`,
     uncheckAll: "Tout décocher",
     close: "Fermer",
     soonEmpty: "Rien à faire dans la demi-heure qui vient.",
@@ -646,10 +653,12 @@ export const t = {
     horizonShort: "horizon",
     sunLabel: (day: number, days: number, done: number, total: number) =>
       `Jour ${day}/${days} · ${formatHours(done)} sur ${formatHours(total)}`,
-    flameLabel: (done: number, total: number) =>
+    flameLabel: (done: number, total: number, past = false) =>
       total === 0
-        ? "Rien de prévu aujourd'hui dans Suluk"
-        : `Aujourd'hui : ${formatHours(done)} sur ${formatHours(total)} · ${Math.round((done / total) * 100)} %`,
+        ? past
+          ? "Rien de prévu ce jour-là dans Suluk"
+          : "Rien de prévu aujourd'hui dans Suluk"
+        : `${past ? "Ce jour-là" : "Aujourd'hui"} : ${formatHours(done)} sur ${formatHours(total)} · ${Math.round((done / total) * 100)} %`,
     periodFlameLabel: (full: number, elapsed: number, days: number) =>
       `Ce mois-ci : ${full.toLocaleString("fr-FR", { maximumFractionDigits: 1 })} jours pleins sur ${days} · jour ${elapsed}`,
     sunLegend:
