@@ -203,6 +203,7 @@ export const t = {
     languageSoon: "L'arabe (droite à gauche) arrive dans une version future.",
   },
   admin: {
+    backToSilsila: "Retour à la silsila",
     title: "Administration",
     requests: "Demandes de mouqaddam",
     noRequests: "Aucune demande en attente.",

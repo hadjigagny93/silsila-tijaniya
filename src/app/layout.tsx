@@ -43,13 +43,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <small>{t.site.tagline}</small>
               </span>
             </Link>
-            <NavLink href="/silsila" icon="tree">{t.nav.silsila}</NavLink>
+            {/* « Ajouter une silsila » se fait depuis la page Silsila : elle reste allumée sur /admin/silsila. */}
+            <NavLink href="/silsila" icon="tree" also="/admin/silsila">{t.nav.silsila}</NavLink>
             <NavLink href="/biographies" icon="book">{t.nav.biographies}</NavLink>
             <NavLink href="/suluk" icon="path">{t.nav.suluk}</NavLink>
             {session?.isAdmin && (
               <>
                 <NavLink href="/admin/mouqaddams" icon="users">{t.nav.adminMouqaddams}</NavLink>
-                <NavLink href="/admin/silsila" icon="link">{t.nav.adminSilsila}</NavLink>
                 {!session.local && <NavLink href="/admin" icon="shield">{t.nav.adminModeration}</NavLink>}
               </>
             )}

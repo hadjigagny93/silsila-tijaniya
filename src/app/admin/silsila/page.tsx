@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { linkMouqaddam } from "@/app/actions";
+import { Icon } from "@/components/Icon";
 import { LinkComposer } from "@/components/LinkComposer";
 import { Notice } from "@/components/Notice";
 import { PendingRow } from "@/components/PendingRow";
@@ -33,7 +35,11 @@ export default async function AdminSilsilaPage({
 
   return (
     <div className="max-w-5xl">
-      <h1 className="page-title">{t.admin.silsilaTitle}</h1>
+      <Link href="/silsila" className="back-link">
+        <Icon name="arrowL" />
+        {t.admin.backToSilsila}
+      </Link>
+      <h1 className="page-title mt-4">{t.admin.silsilaTitle}</h1>
       <p className="page-intro">{t.admin.silsilaIntro}</p>
       {ok && <Notice tone="success">{t.admin.linked}</Notice>}
       {erreur && <Notice tone="error">{t.errors.invalid}</Notice>}

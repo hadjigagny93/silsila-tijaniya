@@ -60,10 +60,13 @@ export function SilsilaTree({
   persons,
   initialId,
   initialView = "tree",
+  canLink = false,
 }: {
   persons: PublicPerson[];
   initialId?: string;
   initialView?: SilsilaView;
+  // Admin : un bouton mène à « Ajouter une silsila » (relier une personne à son maître).
+  canLink?: boolean;
 }) {
   const stage = useRef<HTMLDivElement>(null);
   const labels = useRef<HTMLDivElement>(null);
@@ -295,6 +298,12 @@ export function SilsilaTree({
             <Icon name="plus" size={16} />
             {t.silsila.add}
           </Link>
+          {canLink && (
+            <Link href="/admin/silsila" className="button-quiet silsila-cta">
+              <Icon name="link" size={16} />
+              {t.nav.adminSilsila}
+            </Link>
+          )}
         </div>
       </div>
 
