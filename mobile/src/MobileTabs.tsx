@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { SulukNext } from "@/components/SulukNext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNow } from "@/components/useNow";
-import { PRAYERS, type SulukSettings } from "@/lib/data/types";
-import { dayIn, formatHijri, minuteIn, prayerTimes } from "@/lib/suluk";
+import { PRAYERS, type Exercise, type LitanyGroup, type SulukSettings } from "@/lib/data/types";
+import { addDays, dayIn, formatHijri, minuteIn, prayerTimes } from "@/lib/suluk";
+import { focusDay, stationById } from "@/lib/stations";
 import { t } from "@/messages/fr";
 import { mobileStore } from "./data";
 import { navigate, useLocation } from "./navigation";
@@ -37,6 +39,45 @@ function ignored(target: EventTarget | null) {
   );
 }
 
+// Ce qu'il faut pour « Prochaine œuvre » : relu à chaque navigation et après chaque écriture ou synchronisation.
+function useNextWork(version: number) {
+  const [data, setData] = useState<{
+    settings: SulukSettings;
+    groups: LitanyGroup[];
+    abdal: Exercise[];
+    done: string[];
+    station: string | null;
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const settings = await mobileStore.getSulukSettings("local");
+      if (!settings) return;
+      const today = dayIn(new Date(), settings.timezone);
+      const [groups, abdal, entries, focus] = await Promise.all([
+        mobileStore.listGroups("local"),
+        mobileStore.listExercises("local"),
+        mobileStore.listWird("local", today, addDays(today, 1)),
+        mobileStore.getStationFocus("local"),
+      ]);
+      const station = focus ? stationById(focus.station) : undefined;
+      const running = focus && !focusDay(focus, today).finished;
+      if (cancelled) return;
+      setData({
+        settings,
+        groups,
+        abdal,
+        done: entries.map((entry) => `${entry.day}|${entry.litany}`),
+        station: station && running ? station.arabic : null,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [version]);
+  return data;
+}
+
 function useNextPrayer() {
   const [settings, setSettings] = useState<SulukSettings | null>(null);
   const now = useNow();
@@ -60,7 +101,8 @@ function useNextPrayer() {
 }
 
 export function MobileTabs() {
-  const { location } = useLocation();
+  const { location, version } = useLocation();
+  const work = useNextWork(version);
   const active = tabOf(location.pathname);
   const prayer = useNextPrayer();
 
@@ -135,6 +177,16 @@ export function MobileTabs() {
           <span aria-hidden className="mobile-tabs-bar" />
           <span>{prayer.day}</span>
         </p>
+      )}
+      {/* La prochaine œuvre de Suluk, au-dessus des onglets : visible depuis chaque section. */}
+      {work && (
+        <SulukNext
+          settings={work.settings}
+          groups={work.groups}
+          abdal={work.abdal}
+          done={work.done}
+          station={work.station}
+        />
       )}
       <div className="mobile-tabs-dots" aria-hidden>
         {TABS.map((tab, index) => (

@@ -91,9 +91,9 @@ body.mobile-app main {
   padding-top: 1.25rem;
 }
 
+/* L'en-tête défile avec la page : avec la prochaine œuvre, il prendrait trop de place s'il restait fixé. */
 .mobile-tabs {
-  position: sticky;
-  top: env(safe-area-inset-top);
+  position: relative;
   z-index: 35;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--background) 94%, transparent);
@@ -243,4 +243,48 @@ body.mobile-app[data-slide="right"] main {
   body.mobile-app[data-slide] main {
     animation: none;
   }
+}
+
+/* « Prochaine œuvre » dans l'en-tête, en plus compact ; la carte de la page Suluk n'est plus utile. */
+.mobile-tabs .suluk-next {
+  gap: 0;
+  margin: 0.6rem 0 0;
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.8rem;
+}
+
+.mobile-tabs .suluk-next.is-empty {
+  min-height: 4.5rem;
+}
+
+.mobile-tabs .suluk-next-label {
+  font-size: 0.65rem;
+}
+
+.mobile-tabs .suluk-next-when {
+  font-size: 1.45rem;
+}
+
+.mobile-tabs .suluk-next-name {
+  font-size: 0.95rem;
+}
+
+.mobile-tabs .suluk-next-detail {
+  overflow: hidden;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-tabs .suluk-next-hours {
+  font-size: 0.75rem;
+}
+
+.mobile-tabs .suluk-next-station {
+  top: 0.45rem;
+  font-size: 1.25rem;
+}
+
+body.mobile-app main .suluk-next {
+  display: none;
 }
