@@ -276,16 +276,15 @@ export function SulukToday({
                 onClick={() => toggleRing(ring.key)}
               >
                 <span className="dial-legend-switch" aria-hidden />
-                <span lang="ar" className="dial-legend-title">
-                  {ring.title}
-                </span>
               </button>
+              {/* Le titre arabe mène aux réglages du cercle : les litanies, ou la famille d'exercices. */}
               <Link
                 href={ring.key === "litanies" ? "/suluk/litanies" : `/suluk/abdal?famille=${ring.key}`}
-                className="button-quiet"
+                lang="ar"
+                className="dial-legend-title"
+                aria-label={ring.key === "litanies" ? t.suluk.manage : `${t.abdal.manage} · ${ring.label}`}
               >
-                <Icon name="sliders" />
-                {ring.key === "litanies" ? t.suluk.manage : t.abdal.manage}
+                {ring.title}
               </Link>
             </li>
           ))}
