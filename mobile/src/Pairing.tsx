@@ -65,16 +65,23 @@ export function PairingScreen() {
 const time = (at: number) => new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(at);
 
 // Petite pastille en bas de l'écran : où en est la synchronisation ; la toucher la relance.
-export function SyncBadge() {
+// compact : dans l'en-tête, seulement l'heure du dernier échange (ou « … », « hors ligne »).
+export function SyncBadge({ compact = false }: { compact?: boolean }) {
   const status = useSyncStatus();
   if (status.state === "unpaired") return null;
   const label =
     status.state === "syncing"
-      ? "Synchronisation…"
+      ? compact
+        ? "…"
+        : "Synchronisation…"
       : status.state === "offline"
-        ? "Mac hors de portée"
+        ? compact
+          ? "Hors ligne"
+          : "Mac hors de portée"
         : status.at
-          ? `Synchronisé à ${time(status.at)}`
+          ? compact
+            ? time(status.at)
+            : `Synchronisé à ${time(status.at)}`
           : "Synchroniser";
   return (
     <button

@@ -349,6 +349,7 @@ export const t = {
         : `${detail} · ${minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${String(minutes % 60).padStart(2, "0")}`}`,
     soonTitle: "Dans les 30 prochaines minutes",
     checkAll: "Tout cocher",
+    prayerIn: (name: string) => `${name} dans`,
     previousDay: "Jour précédent",
     nextDay: "Jour suivant",
     calendar: "Calendrier du mois",

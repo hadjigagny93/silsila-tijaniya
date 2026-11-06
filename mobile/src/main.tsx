@@ -7,7 +7,8 @@ import { servePersonImages } from "./images";
 import { navigate } from "./navigation";
 import { scheduleReminders } from "./notifications";
 import { rememberTheme } from "./theme";
-import { PairingScreen, SyncBadge } from "./Pairing";
+import { MobileTabs } from "./MobileTabs";
+import { PairingScreen } from "./Pairing";
 import { Router } from "./router";
 import { initialStatus, pair, parsePairingLink, readPeer, syncNow, useSyncStatus } from "./syncClient";
 
@@ -52,8 +53,8 @@ function App() {
   if (!status.synced) return <PairingScreen />;
   return (
     <>
+      <MobileTabs />
       <Router />
-      <SyncBadge />
     </>
   );
 }
