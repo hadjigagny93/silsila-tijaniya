@@ -5,6 +5,7 @@ import { Flame } from "@/components/Flame";
 import { Hourglass } from "@/components/Hourglass";
 import { Icon } from "@/components/Icon";
 import { SulukClock } from "@/components/SulukClock";
+import { SulukNext } from "@/components/SulukNext";
 import { SulukToday } from "@/components/SulukToday";
 import { getStore } from "@/lib/data";
 import { dayCompletion } from "@/lib/progress";
@@ -59,6 +60,8 @@ export default async function SulukPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="suluk-wide">
+      {/* La première chose qu'on voit : ce qu'il y a à faire maintenant, ou ensuite. */}
+      {!selected && <SulukNext settings={settings} groups={groups} abdal={abdal} done={done} />}
       {header}
 
       <div className="suluk-now">

@@ -290,59 +290,6 @@ export function SulukToday({
           ))}
         </ul>
 
-        <div className="suluk-soon exercise-daily">
-          <h3 className="panel-title">{t.suluk.soonTitle}</h3>
-          {nowMinute === null || soon.length === 0 ? (
-            <p className="suluk-soon-empty">{nowMinute === null ? status : t.suluk.soonEmpty}</p>
-          ) : (
-            <ul className="exercise-list">
-              {soon.map((item) => (
-                <li
-                  key={item.id}
-                  className="exercise-row"
-                  style={item.litany ? ({ "--group-color": item.litany.color } as React.CSSProperties) : undefined}
-                >
-                  <div className="exercise-row-head">
-                    <span className="min-w-0 flex-1">
-                      <span className="wird-name">
-                        {item.name}
-                        {item.arabic && (
-                          <span className="wird-arabic" lang="ar">
-                            {item.arabic}
-                          </span>
-                        )}
-                      </span>
-                      <span className="wird-when">
-                        {item.minute <= nowMinute ? (
-                          <>
-                            {t.suluk.now} · <strong>{t.suluk.leftTime(item.end - nowMinute)}</strong>
-                          </>
-                        ) : (
-                          <>
-                            {formatMinute(item.minute % 1440)} ·{" "}
-                            <strong>{t.suluk.inTime(item.minute - nowMinute)}</strong>
-                          </>
-                        )}
-                      </span>
-                    </span>
-                    {item.litany ? (
-                      <button
-                        type="button"
-                        className="exercise-check"
-                        aria-pressed={false}
-                        aria-label={t.suluk.markDone(item.name)}
-                        onClick={() => onToggle(item.litany!)}
-                      />
-                    ) : (
-                      <Icon name="clock" />
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
         {/* Le bilan du soir s'ouvre ici quand sa plage approche. */}
         <ExerciseDaily
           day={day}
