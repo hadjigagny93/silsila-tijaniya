@@ -15,6 +15,7 @@ import {
   prayerTimes,
 } from "@/lib/suluk";
 import { t } from "@/messages/fr";
+import Link from "next/link";
 import { useNow } from "./useNow";
 
 type Item = { name: string; detail: string; start: number; end: number; color: string };
@@ -66,13 +67,21 @@ export function SulukNext({
   groups,
   abdal,
   done,
+  station = null,
 }: {
   settings: SulukSettings;
   groups: LitanyGroup[];
   abdal: Exercise[];
   done: string[];
+  // Nom arabe de la station du mois, en cours : il mène à l'Échiquier, en bas de la page.
+  station?: string | null;
 }) {
   const now = useNow();
+  const stationLink = station && (
+    <Link href="#echiquier" lang="ar" className="suluk-next-station" aria-label={t.echiquier.focus}>
+      {station}
+    </Link>
+  );
   if (!now) return <div className="suluk-next is-empty" aria-hidden />;
   const today = dayIn(now, settings.timezone);
   const minute = minuteIn(now, settings.timezone);
@@ -85,6 +94,7 @@ export function SulukNext({
   if (!next) {
     return (
       <section className="suluk-next">
+        {stationLink}
         <p className="suluk-next-label">{t.suluk.nextUp}</p>
         <p className="suluk-next-name">{t.suluk.nothingNext}</p>
       </section>
@@ -93,6 +103,7 @@ export function SulukNext({
   const running = next.start <= minute;
   return (
     <section className="suluk-next" style={{ "--group-color": next.color } as React.CSSProperties}>
+      {stationLink}
       <p className="suluk-next-label">{running ? t.suluk.now : t.suluk.nextUp}</p>
       <p className="suluk-next-when">
         {running ? t.suluk.leftFor(duration(next.end - minute)) : t.suluk.inFor(duration(next.start - minute))}

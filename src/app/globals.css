@@ -5693,3 +5693,28 @@ a.calendar-day:hover {
   font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* Station du mois, dans la carte « Prochaine œuvre » : son nom arabe, en haut à droite. */
+.suluk-next {
+  position: relative;
+}
+
+.suluk-next-station {
+  position: absolute;
+  top: 0.7rem;
+  inset-inline-end: 1rem;
+  color: var(--gold);
+  font-family: var(--font-arabic);
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+/* Calendrier : un disque rempli de bas en haut selon la journée accomplie. */
+.calendar-fill {
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-bottom: 0.2rem;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, var(--accent) var(--fill), transparent var(--fill));
+}

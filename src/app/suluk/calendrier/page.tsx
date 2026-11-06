@@ -21,17 +21,15 @@ function shiftMonth(month: string, step: number) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-// Petite flamme d'un jour : sa taille suit la part de la journée accomplie ; rien du tout, un simple point.
-function DayFlame({ ratio }: { ratio: number }) {
+// Un disque par jour, rempli à la mesure de la journée accomplie ; rien du tout, un simple point.
+function DayFill({ ratio }: { ratio: number }) {
   if (ratio <= 0) return <span className="calendar-ember" aria-hidden />;
-  const scale = 0.45 + 0.75 * Math.min(1, ratio);
   return (
-    <svg className="calendar-flame" viewBox="-12 -24 24 26" aria-hidden style={{ opacity: 0.55 + 0.45 * ratio }}>
-      <g transform={`scale(${scale.toFixed(2)})`}>
-        <path d="M0 0C-5.5 -1.5 -6 -8 -2 -13C-1.5 -9.5 0.5 -9 1 -11C2 -14 1 -17 0 -20C6 -15 7 -6 0 0Z" fill="#f08a24" />
-        <path d="M0 0C-2.6 -1 -3 -4.5 -0.8 -7.5C-0.4 -5.5 0.8 -5.2 1 -6.4C2.6 -4.5 2.4 -1.2 0 0Z" fill="#ffe08a" />
-      </g>
-    </svg>
+    <span
+      className="calendar-fill"
+      aria-hidden
+      style={{ "--fill": `${Math.round(Math.min(1, ratio) * 100)}%` } as React.CSSProperties}
+    />
   );
 }
 
@@ -115,7 +113,7 @@ export default async function SulukCalendarPage({ searchParams }: { searchParams
               title={`${percent} %`}
             >
               <span className="calendar-number">{number}</span>
-              <DayFlame ratio={ratio} />
+              <DayFill ratio={ratio} />
             </Link>
           );
         })}

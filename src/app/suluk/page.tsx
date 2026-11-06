@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EchiquierSection } from "@/components/EchiquierSection";
-import { Flame } from "@/components/Flame";
-import { Hourglass } from "@/components/Hourglass";
 import { Icon } from "@/components/Icon";
 import { SulukClock } from "@/components/SulukClock";
 import { SulukNext } from "@/components/SulukNext";
 import { SulukToday } from "@/components/SulukToday";
 import { getStore } from "@/lib/data";
-import { dayCompletion } from "@/lib/progress";
-import { addDays, formatDay, formatHijri, isWirdDay, todayKey } from "@/lib/suluk";
+import { addDays, formatDay, isWirdDay, todayKey } from "@/lib/suluk";
 import { focusDay, stationById } from "@/lib/stations";
 import { loadSuluk } from "@/lib/sulukData";
 import { t } from "@/messages/fr";
@@ -53,77 +50,53 @@ export default async function SulukPage({ searchParams }: { searchParams: Promis
   const focused = focus ? stationById(focus.station) : undefined;
   const progress = focus ? focusDay(focus, today) : null;
   const done = entries.map((entry) => `${entry.day}|${entry.litany}`);
-  // Flamme du jour : la part du temps de Suluk accomplie aujourd'hui.
-  const todayRate = dayCompletion(selected ?? today, groups, abdal, new Set(done));
   const shown = selected ?? today;
   const nextDay = addDays(shown, 1);
 
   return (
     <div className="suluk-wide">
-      {/* La première chose qu'on voit : ce qu'il y a à faire maintenant, ou ensuite. */}
-      {!selected && <SulukNext settings={settings} groups={groups} abdal={abdal} done={done} />}
-      {header}
+      {/* La première chose qu'on voit : ce qu'il y a à faire maintenant, ou ensuite, et la station du mois. */}
+      {!selected && (
+        <SulukNext
+          settings={settings}
+          groups={groups}
+          abdal={abdal}
+          done={done}
+          station={focused && progress && !progress.finished ? focused.arabic : null}
+        />
+      )}
 
       <div className="suluk-now">
         {!selected && <SulukClock timezone={settings.timezone} />}
-        <Flame
-          className="flame-suluk"
-          intensity={todayRate.ratio}
-          label={t.echiquier.flameLabel(todayRate.done, todayRate.total, Boolean(selected))}
-        />
-        <Hourglass
-          className="hourglass-suluk"
-          ratio={todayRate.ratio}
-          label={t.suluk.hourglass(todayRate.done, todayRate.total)}
-        />
-        <p className="suluk-date">
-          {/* Revoir les jours passés : un jour en arrière ou en avant (jamais après aujourd'hui), ou le calendrier du mois. */}
-          <span className="suluk-day-nav">
-            <Link
-              href={`/suluk?jour=${addDays(shown, -1)}`}
-              className="icon-quiet is-down"
-              aria-label={t.suluk.previousDay}
-            >
-              <Icon name="arrowL" />
-            </Link>
-            <span className="first-letter:uppercase">{formatDay(shown)}</span>
-            {selected ? (
-              <Link
-                href={nextDay === today ? "/suluk" : `/suluk?jour=${nextDay}`}
-                className="icon-quiet is-down"
-                aria-label={t.suluk.nextDay}
-              >
-                <Icon name="arrowR" />
-              </Link>
-            ) : (
-              <span className="icon-quiet" aria-hidden />
-            )}
-            <Link
-              href={`/suluk/calendrier?mois=${shown.slice(0, 7)}`}
-              className="icon-quiet is-down"
-              aria-label={t.suluk.calendar}
-            >
-              <Icon name="calendar" />
-            </Link>
-          </span>
-          {formatHijri(selected ?? today)} · {settings.city} ·{" "}
-          <Link href="/suluk/litanies#reglages" className="underline-offset-4 hover:underline">
-            {t.suluk.settings}
+        {/* Revoir les jours passés : un jour en arrière ou en avant (jamais après aujourd'hui), ou le calendrier du mois.
+            La date ne s'écrit que pour un jour passé : aujourd'hui, l'en-tête la montre déjà. */}
+        <span className="suluk-day-nav">
+          <Link
+            href={`/suluk?jour=${addDays(shown, -1)}`}
+            className="icon-quiet is-down"
+            aria-label={t.suluk.previousDay}
+          >
+            <Icon name="arrowL" />
           </Link>
-        </p>
+          {selected && <span className="first-letter:uppercase">{formatDay(shown)}</span>}
+          {selected && (
+            <Link
+              href={nextDay === today ? "/suluk" : `/suluk?jour=${nextDay}`}
+              className="icon-quiet is-down"
+              aria-label={t.suluk.nextDay}
+            >
+              <Icon name="arrowR" />
+            </Link>
+          )}
+          <Link
+            href={`/suluk/calendrier?mois=${shown.slice(0, 7)}`}
+            className="icon-quiet is-down"
+            aria-label={t.suluk.calendar}
+          >
+            <Icon name="calendar" />
+          </Link>
+        </span>
       </div>
-
-      {focused && progress && (
-        <Link href="#echiquier" className="focus-banner">
-          <span className="label">{t.echiquier.focus}</span>
-          <span className="focus-banner-name">
-            <span lang="ar">{focused.arabic}</span> · {focused.name}
-          </span>
-          <span className="text-muted">
-            {progress.finished ? t.echiquier.focusDone : t.echiquier.focusDay(progress.day, focus!.days)}
-          </span>
-        </Link>
-      )}
 
       <SulukToday
         key={selected ?? "aujourdhui"}

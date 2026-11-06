@@ -25,23 +25,6 @@ function arc(from: number, to: number, radius: number) {
 
 // minute : début de la séance ; duration : son temps estimé, colorié sur l'anneau.
 // arabic : ce qu'il y a à faire, en arabe, une ligne par litanie ; affiché en petit près du point.
-// Petite flamme posée sur le point : sa taille suit le temps de la séance, elle ne brûle qu'une fois faite.
-const FLAME_PATH = "M0 0C-5.5 -1.5 -6 -8 -2 -13C-1.5 -9.5 0.5 -9 1 -11C2 -14 1 -17 0 -20C6 -15 7 -6 0 0Z";
-const FLAME_CORE = "M0 0C-2.6 -1 -3 -4.5 -0.8 -7.5C-0.4 -5.5 0.8 -5.2 1 -6.4C2.6 -4.5 2.4 -1.2 0 0Z";
-
-function DialFlame({ x, y, minutes, lit }: { x: number; y: number; minutes: number; lit: boolean }) {
-  // De 0,55 (quelques minutes) à 1,35 (deux heures et plus).
-  const scale = 0.55 + 0.8 * Math.min(1, minutes / 120);
-  return (
-    <g className={`dial-flame${lit ? " is-lit" : ""}`} transform={`translate(${x} ${y}) scale(${scale})`} aria-hidden>
-      <g className="dial-flame-body">
-        <path d={FLAME_PATH} fill="url(#dial-flame-outer)" />
-        <path d={FLAME_CORE} fill="url(#dial-flame-core)" />
-      </g>
-    </g>
-  );
-}
-
 export type DialLitany = {
   id: string;
   name: string;
@@ -111,15 +94,6 @@ export function SulukDial({
     <div className="suluk-dial">
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="group" aria-label={label}>
         <defs>
-          <radialGradient id="dial-flame-outer" cx="50%" cy="85%" r="70%">
-            <stop offset="0%" stopColor="#ffd25a" />
-            <stop offset="55%" stopColor="#ff8a1f" />
-            <stop offset="100%" stopColor="#d93d16" />
-          </radialGradient>
-          <radialGradient id="dial-flame-core" cx="50%" cy="80%" r="60%">
-            <stop offset="0%" stopColor="#fffbe6" />
-            <stop offset="100%" stopColor="#ffe08a" />
-          </radialGradient>
           <linearGradient id="dial-hand" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#f4d27c" />
             <stop offset="100%" stopColor="#b9862e" />
@@ -233,7 +207,6 @@ export function SulukDial({
                 {litany.done && (
                   <path className="dial-litany-check" d={`M${dot.x - 3.5} ${dot.y + 0.2}l2.4 2.4 4.6-4.8`} />
                 )}
-                <DialFlame x={dot.x} y={dot.y - 7} minutes={litany.duration} lit={litany.done} />
                 {lines.length > 0 ? (
                   <text className="dial-litany-arabic" x={label.x} y={label.y} textAnchor={side}>
                     {lines.map((line, row) => (

@@ -358,7 +358,7 @@ export const t = {
     nextDay: "Jour suivant",
     calendar: "Calendrier du mois",
     calendarTitle: "Mon mois",
-    calendarIntro: "Chaque jour, une flamme : plus elle est grande, plus la journée de Suluk a été remplie. Touche un jour pour le revoir.",
+    calendarIntro: "Chaque jour, un disque : plus il est rempli, plus la journée de Suluk l'a été. Touche un jour pour le revoir.",
     calendarDay: (day: string, percent: number) => `${day} : ${percent} %`,
     calendarAverage: (percent: number, days: number) => `Moyenne : ${percent} % sur ${days} jour${days > 1 ? "s" : ""}`,
     uncheckAll: "Tout décocher",
