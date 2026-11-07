@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
@@ -42,6 +42,19 @@ export function PersonPicker({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  const root = useRef<HTMLDivElement>(null);
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+
+  // Un toucher ou un clic hors de la liste la ferme. On ne se fie pas à la perte de focus : sur iPhone (Safari),
+  // toucher un nom ne lui donne pas le focus, et la liste se fermait avant que le choix soit pris en compte.
+  useEffect(() => {
+    if (!open) return;
+    const outside = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [open]);
 
   const matches = useMemo(() => {
     const term = normalize(query.trim());
@@ -75,9 +88,11 @@ export function PersonPicker({
 
   return (
     <div
+      ref={root}
       className="picker"
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) close();
+        // Au clavier (Tab), le focus part ailleurs : on ferme. Un toucher sans cible de focus est géré plus haut.
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) close();
       }}
     >
       <input type="hidden" name={name} value={value} />
@@ -117,9 +132,16 @@ export function PersonPicker({
       )}
 
       {open && (
-        <div className="picker-panel">
+        <div className="picker-panel" role="dialog" aria-label={label}>
+          <div className="picker-panel-head">
+            <span className="picker-panel-title">{label}</span>
+            <button type="button" className="icon-quiet is-danger" onClick={close} aria-label={t.suluk.close}>
+              <Icon name="close" />
+            </button>
+          </div>
           <input
-            autoFocus
+            // Sur un écran tactile, le clavier cacherait la liste : on la montre d'abord, la recherche se touche ensuite.
+            autoFocus={!coarse}
             type="search"
             value={query}
             placeholder={t.silsila.searchLabel}

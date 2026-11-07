@@ -5718,3 +5718,45 @@ a.calendar-day:hover {
   border-radius: 50%;
   background: linear-gradient(to top, var(--accent) var(--fill), transparent var(--fill));
 }
+
+/* Choix d'une personne sur téléphone : la liste s'ouvre en haut de l'écran, au-dessus de tout,
+   pour que le clavier (en bas) ne la cache jamais. Sur grand écran, elle reste sous le champ. */
+.picker-panel-head {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  .picker-panel {
+    position: fixed;
+    z-index: 70;
+    top: calc(env(safe-area-inset-top) + 0.5rem);
+    right: 0.5rem;
+    left: 0.5rem;
+    display: flex;
+    max-height: 55dvh;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .picker-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-inline-start: 0.4rem;
+  }
+
+  .picker-panel-title {
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .picker-panel .picker-list {
+    max-height: none;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
