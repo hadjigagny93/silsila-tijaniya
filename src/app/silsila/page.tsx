@@ -30,9 +30,9 @@ function Branch({ person, tree }: { person: PublicPerson; tree: Map<string, Publ
 export default async function SilsilaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ personne?: string; vue?: string }>;
+  searchParams: Promise<{ personne?: string }>;
 }) {
-  const { personne, vue } = await searchParams;
+  const { personne } = await searchParams;
   const store = getStore();
   const [persons, session] = await Promise.all([store.listPersons(), store.getSession()]);
   const tree = childrenOf(persons);
@@ -48,7 +48,6 @@ export default async function SilsilaPage({
       <SilsilaTree
         persons={persons}
         initialId={persons.some((person) => person.id === personne) ? personne : undefined}
-        initialView={vue === "planetaire" ? "planets" : "tree"}
         canLink={Boolean(session?.isAdmin)}
       />
 

@@ -4,7 +4,6 @@ export type TreeDisplay = "photo" | "name";
 
 export type SceneApi = {
   select(id: string | null): void;
-  // Propre à l'arbre : la vue planétaire n'a qu'un seul affichage.
   setDisplay?(display: TreeDisplay): void;
   setIsolated?(isolated: boolean): void;
   setGeneration?(generation: number | null): void;

@@ -2686,33 +2686,6 @@ h3 {
   opacity: 0.35;
 }
 
-.t-ring-thin {
-  stroke-width: 1.2;
-}
-
-.o-dust {
-  fill: var(--foreground);
-}
-
-.o-orbit {
-  fill: none;
-  stroke: var(--foreground);
-  stroke-width: 0.8;
-  opacity: 0.18;
-}
-
-.o-orbit-gold {
-  stroke: var(--gold);
-  opacity: 0.6;
-}
-
-.o-chain {
-  fill: none;
-  stroke: var(--gold);
-  stroke-width: 1.6;
-  opacity: 0.95;
-}
-
 .tree ul {
   margin-inline-start: 0.6rem;
   border-inline-start: 1px solid var(--line);

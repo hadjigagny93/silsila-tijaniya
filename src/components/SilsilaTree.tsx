@@ -7,20 +7,11 @@ import type { PublicPerson } from "@/lib/data/types";
 import { periodOf } from "@/lib/dates";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
-import { Icon, type IconName } from "./Icon";
+import { Icon } from "./Icon";
 import type { SceneApi } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
 import { useDragCard } from "./useDragCard";
 import { useStoredToggle } from "./useStoredToggle";
-
-export type SilsilaView = "tree" | "planets";
-
-const scenes = {
-  tree: () => import("./silsilaTree2d"),
-  planets: () => import("./silsilaOrbit2d"),
-};
-
-const VIEW_ICONS: Record<SilsilaView, IconName> = { tree: "tree", planets: "orbit" };
 
 function normalize(text: string) {
   return text
@@ -60,12 +51,10 @@ function Highlighted({ name, query }: { name: string; query: string }) {
 export function SilsilaTree({
   persons,
   initialId,
-  initialView = "tree",
   canLink = false,
 }: {
   persons: PublicPerson[];
   initialId?: string;
-  initialView?: SilsilaView;
   // Admin : un bouton mène à « Ajouter une silsila » (relier une personne à son maître).
   canLink?: boolean;
 }) {
@@ -75,7 +64,6 @@ export function SilsilaTree({
   const scene = useRef<SceneApi | null>(null);
   const chosen = useRef<string | null>(initialId ?? null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
-  const [view, setView] = useState<SilsilaView>(initialView);
   const silver = useStoredToggle("silsila:chaines-argentees", true);
   // Tous les noms à la fois ; par défaut, seulement ceux sans photo (les autres au survol).
   const names = useStoredToggle("silsila:tous-les-noms", false);
@@ -85,9 +73,6 @@ export function SilsilaTree({
   const dark = useDarkTheme();
   const [generation, setGeneration] = useState<number | null>(null);
   const generationNow = useRef<number | null>(null);
-  const [isolated, setIsolated] = useState(false);
-  // Le changement de vue recrée la scène : elle doit retrouver cet état.
-  const isolatedNow = useRef(false);
   const [failed, setFailed] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -96,28 +81,19 @@ export function SilsilaTree({
   const [exploring, setExploring] = useState(false);
   const exploringNow = useRef(false);
 
-  const markIsolated = useCallback((next: boolean) => {
-    isolatedNow.current = next;
-    setIsolated(next);
-  }, []);
-
   useEffect(() => {
     namesNow.current = names.shown;
     scene.current?.setDisplay?.(names.shown ? "name" : "photo");
   }, [names.shown]);
 
-  const remember = useCallback(
-    (id: string | null) => {
-      chosen.current = id;
-      setSelectedId(id);
-      if (!id) markIsolated(false);
-    },
-    [markIsolated],
-  );
+  const remember = useCallback((id: string | null) => {
+    chosen.current = id;
+    setSelectedId(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    scenes[view]()
+    import("./silsilaTree2d")
       .then(({ createScene }) => {
         if (cancelled || !stage.current || !labels.current) return;
         scene.current = createScene({
@@ -128,9 +104,7 @@ export function SilsilaTree({
           generation: generationNow.current,
           onSelect: remember,
         });
-        // Le nom choisi reste sélectionné quand on change de vue.
         if (chosen.current) scene.current.select(chosen.current);
-        if (isolatedNow.current) scene.current.setIsolated?.(true);
         scene.current.setExploring?.(exploringNow.current);
         if (namesNow.current) scene.current.setDisplay?.("name");
       })
@@ -144,9 +118,9 @@ export function SilsilaTree({
       scene.current?.dispose();
       scene.current = null;
     };
-    // Les vues 2D suivent le thème par leurs couleurs : seul le changement de vue les recrée.
+    // L'arbre suit le thème par ses couleurs : il n'est pas recréé quand le thème change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persons, view, remember]);
+  }, [persons, remember]);
 
   const generations = useMemo(() => generationsOf(persons), [persons]);
   const ranks = useMemo(() => [...new Set(generations.values())].sort((a, b) => a - b), [generations]);
@@ -173,17 +147,6 @@ export function SilsilaTree({
 
   const selected = selectedId ? chainOf(persons, selectedId) : null;
   const person = selected?.chain.at(-1);
-
-  function changeView(next: SilsilaView) {
-    if (next === view) return;
-    markIsolated(false);
-    setView(next);
-  }
-
-  function toggleIsolated() {
-    markIsolated(!isolated);
-    scene.current?.setIsolated?.(!isolated);
-  }
 
   function changeGeneration(next: number | null) {
     generationNow.current = next;
@@ -235,7 +198,6 @@ export function SilsilaTree({
   return (
     <section
       className="silsila-stage"
-      data-view={view}
       data-dark={dark || undefined}
       data-exploring={exploring || undefined}
       data-silver={silver.shown ? undefined : "off"}
@@ -355,12 +317,6 @@ export function SilsilaTree({
             <Link href={`/silsila/${person.id}`} className="button w-full">
               {t.silsila.openChain}
             </Link>
-            {/* Dans l'arbre, choisir une personne ne montre déjà que ses chaînes. */}
-            {person.kind !== "prophet" && view !== "tree" && (
-              <button onClick={toggleIsolated} className="button-quiet w-full" aria-pressed={isolated}>
-                {isolated ? t.silsila.showAll : t.silsila.isolate}
-              </button>
-            )}
             {person.biographySlug && (
               <Link href={`/biographies/${person.biographySlug}`} className="profile-link mx-auto flex w-fit">
                 {t.silsila.biography}
@@ -430,15 +386,13 @@ export function SilsilaTree({
         <button onClick={() => scene.current?.overview()} aria-label={t.silsila.resetView}>
           <Icon name="recenter" />
         </button>
-        {view === "tree" && (
-          <button
-            onClick={() => scene.current?.rearrange?.()}
-            aria-label={t.silsila.rearrange}
-            title={t.silsila.rearrange}
-          >
-            <Icon name="wind" />
-          </button>
-        )}
+        <button
+          onClick={() => scene.current?.rearrange?.()}
+          aria-label={t.silsila.rearrange}
+          title={t.silsila.rearrange}
+        >
+          <Icon name="wind" />
+        </button>
       </div>
 
       <div className="silsila-bar">
@@ -451,14 +405,6 @@ export function SilsilaTree({
           <Icon name={exploring ? "close" : "compass"} size={17} />
           {exploring ? t.silsila.exploreLeave : t.silsila.explore}
         </button>
-        <div className="bar-group" role="group" aria-label={t.silsila.viewLabel}>
-          {(["tree", "planets"] as const).map((option) => (
-            <button key={option} aria-pressed={view === option} onClick={() => changeView(option)}>
-              <Icon name={VIEW_ICONS[option]} size={17} />
-              {t.silsila.views[option]}
-            </button>
-          ))}
-        </div>
         {ranks.length > 0 && (
           <div className="bar-group" role="group" aria-label={t.silsila.generationLabel}>
             <span className="bar-label">{t.silsila.generationBar}</span>
@@ -477,14 +423,12 @@ export function SilsilaTree({
             ))}
           </div>
         )}
-        {view === "tree" && (
-          <div className="bar-group" role="group" aria-label={t.silsila.namesLabel}>
-            <button aria-pressed={names.shown} onClick={names.toggle}>
-              {t.silsila.namesToggle}
-            </button>
-          </div>
-        )}
-        {view === "tree" && hasSilver && (
+        <div className="bar-group" role="group" aria-label={t.silsila.namesLabel}>
+          <button aria-pressed={names.shown} onClick={names.toggle}>
+            {t.silsila.namesToggle}
+          </button>
+        </div>
+        {hasSilver && (
           <div className="bar-group" role="group" aria-label={t.silsila.silverLabel}>
             <button aria-pressed={silver.shown} onClick={silver.toggle} className="bar-silver">
               {t.silsila.silverToggle}
