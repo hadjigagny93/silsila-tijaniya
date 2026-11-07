@@ -81,8 +81,6 @@ export const t = {
     generationShort: (rank: number) => `${rank}${rank === 1 ? "re" : "e"} gén.`,
     generationCount: (rank: number, count: number) =>
       `${rank}${rank === 1 ? "re" : "e"} génération : ${count} personne${count > 1 ? "s" : ""}`,
-    displayLabel: "Affichage de l'arbre",
-    displays: { photo: "Photos", name: "Noms" },
     hints: {
       tree: "Glissez une feuille ou une branche pour la déplacer, cliquez sur un nom pour suivre sa chaîne.",
       planets: "Chaque astre gravite autour de celui qui lui a transmis le wird. Plus il a transmis, plus il brille.",

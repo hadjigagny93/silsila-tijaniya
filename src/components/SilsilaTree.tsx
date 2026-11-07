@@ -8,7 +8,7 @@ import { periodOf } from "@/lib/dates";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
-import type { SceneApi, TreeDisplay } from "./sceneTypes";
+import type { SceneApi } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
 import { useDragCard } from "./useDragCard";
 import { useShowSilver } from "./useShowSilver";
@@ -76,11 +76,9 @@ export function SilsilaTree({
   const chosen = useRef<string | null>(initialId ?? null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
   const [view, setView] = useState<SilsilaView>(initialView);
-  const [display, setDisplay] = useState<TreeDisplay>("photo");
   const silver = useShowSilver();
   const hasSilver = persons.some((person) => person.alsoFrom.length > 0);
   // Lu à la création de la scène, sans la recréer quand l'affichage change.
-  const shown = useRef<TreeDisplay>("photo");
   const dark = useDarkTheme();
   const [generation, setGeneration] = useState<number | null>(null);
   const generationNow = useRef<number | null>(null);
@@ -118,7 +116,6 @@ export function SilsilaTree({
           container: stage.current,
           labels: labels.current,
           persons,
-          display: shown.current,
           dark,
           generation: generationNow.current,
           onSelect: remember,
@@ -202,12 +199,6 @@ export function SilsilaTree({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [exploring, changeExploring]);
-
-  function changeDisplay(next: TreeDisplay) {
-    shown.current = next;
-    setDisplay(next);
-    scene.current?.setDisplay?.(next);
-  }
 
   function choose(id: string) {
     // Une personne d'une autre génération serait estompée : on revoit tout.
@@ -473,15 +464,6 @@ export function SilsilaTree({
                 onClick={() => changeGeneration(rank)}
               >
                 {rank}
-              </button>
-            ))}
-          </div>
-        )}
-        {view === "tree" && (
-          <div className="bar-group" role="group" aria-label={t.silsila.displayLabel}>
-            {(["photo", "name"] as const).map((option) => (
-              <button key={option} aria-pressed={display === option} onClick={() => changeDisplay(option)}>
-                {t.silsila.displays[option]}
               </button>
             ))}
           </div>

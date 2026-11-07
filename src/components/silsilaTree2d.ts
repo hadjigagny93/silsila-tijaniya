@@ -1,6 +1,6 @@
 import { buildForest, type ForestNode, hash, subtreeOf } from "@/lib/silsilaForest";
 import { personImageUrl } from "./Avatar";
-import { prefersCalm, type SceneApi, type SceneOptions, type TreeDisplay } from "./sceneTypes";
+import { prefersCalm, type SceneApi, type SceneOptions } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 
 const ROW = 84;
@@ -107,7 +107,6 @@ export function createScene(options: SceneOptions): SceneApi {
   };
   let selected: ForestNode | null = null;
   let generation = options.generation ?? null;
-  let display: TreeDisplay = options.display ?? "photo";
 
   const stage = createSvgStage(
     options.container,
@@ -253,7 +252,7 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth === 0) {
         svg("circle", { r: 46, fill: `url(#${id}g)` }, group);
         star(group, 11, "var(--gold)");
-      } else if (display === "photo") {
+      } else {
         const radius = kind === "cheikh" ? 13 : kind === "mouqaddam" ? 8.5 : 5;
         svg("circle", { r: radius, class: `t-disc t-disc-${kind}`, style: `stroke:${COLOR[kind]}` }, group);
         if (node.person.hasImage && radius > 6) {
@@ -272,10 +271,6 @@ export function createScene(options: SceneOptions): SceneApi {
           );
           image.setAttribute("pointer-events", "none");
         }
-      } else if (kind === "member") {
-        svg("circle", { r: 2.6, style: `fill:${COLOR.member}` }, group);
-      } else {
-        star(group, kind === "cheikh" ? 6.5 : 4, COLOR[kind]);
       }
       const title = svg("title", {}, group);
       title.textContent = node.person.displayName;
@@ -284,32 +279,24 @@ export function createScene(options: SceneOptions): SceneApi {
     draw(performance.now());
   }
 
-  // Noms permanents : le Cheikh et les cheikhs, sans chevauchement, les plus portants d'abord.
+  // Noms permanents : le Cheikh, la personne choisie, et les mouqaddams et cheikhs sans photo, sans chevauchement,
+  // les plus portants d'abord. Les autres montrent leur nom au survol de leur photo.
   const labels = new Map<ForestNode, SVGTextElement>();
   function drawLabels() {
     labelLayer.querySelectorAll(".t-label").forEach((label) => label.remove());
     labels.clear();
     const taken: Box[] = [];
     const candidates = nodes
-      .filter((node) => node.depth === 0 || node.person.kind === "cheikh" || node === selected)
+      .filter(
+        (node) => node.depth === 0 || node === selected || (node.person.kind !== "member" && !node.person.hasImage),
+      )
       .sort((a, b) => Number(b === selected) - Number(a === selected) || a.depth - b.depth || b.desc - a.desc);
     for (const node of candidates) {
       if (node.depth < 0) continue;
       const size = (node.depth === 0 ? 19 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
-      const offset = (display === "photo" ? 18 : 12) * textScale;
+      const offset = 18 * textScale;
       const x = node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
-      const textWidth = node.person.displayName.length * size * 0.48;
-      const box = { x: left ? x - textWidth : x, y: node.y - size, width: textWidth, height: size * 1.3 };
-      const clash = taken.some(
-        (other) =>
-          box.x < other.x + other.width &&
-          other.x < box.x + box.width &&
-          box.y < other.y + other.height &&
-          other.y < box.y + box.height,
-      );
-      if (clash && node !== selected) continue;
-      taken.push(box);
       const label = svg(
         "text",
         {
@@ -322,6 +309,27 @@ export function createScene(options: SceneOptions): SceneApi {
         labelLayer,
       );
       label.textContent = node.person.displayName;
+      // La vraie largeur du nom, avec un peu d'air autour ; un nom qui en chevauche un autre attend le survol.
+      const gap = 4 * textScale;
+      const textWidth = label.getComputedTextLength() || node.person.displayName.length * size * 0.5;
+      const box = {
+        x: (left ? x - textWidth : x) - gap,
+        y: node.y - size - gap / 2,
+        width: textWidth + gap * 2,
+        height: size * 1.3 + gap,
+      };
+      const clash = taken.some(
+        (other) =>
+          box.x < other.x + other.width &&
+          other.x < box.x + box.width &&
+          box.y < other.y + other.height &&
+          other.y < box.y + box.height,
+      );
+      if (clash && node !== selected) {
+        label.remove();
+        continue;
+      }
+      taken.push(box);
       label.dataset.offset = String(x - node.x);
       labels.set(node, label);
     }
@@ -579,12 +587,6 @@ export function createScene(options: SceneOptions): SceneApi {
 
   return {
     select,
-    setDisplay(next) {
-      display = next;
-      drawNodes();
-      drawLabels();
-      restyle();
-    },
     setGeneration(next) {
       generation = next;
       restyle();
