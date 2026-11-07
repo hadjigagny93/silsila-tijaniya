@@ -282,7 +282,8 @@ export function SilsilaTree({
       {failed && <p className="panel absolute inset-x-4 top-1/2 mx-auto max-w-md">{t.silsila.noWebgl}</p>}
 
       {person && selected ? (
-        <aside key="personne" className="person-card-float is-draggable" aria-label={person.displayName} {...drag}>
+        <aside key="personne" className="person-card-float is-draggable" aria-label={person.displayName} {...drag.card}>
+          <span className="card-resize" aria-hidden title={t.silsila.resizeCard} {...drag.grip} />
           <button onClick={() => scene.current?.reset()} aria-label={t.silsila.close} className="card-close">
             <Icon name="close" />
           </button>

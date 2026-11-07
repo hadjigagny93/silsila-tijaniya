@@ -67,6 +67,7 @@ export const t = {
     searchLabel: "Chercher un nom",
     noResult: "Aucun nom ne correspond à cette recherche.",
     tree: "Voir toutes les chaînes en liste",
+    resizeCard: "Tirer pour rétrécir ou agrandir la carte",
     namesLabel: "Noms dans l'arbre",
     namesToggle: "Tous les noms",
     silverLabel: "Chaînes argentées",
