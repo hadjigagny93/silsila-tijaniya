@@ -32,9 +32,19 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const saved = jar.get("theme")?.value;
   const theme = saved === "dark" || saved === "light" ? saved : undefined;
   const sidebarHidden = jar.get("sidebar")?.value === "hidden";
+  // Largeur choisie en tirant le bord du menu ; « rail » : rétréci aux seules icônes.
+  const sidebarWidth = jar.get("sidebar-width")?.value;
+  const rail = sidebarWidth === "rail";
+  const width = Number(sidebarWidth);
 
   return (
-    <html lang="fr" data-theme={theme} data-sidebar={sidebarHidden ? "hidden" : undefined}>
+    <html
+      lang="fr"
+      data-theme={theme}
+      data-sidebar={sidebarHidden ? "hidden" : undefined}
+      data-rail={rail || undefined}
+      style={width >= 190 && width <= 380 ? ({ "--sidebar-open": `${width}px` } as React.CSSProperties) : undefined}
+    >
       <body className="min-h-dvh md:flex">
         <ThemeToggle initialDark={theme === "dark"} />
         <SidebarToggle />
@@ -70,7 +80,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     <form action={signOut}>
                       <button className="nav-link w-full cursor-pointer text-start text-muted">
                         <Icon name="logout" />
-                        {t.nav.signOut}
+                        <span className="nav-label">{t.nav.signOut}</span>
                       </button>
                     </form>
                   )}

@@ -20,6 +20,7 @@ export const t = {
     account: "Mon compte",
     darkMode: "Passer en mode sombre",
     toggleSidebar: "Cacher ou montrer le menu (⌘\\)",
+    resizeSidebar: "Tirer pour élargir ou rétrécir le menu · double-clic : largeur d'origine",
     lightMode: "Passer en mode clair",
     admin: "Administration",
     adminModeration: "Modération",

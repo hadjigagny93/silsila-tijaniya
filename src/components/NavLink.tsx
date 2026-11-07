@@ -22,9 +22,15 @@ export function NavLink({
   const active = matches(href) || (also !== undefined && matches(also));
 
   return (
-    <Link href={href} aria-current={active ? "page" : undefined} className="nav-link">
+    // Le titre sert de bulle quand le menu est rétréci aux seules icônes.
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className="nav-link"
+      title={typeof children === "string" ? children : undefined}
+    >
       {icon && <Icon name={icon} />}
-      {children}
+      <span className="nav-label">{children}</span>
     </Link>
   );
 }

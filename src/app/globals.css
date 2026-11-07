@@ -21,7 +21,12 @@
 
 @media (min-width: 48rem) {
   :root {
-    --sidebar-width: 16.5rem;
+    --sidebar-width: var(--sidebar-open, 16.5rem);
+  }
+
+  /* Menu rétréci aux icônes (bord tiré vers la gauche). */
+  :root[data-rail] {
+    --sidebar-width: 4.5rem;
   }
 
   /* Menu caché (bouton en haut à gauche, ou ⌘\) : la page prend toute la largeur. */
@@ -603,6 +608,60 @@ h3 {
 
   :root[data-sidebar="hidden"] .sidebar-toggle svg {
     transform: rotate(180deg);
+  }
+}
+
+/* Bord du menu, à tirer pour l'élargir ou le rétrécir. */
+.sidebar-resize {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .sidebar-resize {
+    position: fixed;
+    z-index: 29;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--sidebar-width) - 4px);
+    display: block;
+    width: 8px;
+    cursor: col-resize;
+  }
+
+  .sidebar-resize:hover,
+  :root[data-resizing] .sidebar-resize {
+    background: linear-gradient(to right, transparent 3px, var(--accent) 3px 5px, transparent 5px);
+  }
+
+  :root[data-sidebar="hidden"] .sidebar-resize {
+    display: none;
+  }
+
+  :root[data-resizing] {
+    cursor: col-resize;
+    user-select: none;
+  }
+
+  /* Rail : les icônes seules, centrées ; le nom de chaque entrée apparaît en bulle au survol. */
+  :root[data-rail] .site-sidebar nav {
+    padding-inline: 0.5rem;
+  }
+
+  :root[data-rail] .site-sidebar .nav-label,
+  :root[data-rail] .site-sidebar .site-name > span,
+  :root[data-rail] .site-sidebar .sidebar-stats,
+  :root[data-rail] .site-sidebar .nav-count {
+    display: none;
+  }
+
+  :root[data-rail] .site-sidebar .nav-link,
+  :root[data-rail] .site-sidebar .site-name {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  :root[data-rail] .site-sidebar .sidebar-stats + div {
+    margin-top: auto;
   }
 }
 
