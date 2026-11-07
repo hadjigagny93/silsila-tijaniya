@@ -106,6 +106,8 @@ export const supabaseStore: Store = {
       deathCountry: row.death_country,
       zawiya: row.zawiya,
       nicknames: row.nicknames?.split("\n") ?? [],
+      // Les chaînes argentées ne vivent encore que dans les bases locales (Mac et iPhone).
+      alsoFrom: [],
     }));
   },
 
@@ -274,6 +276,10 @@ export const supabaseStore: Store = {
   async closeReport(id) {
     const supabase = await createClient();
     check((await supabase.from("reports").update({ status: "closed" }).eq("id", id)).error);
+  },
+
+  async setAlsoFrom() {
+    throw new Error("Les chaînes argentées ne sont pas encore disponibles en ligne.");
   },
 
   async setHidden(personId, hidden) {

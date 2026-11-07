@@ -16,6 +16,8 @@ export type PublicPerson = {
   deathCountry: string | null;
   zawiya: string | null;
   nicknames: string[];
+  // Autres maîtres dont la personne a aussi reçu le wird : les chaînes argentées (la dorée est mouqaddamId).
+  alsoFrom: string[];
   hasImage: boolean;
   // Change avec l'image : force le navigateur à recharger la nouvelle.
   imageVersion?: string | null;
@@ -213,6 +215,8 @@ export type Store = {
   resolveRequest(id: string, status: "accepted" | "rejected"): Promise<void>;
   closeReport(id: string): Promise<void>;
   setHidden(personId: string, hidden: boolean): Promise<void>;
+  // Remplace les maîtres « argentés » d'une personne (sans compter le maître doré, mouqaddamId).
+  setAlsoFrom(personId: string, masterIds: string[]): Promise<void>;
   listBiographies(): Promise<Biography[]>;
   getBiography(slug: string): Promise<Biography | null>;
   saveBiography(input: BiographyInput): Promise<void>;

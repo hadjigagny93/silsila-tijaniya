@@ -27,7 +27,11 @@ function Branch({ person, tree }: { person: PublicPerson; tree: Map<string, Publ
   );
 }
 
-export default async function SilsilaPage({ searchParams }: { searchParams: Promise<{ personne?: string; vue?: string }> }) {
+export default async function SilsilaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ personne?: string; vue?: string }>;
+}) {
   const { personne, vue } = await searchParams;
   const store = getStore();
   const [persons, session] = await Promise.all([store.listPersons(), store.getSession()]);
@@ -47,6 +51,13 @@ export default async function SilsilaPage({ searchParams }: { searchParams: Prom
         initialView={vue === "planetaire" ? "planets" : "tree"}
         canLink={Boolean(session?.isAdmin)}
       />
+
+      {/* Légende des chaînes argentées, dès qu'il y en a une. */}
+      {persons.some((person) => person.alsoFrom.length > 0) && (
+        <p className="mt-3 text-sm text-muted">
+          <span className="silver-legend">{t.silsila.silverLegend}</span>
+        </p>
+      )}
 
       <details className="mt-10">
         <summary className="section-title cursor-pointer">{t.silsila.tree}</summary>

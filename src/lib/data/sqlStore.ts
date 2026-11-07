@@ -149,6 +149,14 @@ const SCHEMA = `
     primary key (user_id, id)
   );
 
+  create table if not exists person_links (
+    id text primary key,
+    person_id text not null,
+    master_id text not null,
+    created_at text not null default (datetime('now'))
+  );
+  create index if not exists person_links_person_idx on person_links (person_id);
+
   create table if not exists sync_meta (
     key text primary key,
     value text not null
@@ -158,6 +166,7 @@ const SCHEMA = `
 // Tables échangées entre appareils, avec la clé qui identifie une ligne.
 export const SYNC_TABLES: Record<string, string[]> = {
   persons: ["id"],
+  person_links: ["id"],
   person_images: ["person_id"],
   biographies: ["slug"],
   wird_log: ["user_id", "day", "practice"],
@@ -459,9 +468,20 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
            on person_images.person_id = persons.id and person_images.deleted = 0
          where hidden = 0 and persons.deleted = 0`,
       );
+      // Chaînes argentées : seulement vers des maîtres visibles, et pas pour une personne en affichage court.
+      const visible = new Set(rows.map((row) => row.id));
+      const links = await all<{ person_id: string; master_id: string }>(
+        "select person_id, master_id from person_links where deleted = 0 order by created_at",
+      );
+      const alsoFrom = new Map<string, string[]>();
+      for (const link of links) {
+        if (!visible.has(link.master_id)) continue;
+        alsoFrom.set(link.person_id, [...(alsoFrom.get(link.person_id) ?? []), link.master_id]);
+      }
       return rows.map((row) => ({
         id: row.id,
         kind: row.kind,
+        alsoFrom: row.display_mode === "short" ? [] : (alsoFrom.get(row.id) ?? []).filter((id) => id !== row.mouqaddam_id),
         displayName: row.display_mode === "short" ? shortName(row.full_name) : row.full_name,
         city: row.display_mode === "short" ? null : row.city,
         mouqaddamId: row.mouqaddam_id,
@@ -570,6 +590,10 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         await run("update persons set mouqaddam_id = null where mouqaddam_id = ?", [personId]);
         await run("update person_images set deleted = 1 where person_id = ?", [personId]);
         await run("update persons set deleted = 1, biography_slug = null, user_id = null where id = ?", [personId]);
+        await run("update person_links set deleted = 1 where (person_id = ? or master_id = ?) and deleted = 0", [
+          personId,
+          personId,
+        ]);
       });
     },
 
@@ -599,6 +623,33 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
     async linkMouqaddam(personId, mouqaddamId) {
       await assertLink(await findPerson(personId), mouqaddamId);
       await run("update persons set mouqaddam_id = ? where id = ?", [mouqaddamId, personId]);
+    },
+
+    async setAlsoFrom(personId, masterIds) {
+      const person = await findPerson(personId);
+      const wanted = new Set(masterIds.filter((id) => id && id !== personId && id !== person.mouqaddam_id));
+      const current = await all<{ id: string; master_id: string; deleted: number }>(
+        "select id, master_id, deleted from person_links where person_id = ?",
+        [personId],
+      );
+      await (
+        await db()
+      ).transaction(async () => {
+        for (const link of current) {
+          const keep = wanted.has(link.master_id);
+          if (keep && link.deleted) await run("update person_links set deleted = 0 where id = ?", [link.id]);
+          if (!keep && !link.deleted) await run("update person_links set deleted = 1 where id = ?", [link.id]);
+          wanted.delete(link.master_id);
+        }
+        for (const masterId of wanted) {
+          await findPerson(masterId);
+          await run("insert into person_links (id, person_id, master_id) values (?, ?, ?)", [
+            crypto.randomUUID(),
+            personId,
+            masterId,
+          ]);
+        }
+      });
     },
 
     async setHidden(personId, hidden) {

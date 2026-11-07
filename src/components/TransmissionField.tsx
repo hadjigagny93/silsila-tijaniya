@@ -13,12 +13,14 @@ export function TransmissionField({
   defaultValue,
   details,
   placements,
+  onChange,
 }: {
   parents: PublicPerson[];
   defaultValue: string;
   details: Record<string, string>;
   // Pour chaque maître possible : où se placera celui qui a reçu de lui.
   placements: Record<string, Placement>;
+  onChange?: (id: string) => void;
 }) {
   const [parent, setParent] = useState(defaultValue);
   const placement = parent ? placements[parent] : null;
@@ -34,7 +36,10 @@ export function TransmissionField({
         emptyLabel={t.admin.none}
         profileBase="/admin/mouqaddams"
         details={details}
-        onChange={setParent}
+        onChange={(id) => {
+          setParent(id);
+          onChange?.(id);
+        }}
       />
       <p className="field-help">
         {!placement

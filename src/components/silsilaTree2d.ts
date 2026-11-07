@@ -24,13 +24,20 @@ let instances = 0;
 function star(parent: Element, size: number, fill: string) {
   const group = svg("g", {}, parent);
   svg("rect", { x: -size, y: -size, width: size * 2, height: size * 2, style: `fill:${fill}` }, group);
-  svg("rect", { x: -size, y: -size, width: size * 2, height: size * 2, transform: "rotate(45)", style: `fill:${fill}` }, group);
+  svg(
+    "rect",
+    { x: -size, y: -size, width: size * 2, height: size * 2, transform: "rotate(45)", style: `fill:${fill}` },
+    group,
+  );
   return group;
 }
 
 function defs(root: SVGSVGElement, id: string) {
   const definitions = svg("defs", {}, root);
-  for (const [suffix, color, strength] of [["g", "var(--gold)", 0.55], ["a", "var(--accent)", 0.45]] as const) {
+  for (const [suffix, color, strength] of [
+    ["g", "var(--gold)", 0.55],
+    ["a", "var(--accent)", 0.45],
+  ] as const) {
     const gradient = svg("radialGradient", { id: id + suffix }, definitions);
     svg("stop", { offset: "0%", style: `stop-color:${color};stop-opacity:${strength}` }, gradient);
     svg("stop", { offset: "100%", style: `stop-color:${color};stop-opacity:0` }, gradient);
@@ -66,7 +73,7 @@ export function createScene(options: SceneOptions): SceneApi {
   const span = (depth: number) => width * (0.42 + 0.58 * (depth / maxDepth) ** 0.75);
   for (const node of nodes) {
     if (node.depth < 0) continue;
-    const share = leaves.length > 1 ? (order.get(node)! / (leaves.length - 1) - 0.5) : 0;
+    const share = leaves.length > 1 ? order.get(node)! / (leaves.length - 1) - 0.5 : 0;
     node.x = node.depth === 0 && founders.length === 1 ? center : center + share * span(Math.max(node.depth, 1));
     node.y = base - node.depth * ROW + (node.depth > 0 ? hash(node.person.id) * 16 - 8 : 0);
     // Un bout de branche monte d'autant plus qu'il est loin du tronc : la ramure s'ouvre en éventail
@@ -117,6 +124,7 @@ export function createScene(options: SceneOptions): SceneApi {
   const layer = (name: string) => svg("g", { class: name }, stage.world);
   const rootsLayer = layer("t-roots");
   const branchLayer = layer("t-branches");
+  const silverLayer = layer("t-silvers");
   const leafLayer = layer("t-leaves");
   const haloLayer = layer("t-halos");
   const nodeLayer = layer("t-nodes");
@@ -127,18 +135,26 @@ export function createScene(options: SceneOptions): SceneApi {
   [-190, -130, -70, 0, 72, 142, 190].forEach((spread, index) => {
     const x = center + spread;
     const y = prophetY + 56 - Math.abs(spread) / 8;
-    svg("path", {
-      d: `M${center} ${prophetY + 2} C ${center + spread * 0.2} ${prophetY + 20} ${x - spread * 0.3} ${y - 10} ${x} ${y}`,
-      class: "t-root",
-      style: `stroke-width:${3 - index * 0.25}`,
-    }, rootsLayer);
+    svg(
+      "path",
+      {
+        d: `M${center} ${prophetY + 2} C ${center + spread * 0.2} ${prophetY + 20} ${x - spread * 0.3} ${y - 10} ${x} ${y}`,
+        class: "t-root",
+        style: `stroke-width:${3 - index * 0.25}`,
+      },
+      rootsLayer,
+    );
   });
   if (forest && founders.length) {
-    svg("path", {
-      d: `M${center - 22} ${prophetY + 6} C ${center - 12} ${prophetY - 40} ${center - 10} ${base + 40} ${center - 8} ${base}
+    svg(
+      "path",
+      {
+        d: `M${center - 22} ${prophetY + 6} C ${center - 12} ${prophetY - 40} ${center - 10} ${base + 40} ${center - 8} ${base}
           L ${center + 8} ${base} C ${center + 10} ${base + 40} ${center + 12} ${prophetY - 40} ${center + 22} ${prophetY + 6} Z`,
-      class: "t-trunk",
-    }, rootsLayer);
+        class: "t-trunk",
+      },
+      rootsLayer,
+    );
   }
 
   const branches = new Map<ForestNode, SVGPathElement>();
@@ -149,8 +165,28 @@ export function createScene(options: SceneOptions): SceneApi {
     path.dataset.width = String(0.8 + Math.sqrt(node.desc + 1) * 1.25);
     branches.set(node, path);
     if (!node.children.length) {
-      leafMarks.set(node, [0, 1].map(() => svg("ellipse", { rx: 3.4, ry: 8, class: "t-leaf" }, leafLayer)));
+      leafMarks.set(
+        node,
+        [0, 1].map(() => svg("ellipse", { rx: 3.4, ry: 8, class: "t-leaf" }, leafLayer)),
+      );
     }
+  }
+
+  // Chaînes argentées : un trait fin du maître vers le disciple, en plus de la branche dorée.
+  const silvers: { master: ForestNode; node: ForestNode; path: SVGPathElement }[] = [];
+  for (const node of nodes) {
+    for (const masterId of node.person.alsoFrom ?? []) {
+      const master = forest?.byId.get(masterId);
+      if (master && master !== node)
+        silvers.push({ master, node, path: svg("path", { class: "t-silver" }, silverLayer) });
+    }
+  }
+
+  function silverPath(master: ForestNode, node: ForestNode) {
+    const dx = node.x - master.x;
+    const dy = node.y - master.y;
+    // Une courbe douce, légèrement de côté, pour ne pas se confondre avec la branche dorée.
+    return `M${master.x} ${master.y} Q ${master.x + dx / 2 - dy * 0.18} ${master.y + dy / 2 + dx * 0.18} ${node.x} ${node.y}`;
   }
 
   function branchPath(node: ForestNode) {
@@ -161,13 +197,21 @@ export function createScene(options: SceneOptions): SceneApi {
 
   // Médaillon du Prophète ﷺ et étoile du Cheikh.
   if (forest) {
-    const medal = svg("g", { transform: `translate(${center} ${prophetY}) scale(0.8)`, "data-id": forest.root.person.id, class: "t-hit" }, stage.world);
+    const medal = svg(
+      "g",
+      { transform: `translate(${center} ${prophetY}) scale(0.8)`, "data-id": forest.root.person.id, class: "t-hit" },
+      stage.world,
+    );
     svg("circle", { r: 90, fill: `url(#${id}g)` }, medal);
     svg("circle", { r: 34, class: "t-medal" }, medal);
     svg("circle", { r: 28, class: "t-medal-inner" }, medal);
     const saw = svg("text", { y: 13, "text-anchor": "middle", class: "t-saw" }, medal);
     saw.textContent = "ﷺ";
-    const caption = svg("text", { x: center, y: prophetY + 58, "text-anchor": "middle", class: "t-caption" }, labelLayer);
+    const caption = svg(
+      "text",
+      { x: center, y: prophetY + 58, "text-anchor": "middle", class: "t-caption" },
+      labelLayer,
+    );
     caption.textContent = "LE PROPHÈTE MUḤAMMAD ﷺ";
   }
 
@@ -187,15 +231,19 @@ export function createScene(options: SceneOptions): SceneApi {
         const radius = kind === "cheikh" ? 13 : kind === "mouqaddam" ? 8.5 : 5;
         svg("circle", { r: radius, class: `t-disc t-disc-${kind}`, style: `stroke:${COLOR[kind]}` }, group);
         if (node.person.hasImage && radius > 6) {
-          const image = svg("image", {
-            href: personImageUrl(node.person),
-            x: -radius + 1,
-            y: -radius + 1,
-            width: radius * 2 - 2,
-            height: radius * 2 - 2,
-            "clip-path": `url(#${id}c)`,
-            preserveAspectRatio: "xMidYMid slice",
-          }, group);
+          const image = svg(
+            "image",
+            {
+              href: personImageUrl(node.person),
+              x: -radius + 1,
+              y: -radius + 1,
+              width: radius * 2 - 2,
+              height: radius * 2 - 2,
+              "clip-path": `url(#${id}c)`,
+              preserveAspectRatio: "xMidYMid slice",
+            },
+            group,
+          );
           image.setAttribute("pointer-events", "none");
         }
       } else if (kind === "member") {
@@ -227,17 +275,26 @@ export function createScene(options: SceneOptions): SceneApi {
       const x = node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
       const textWidth = node.person.displayName.length * size * 0.48;
       const box = { x: left ? x - textWidth : x, y: node.y - size, width: textWidth, height: size * 1.3 };
-      const clash = taken.some((other) =>
-        box.x < other.x + other.width && other.x < box.x + box.width && box.y < other.y + other.height && other.y < box.y + box.height);
+      const clash = taken.some(
+        (other) =>
+          box.x < other.x + other.width &&
+          other.x < box.x + box.width &&
+          box.y < other.y + other.height &&
+          other.y < box.y + box.height,
+      );
       if (clash && node !== selected) continue;
       taken.push(box);
-      const label = svg("text", {
-        x,
-        y: node.y + 5,
-        "text-anchor": left ? "end" : "start",
-        class: node === selected ? "t-label t-label-chosen" : "t-label",
-        style: `font-size:${size}px`,
-      }, labelLayer);
+      const label = svg(
+        "text",
+        {
+          x,
+          y: node.y + 5,
+          "text-anchor": left ? "end" : "start",
+          class: node === selected ? "t-label t-label-chosen" : "t-label",
+          style: `font-size:${size}px`,
+        },
+        labelLayer,
+      );
       label.textContent = node.person.displayName;
       label.dataset.offset = String(x - node.x);
       labels.set(node, label);
@@ -261,6 +318,11 @@ export function createScene(options: SceneOptions): SceneApi {
       path.style.strokeWidth = String(golden ? base + 1.6 : base);
       path.style.opacity = String((golden ? 1 : 0.5) * opacity(node));
     });
+    for (const { master, node, path } of silvers) {
+      const near = Boolean(selected && (selected === node || selected === master));
+      path.classList.toggle("is-near", near);
+      path.style.opacity = String(Math.min(opacity(node), opacity(master)) * (near ? 1 : 0.75));
+    }
     leafMarks.forEach((items, node) => items.forEach((item) => (item.style.opacity = String(0.3 * opacity(node)))));
     marks.forEach((group, node) => (group.style.opacity = String(opacity(node))));
     labels.forEach((label, node) => (label.style.opacity = String(Math.max(opacity(node), 0.35))));
@@ -273,9 +335,13 @@ export function createScene(options: SceneOptions): SceneApi {
       }
     }
     markLayer.replaceChildren();
-    rings = selected && selected.depth >= 0
-      ? [svg("circle", { r: 20, class: "t-ring" }, markLayer), svg("circle", { r: 28, class: "t-ring t-ring-soft" }, markLayer)]
-      : [];
+    rings =
+      selected && selected.depth >= 0
+        ? [
+            svg("circle", { r: 20, class: "t-ring" }, markLayer),
+            svg("circle", { r: 28, class: "t-ring t-ring-soft" }, markLayer),
+          ]
+        : [];
     draw(performance.now());
   }
 
@@ -286,6 +352,7 @@ export function createScene(options: SceneOptions): SceneApi {
   function draw(now: number) {
     marks.forEach((group, node) => group.setAttribute("transform", `translate(${node.x} ${node.y})`));
     branches.forEach((path, node) => path.setAttribute("d", branchPath(node)));
+    for (const { master, node, path } of silvers) path.setAttribute("d", silverPath(master, node));
     leafMarks.forEach((items, node) => {
       const sway = calm ? 0 : Math.sin(now / 900 + hash(node.person.id) * 6) * 7;
       const angle = hash(node.person.id + "f") * 360 + sway;

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { isChoosableMouqaddam } from "@/lib/chain";
 import { listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import {
@@ -148,6 +149,17 @@ function nicknamesField(form: FormData) {
   return [...new Set(lines.filter(Boolean))];
 }
 
+// Les maîtres argentés : des personnes qui peuvent transmettre (Prophète, cheikh, mouqaddam), sans la personne
+// elle-même ni son maître doré.
+async function alsoFromField(form: FormData, personId: string | null, goldenId: string | null) {
+  const persons = await getStore().listPersons();
+  const allowed = new Set(
+    persons.filter((person) => person.kind === "prophet" || isChoosableMouqaddam(person)).map((person) => person.id),
+  );
+  const ids = form.getAll("alsoFrom").map((value) => String(value).slice(0, 36));
+  return [...new Set(ids)].filter((id) => allowed.has(id) && id !== personId && id !== goldenId);
+}
+
 async function mouqaddamFields(form: FormData) {
   const slug = optional(form, "biographySlug", 120);
   return {
@@ -196,6 +208,7 @@ export async function addMouqaddam(form: FormData) {
   let target = "/admin/mouqaddams/nouveau?erreur=1";
   try {
     const id = await getStore().addMouqaddam(fields);
+    await getStore().setAlsoFrom(id, await alsoFromField(form, id, fields.mouqaddamId));
     if (image) await getStore().setPersonImage(id, image);
     await createBiographyFor(id, fields);
     revalidatePath("/", "layout");
@@ -259,6 +272,7 @@ export async function updateMouqaddam(form: FormData) {
   await attempt(
     async () => {
       await getStore().updateMouqaddam(personId, fields);
+      await getStore().setAlsoFrom(personId, await alsoFromField(form, personId, fields.mouqaddamId));
       if (image) await getStore().setPersonImage(personId, image);
       else if (removeImage) await getStore().setPersonImage(personId, null);
       if (before) await syncBiography(before, fields, personId);

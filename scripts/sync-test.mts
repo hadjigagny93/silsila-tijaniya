@@ -14,7 +14,7 @@ const check = (label: string, ok: boolean) => {
   console.log(`${ok ? "OK " : "ÉCHEC"} ${label}`);
   if (!ok) process.exitCode = 1;
 };
-const tables = ["persons", "person_images", "biographies", "litanies", "abdal", "wird_log", "stations", "station_history"];
+const tables = ["persons", "person_links", "person_images", "biographies", "litanies", "abdal", "wird_log", "stations", "station_history"];
 async function snapshot(driver: typeof macDb) {
   const out: Record<string, string> = {};
   for (const table of tables) {
@@ -88,7 +88,19 @@ check("conflit : l'iPhone garde la sienne", (await phone.getBiography(slug))!.su
 await sync();
 await same("après conflit : bases identiques");
 
-// 6. Les images arrivent intactes.
+// 6. Chaîne argentée : posée sur le Mac, retirée sur l'iPhone.
+const people = (await mac.listPersons()).filter((person) => person.kind === "mouqaddam");
+const [disciple, master] = [people[0], people[1]];
+await mac.setAlsoFrom(disciple.id, [master.id]);
+await sync();
+check("chaîne argentée arrivée sur l'iPhone", (await phone.listPersons()).find((p) => p.id === disciple.id)!.alsoFrom.includes(master.id));
+await phone.setAlsoFrom(disciple.id, []);
+await sync();
+check("chaîne argentée retirée sur le Mac", (await mac.listPersons()).find((p) => p.id === disciple.id)!.alsoFrom.length === 0);
+await sync();
+await same("après chaînes argentées : bases identiques");
+
+// 7. Les images arrivent intactes.
 const macImages = await macDb.all<{ person_id: string }>("select person_id from person_images where deleted = 0 limit 1");
 if (macImages[0]) {
   const a = await mac.getPersonImage(macImages[0].person_id);

@@ -1,11 +1,5 @@
 import Link from "next/link";
-import {
-  addMouqaddam,
-  createPersonBiography,
-  deleteBiography,
-  deleteMouqaddam,
-  updateMouqaddam,
-} from "@/app/actions";
+import { addMouqaddam, createPersonBiography, deleteBiography, deleteMouqaddam, updateMouqaddam } from "@/app/actions";
 import { coverUrl, shownCover } from "@/lib/coverUrl";
 import type { Biography, PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";
@@ -15,7 +9,8 @@ import { Icon } from "./Icon";
 import { ImageField } from "./ImageField";
 import { NicknamesField } from "./NicknamesField";
 import { Segmented } from "./Segmented";
-import { type Placement, TransmissionField } from "./TransmissionField";
+import { MastersField } from "./AlsoFromField";
+import type { Placement } from "./TransmissionField";
 import { YearField } from "./YearField";
 
 function Block({ number, title }: { number: string; title: string }) {
@@ -27,13 +22,7 @@ function Block({ number, title }: { number: string; title: string }) {
   );
 }
 
-function PlaceRow({
-  kind,
-  person,
-}: {
-  kind: "birth" | "death";
-  person?: PublicPerson;
-}) {
+function PlaceRow({ kind, person }: { kind: "birth" | "death"; person?: PublicPerson }) {
   const year = kind === "birth" ? person?.birthDate : person?.deathDate;
   const city = kind === "birth" ? person?.birthCity : person?.deathCity;
   const country = kind === "birth" ? person?.birthCountry : person?.deathCountry;
@@ -153,11 +142,13 @@ export function MouqaddamForm({
           </div>
 
           <Block number="03" title={t.admin.blockTransmission} />
-          <TransmissionField
+          <MastersField
             parents={parents}
-            defaultValue={person?.mouqaddamId ?? ""}
+            defaultGolden={person?.mouqaddamId ?? ""}
+            defaultSilver={person?.alsoFrom ?? []}
             details={details}
             placements={placements}
+            personId={person?.id}
           />
 
           <Block number="04" title={t.admin.blockBiography} />
@@ -230,7 +221,9 @@ export function MouqaddamForm({
                   impact={
                     <>
                       <p>{t.admin.removeImpact(disciples)}</p>
-                      {biography && <p>{emptyBiography ? t.admin.removeBiographyEmpty : t.admin.removeBiographyKept}</p>}
+                      {biography && (
+                        <p>{emptyBiography ? t.admin.removeBiographyEmpty : t.admin.removeBiographyKept}</p>
+                      )}
                     </>
                   }
                   expected={person.displayName}
