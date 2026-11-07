@@ -193,6 +193,7 @@ const PERSON_COLUMNS = [
   "birth_country",
   "death_city",
   "death_country",
+  "qutb",
 ];
 
 async function columnsOf(driver: SqlDriver, table: string) {
@@ -296,6 +297,7 @@ type PersonRow = {
   death_country: string | null;
   zawiya: string | null;
   nicknames: string | null;
+  qutb: string | null;
   hidden: number;
   image_version?: string | null;
 };
@@ -361,6 +363,7 @@ function detailValues(input: NewMouqaddam): SqlValue[] {
     input.deathCountry,
     input.zawiya,
     input.nicknames.join("\n") || null,
+    input.qutb ? "1" : null,
     input.biographySlug,
   ];
 }
@@ -494,6 +497,7 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         deathCountry: row.display_mode === "short" ? null : row.death_country,
         zawiya: row.display_mode === "short" ? null : row.zawiya,
         nicknames: row.display_mode === "short" ? [] : (row.nicknames?.split("\n") ?? []),
+        qutb: row.qutb === "1",
         hasImage: row.display_mode !== "short" && Boolean(row.image_version),
         imageVersion: row.image_version,
       }));
@@ -563,8 +567,8 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run(
         `insert into persons
            (id, kind, full_name, mouqaddam_id, birth_date, death_date, birth_city, birth_country,
-            death_city, death_country, zawiya, nicknames, biography_slug)
-         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            death_city, death_country, zawiya, nicknames, qutb, biography_slug)
+         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [id, input.kind, input.name, ...detailValues(input)],
       );
       return id;
@@ -576,7 +580,8 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run(
         `update persons set
            kind = ?, full_name = ?, mouqaddam_id = ?, birth_date = ?, death_date = ?, birth_city = ?,
-           birth_country = ?, death_city = ?, death_country = ?, zawiya = ?, nicknames = ?, biography_slug = ?
+           birth_country = ?, death_city = ?, death_country = ?, zawiya = ?, nicknames = ?, qutb = ?,
+           biography_slug = ?
          where id = ?`,
         [input.kind, input.name, ...detailValues(input), personId],
       );

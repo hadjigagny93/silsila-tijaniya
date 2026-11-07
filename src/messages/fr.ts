@@ -105,6 +105,7 @@ export const t = {
     born: "Naissance",
     died: "Décès",
     zawiya: "Zawiya",
+    qutb: "Pôle spirituel (Qutb)",
   },
   kinds: {
     prophet: "",
@@ -271,6 +272,8 @@ export const t = {
     photoOptional: "(facultative)",
     blockIdentity: "Identité",
     kindCheikh: "Cheikh",
+    qutb: "Pôle spirituel (Qutb)",
+    qutbHelp: "Un halo bleu entoure sa photo dans la Silsila.",
     blockLife: "Vie",
     blockTransmission: "Transmission",
     blockBiography: "Biographie liée",

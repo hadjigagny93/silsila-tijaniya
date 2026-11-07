@@ -44,7 +44,9 @@ export default async function PersonPage({ params, searchParams }: Props) {
         <h1>{person.displayName}</h1>
       </div>
       <p className="mt-1 text-muted">
-        {[t.kinds[person.kind], person.kind === "member" && person.city].filter(Boolean).join(" · ")}
+        {[t.kinds[person.kind], person.qutb && t.silsila.qutb, person.kind === "member" && person.city]
+          .filter(Boolean)
+          .join(" · ")}
       </p>
       <p className="mt-3 flex flex-wrap gap-x-4">
         <Link href={`/silsila?personne=${person.id}`} className="text-accent underline">

@@ -18,6 +18,8 @@ export type PublicPerson = {
   nicknames: string[];
   // Autres maîtres dont la personne a aussi reçu le wird : les chaînes argentées (la dorée est mouqaddamId).
   alsoFrom: string[];
+  // Pôle spirituel (Qutb) : un halo bleu entoure sa photo dans l'arbre.
+  qutb: boolean;
   hasImage: boolean;
   // Change avec l'image : force le navigateur à recharger la nouvelle.
   imageVersion?: string | null;
@@ -68,6 +70,7 @@ export type NewMouqaddam = {
   deathCountry: string | null;
   zawiya: string | null;
   nicknames: string[];
+  qutb: boolean;
   biographySlug: string | null;
 };
 

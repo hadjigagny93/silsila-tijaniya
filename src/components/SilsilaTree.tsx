@@ -134,7 +134,9 @@ export function SilsilaTree({
 
   const describe = (person: PublicPerson) => {
     const rank = generations.get(person.id);
-    return [t.kinds[person.kind], rank && t.silsila.generationShort(rank)].filter(Boolean).join(" · ");
+    return [t.kinds[person.kind], person.qutb && t.silsila.qutb, rank && t.silsila.generationShort(rank)]
+      .filter(Boolean)
+      .join(" · ");
   };
 
   const matches = useMemo(() => {

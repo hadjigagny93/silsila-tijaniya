@@ -174,6 +174,7 @@ async function mouqaddamFields(form: FormData) {
     deathCountry: optional(form, "deathCountry", 120),
     zawiya: optional(form, "zawiya", 200),
     nicknames: nicknamesField(form),
+    qutb: form.get("qutb") === "on",
     biographySlug: slug && (await getStore().getBiography(slug)) ? slug : null,
   };
 }

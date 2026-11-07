@@ -125,6 +125,13 @@ export function MouqaddamForm({
                 ]}
               />
             </div>
+            <label className="check-row">
+              <input type="checkbox" name="qutb" defaultChecked={person?.qutb ?? false} />
+              <span>
+                <span className="block font-semibold">{t.admin.qutb}</span>
+                <span className="block text-sm text-muted">{t.admin.qutbHelp}</span>
+              </span>
+            </label>
             <div>
               <span className="field-label">{t.admin.nicknames}</span>
               <NicknamesField defaultValue={person?.nicknames} />

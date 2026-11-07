@@ -106,6 +106,7 @@ export const supabaseStore: Store = {
       deathCountry: row.death_country,
       zawiya: row.zawiya,
       nicknames: row.nicknames?.split("\n") ?? [],
+      qutb: false,
       // Les chaînes argentées ne vivent encore que dans les bases locales (Mac et iPhone).
       alsoFrom: [],
     }));

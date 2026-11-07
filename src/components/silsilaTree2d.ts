@@ -37,6 +37,7 @@ function defs(root: SVGSVGElement, id: string) {
   for (const [suffix, color, strength] of [
     ["g", "var(--gold)", 0.55],
     ["a", "var(--accent)", 0.45],
+    ["q", "#2f8cff", 0.95],
   ] as const) {
     const gradient = svg("radialGradient", { id: id + suffix }, definitions);
     svg("stop", { offset: "0%", style: `stop-color:${color};stop-opacity:${strength}` }, gradient);
@@ -251,12 +252,18 @@ export function createScene(options: SceneOptions): SceneApi {
       const kind = node.person.kind;
       const group = svg("g", { "data-id": node.person.id, class: "t-hit" }, nodeLayer);
       svg("circle", { r: 12, class: "t-target" }, group);
+      // Pôle spirituel (Qutb) : un halo bleu vif qui respire autour de la photo.
+      if (node.person.qutb) {
+        const size = node.depth === 0 || kind === "cheikh" ? 30 : kind === "mouqaddam" ? 22 : 14;
+        svg("circle", { r: size, fill: `url(#${id}q)`, class: "t-qutb" }, group);
+      }
       if (node.depth === 0) {
         svg("circle", { r: 46, fill: `url(#${id}g)` }, group);
         star(group, 11, "var(--gold)");
       } else {
         const radius = kind === "cheikh" ? 13 : kind === "mouqaddam" ? 8.5 : 5;
-        svg("circle", { r: radius, class: `t-disc t-disc-${kind}`, style: `stroke:${COLOR[kind]}` }, group);
+        const qutb = node.person.qutb ? " t-disc-qutb" : "";
+        svg("circle", { r: radius, class: `t-disc t-disc-${kind}${qutb}`, style: `stroke:${COLOR[kind]}` }, group);
         if (node.person.hasImage && radius > 6) {
           const image = svg(
             "image",
