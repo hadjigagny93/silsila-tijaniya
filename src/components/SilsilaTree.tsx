@@ -11,15 +11,14 @@ import { Icon, type IconName } from "./Icon";
 import type { SceneApi, TreeDisplay } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
 
-export type SilsilaView = "tree" | "planets" | "pyramid";
+export type SilsilaView = "tree" | "planets";
 
 const scenes = {
   tree: () => import("./silsilaTree2d"),
   planets: () => import("./silsilaOrbit2d"),
-  pyramid: () => import("./silsilaPyramid"),
 };
 
-const VIEW_ICONS: Record<SilsilaView, IconName> = { tree: "tree", planets: "orbit", pyramid: "pyramid" };
+const VIEW_ICONS: Record<SilsilaView, IconName> = { tree: "tree", planets: "orbit" };
 
 function normalize(text: string) {
   return text
@@ -427,7 +426,7 @@ export function SilsilaTree({
           {exploring ? t.silsila.exploreLeave : t.silsila.explore}
         </button>
         <div className="bar-group" role="group" aria-label={t.silsila.viewLabel}>
-          {(["tree", "planets", "pyramid"] as const).map((option) => (
+          {(["tree", "planets"] as const).map((option) => (
             <button key={option} aria-pressed={view === option} onClick={() => changeView(option)}>
               <Icon name={VIEW_ICONS[option]} size={17} />
               {t.silsila.views[option]}

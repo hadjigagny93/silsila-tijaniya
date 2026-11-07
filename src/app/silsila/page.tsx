@@ -44,7 +44,7 @@ export default async function SilsilaPage({ searchParams }: { searchParams: Prom
       <SilsilaTree
         persons={persons}
         initialId={persons.some((person) => person.id === personne) ? personne : undefined}
-        initialView={vue === "planetaire" ? "planets" : vue === "pyramide" ? "pyramid" : "tree"}
+        initialView={vue === "planetaire" ? "planets" : "tree"}
         canLink={Boolean(session?.isAdmin)}
       />
 

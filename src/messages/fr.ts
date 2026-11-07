@@ -66,7 +66,7 @@ export const t = {
     noResult: "Aucun nom ne correspond à cette recherche.",
     tree: "Voir toutes les chaînes en liste",
     viewLabel: "Mode d'affichage",
-    views: { tree: "Arbre", planets: "Planétaire", pyramid: "Pyramide" },
+    views: { tree: "Arbre", planets: "Planétaire" },
     isolate: "Voir seulement ses branches",
     showAll: "Revoir tout l'arbre",
     pending: "Chaînes à compléter",
@@ -81,8 +81,6 @@ export const t = {
     hints: {
       tree: "Glissez une feuille ou une branche pour la déplacer, cliquez sur un nom pour suivre sa chaîne.",
       planets: "Chaque astre gravite autour de celui qui lui a transmis le wird. Plus il a transmis, plus il brille.",
-      pyramid:
-        "Chaque carré porte ceux à qui il a transmis le wird. Faites glisser pour vous déplacer, cliquez sur un carré pour voir sa lignée.",
     },
     noWebgl: "Votre appareil n'affiche pas l'arbre en 3D. Toutes les chaînes sont disponibles en liste ci-dessous.",
     links: (count: number) => `${count} maillon${count > 1 ? "s" : ""} jusqu'au Prophète ﷺ`,

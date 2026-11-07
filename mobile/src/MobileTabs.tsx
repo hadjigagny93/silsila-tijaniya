@@ -33,7 +33,7 @@ function ignored(target: EventTarget | null) {
     target instanceof Element &&
     Boolean(
       target.closest(
-        ".svg-stage, .tree-stage, .pyramid-frame, canvas, input, textarea, select, .litany-sheet, .view-bar, .mobile-tabs-list, [data-no-swipe]",
+        ".svg-stage, .tree-stage, canvas, input, textarea, select, .litany-sheet, .view-bar, .mobile-tabs-list, [data-no-swipe]",
       ),
     )
   );
