@@ -237,6 +237,7 @@ export function SilsilaTree({
       data-dark={dark || undefined}
       data-exploring={exploring || undefined}
       data-silver={silver.shown ? undefined : "off"}
+      data-chosen={selectedId ? "" : undefined}
       aria-label={t.silsila.title}
     >
       <div ref={stage} className="absolute inset-0" />
@@ -352,7 +353,8 @@ export function SilsilaTree({
             <Link href={`/silsila/${person.id}`} className="button w-full">
               {t.silsila.openChain}
             </Link>
-            {person.kind !== "prophet" && (
+            {/* Dans l'arbre, choisir une personne ne montre déjà que ses chaînes. */}
+            {person.kind !== "prophet" && view !== "tree" && (
               <button onClick={toggleIsolated} className="button-quiet w-full" aria-pressed={isolated}>
                 {isolated ? t.silsila.showAll : t.silsila.isolate}
               </button>

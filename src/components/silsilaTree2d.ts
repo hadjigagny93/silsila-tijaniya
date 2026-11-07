@@ -1,4 +1,4 @@
-import { buildForest, chainTo, type ForestNode, hash, subtreeOf } from "@/lib/silsilaForest";
+import { buildForest, type ForestNode, hash, subtreeOf } from "@/lib/silsilaForest";
 import { personImageUrl } from "./Avatar";
 import { prefersCalm, type SceneApi, type SceneOptions, type TreeDisplay } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
@@ -106,7 +106,6 @@ export function createScene(options: SceneOptions): SceneApi {
     return { x: left, y: upper, width: right - left, height: prophetY + 90 - upper };
   };
   let selected: ForestNode | null = null;
-  let isolated = false;
   let generation = options.generation ?? null;
   let display: TreeDisplay = options.display ?? "photo";
 
@@ -125,6 +124,7 @@ export function createScene(options: SceneOptions): SceneApi {
   const rootsLayer = layer("t-roots");
   const branchLayer = layer("t-branches");
   const silverLayer = layer("t-silvers");
+  const goldFlowLayer = layer("t-gold-flows");
   const leafLayer = layer("t-leaves");
   const haloLayer = layer("t-halos");
   const nodeLayer = layer("t-nodes");
@@ -172,32 +172,54 @@ export function createScene(options: SceneOptions): SceneApi {
     }
   }
 
-  // Chaînes argentées : un trait fin du maître vers le disciple, en plus de la branche dorée.
-  // Une traînée de lumière glisse le long du fil, du maître qui donne vers celui qui reçoit.
+  // Une traînée de lumière glisse le long de chaque chaîne, du maître qui donne vers celui qui reçoit :
+  // jaune sur les chaînes dorées, argent sur les autres.
+  const flowOf = (className: string, seed: string, parent: SVGGElement) => {
+    const flow = svg("path", { class: className, pathLength: 100 }, parent);
+    flow.style.animationDelay = `${-hash(seed) * 3}s`;
+    return flow;
+  };
+  const goldFlows = new Map<ForestNode, SVGPathElement>();
+  branches.forEach((_, node) => goldFlows.set(node, flowOf("t-gold-flow", node.person.id, goldFlowLayer)));
+
+  // Chaînes argentées : une branche grise du maître vers le disciple, en plus de la branche dorée.
   const silvers: { master: ForestNode; node: ForestNode; path: SVGPathElement; flow: SVGPathElement }[] = [];
+  const silverMasters = new Map<ForestNode, ForestNode[]>();
+  const silverDisciples = new Map<ForestNode, ForestNode[]>();
   for (const node of nodes) {
     for (const masterId of node.person.alsoFrom ?? []) {
       const master = forest?.byId.get(masterId);
       if (!master || master === node) continue;
       const path = svg("path", { class: "t-silver" }, silverLayer);
-      const flow = svg("path", { class: "t-silver-flow", pathLength: 100 }, silverLayer);
-      flow.style.animationDelay = `${-hash(node.person.id + masterId) * 3}s`;
-      silvers.push({ master, node, path, flow });
+      path.dataset.width = String(0.8 + Math.sqrt(node.desc + 1) * 1.25);
+      silvers.push({ master, node, path, flow: flowOf("t-silver-flow", node.person.id + masterId, silverLayer) });
+      silverMasters.set(node, [...(silverMasters.get(node) ?? []), master]);
+      silverDisciples.set(master, [...(silverDisciples.get(master) ?? []), node]);
     }
   }
 
-  function silverPath(master: ForestNode, node: ForestNode) {
-    const dx = node.x - master.x;
-    const dy = node.y - master.y;
-    // Une courbe douce, légèrement de côté, pour ne pas se confondre avec la branche dorée.
-    return `M${master.x} ${master.y} Q ${master.x + dx / 2 - dy * 0.18} ${master.y + dy / 2 + dx * 0.18} ${node.x} ${node.y}`;
+  // Tout ce qui mène à une personne (ses maîtres, dorés et argentés, jusqu'au Prophète ﷺ)
+  // et tout ce qui part d'elle (ses disciples, et les leurs).
+  function spread(start: ForestNode, next: (node: ForestNode) => (ForestNode | null | undefined)[]) {
+    const seen = new Set([start]);
+    const stack = [start];
+    while (stack.length) {
+      for (const other of next(stack.pop()!)) {
+        if (other && !seen.has(other)) {
+          seen.add(other);
+          stack.push(other);
+        }
+      }
+    }
+    return seen;
   }
 
-  function branchPath(node: ForestNode) {
-    const parent = node.parent!;
-    const dy = parent.y - node.y;
-    return `M${parent.x} ${parent.y} C ${parent.x} ${parent.y - dy * 0.62} ${node.x} ${node.y + dy * 0.45} ${node.x} ${node.y}`;
+  // La même courbe que les branches, du maître vers le disciple.
+  function curve(from: ForestNode, to: ForestNode) {
+    const dy = from.y - to.y;
+    return `M${from.x} ${from.y} C ${from.x} ${from.y - dy * 0.62} ${to.x} ${to.y + dy * 0.45} ${to.x} ${to.y}`;
   }
+  const branchPath = (node: ForestNode) => curve(node.parent!, node);
 
   // Médaillon du Prophète ﷺ et étoile du Cheikh.
   if (forest) {
@@ -306,33 +328,49 @@ export function createScene(options: SceneOptions): SceneApi {
   }
 
   function restyle() {
-    const chain = selected ? chainTo(selected) : null;
-    const kept = selected && isolated ? new Set([...chain!, ...subtreeOf(selected)]) : null;
-    const opacity = (node: ForestNode) => {
-      if (kept) return kept.has(node) ? 1 : 0.12;
-      if (chain) return chain.has(node) ? 1 : 0.55;
-      if (generation !== null) return node.depth === generation ? 1 : 0.2;
-      return 1;
-    };
+    // Une personne choisie : on ne garde que les chaînes qui viennent à elle et qui partent d'elle, le reste disparaît.
+    const up = selected ? spread(selected, (node) => [node.parent, ...(silverMasters.get(node) ?? [])]) : null;
+    const down = selected ? spread(selected, (node) => [...node.children, ...(silverDisciples.get(node) ?? [])]) : null;
+    const kept = (node: ForestNode) => !up || node.depth < 0 || up.has(node) || down!.has(node);
+    // Une chaîne reste si elle mène à la personne, ou si elle part d'elle ou de l'un de ses disciples.
+    const linked = (master: ForestNode, node: ForestNode) => !up || up.has(node) || down!.has(master);
+    const show = (element: SVGElement, on: boolean) => (element.style.display = on ? "" : "none");
+    const opacity = (node: ForestNode) =>
+      generation !== null && !selected ? (node.depth === generation ? 1 : 0.2) : 1;
 
     branches.forEach((path, node) => {
-      const golden = Boolean(chain?.has(node));
+      const on = linked(node.parent!, node);
       const base = Number(path.dataset.width);
-      path.style.stroke = golden ? "var(--gold)" : "var(--foreground)";
-      path.style.strokeWidth = String(golden ? base + 1.6 : base);
-      path.style.opacity = String((golden ? 1 : 0.5) * opacity(node));
+      show(path, on);
+      show(goldFlows.get(node)!, on);
+      path.style.stroke = selected ? "var(--gold)" : "var(--foreground)";
+      path.style.strokeWidth = String(selected ? base + 1.6 : base);
+      path.style.opacity = String((selected ? 1 : 0.5) * opacity(node));
+      goldFlows.get(node)!.style.strokeWidth = String(base + (selected ? 2.4 : 1));
     });
     for (const { master, node, path, flow } of silvers) {
-      const near = Boolean(selected && (selected === node || selected === master));
-      const seen = Math.min(opacity(node), opacity(master));
-      path.classList.toggle("is-near", near);
-      flow.classList.toggle("is-near", near);
-      path.style.opacity = String(seen * (near ? 1 : 0.85));
-      flow.style.opacity = String(seen);
+      const on = linked(master, node);
+      const base = Number(path.dataset.width);
+      show(path, on);
+      show(flow, on);
+      path.style.strokeWidth = String(selected ? base + 1.6 : base);
+      path.style.opacity = String((selected ? 1 : 0.6) * Math.min(opacity(node), opacity(master)));
+      flow.style.strokeWidth = String(base + (selected ? 2.4 : 1));
     }
-    leafMarks.forEach((items, node) => items.forEach((item) => (item.style.opacity = String(0.3 * opacity(node)))));
-    marks.forEach((group, node) => (group.style.opacity = String(opacity(node))));
-    labels.forEach((label, node) => (label.style.opacity = String(Math.max(opacity(node), 0.35))));
+    leafMarks.forEach((items, node) =>
+      items.forEach((item) => {
+        show(item, kept(node));
+        item.style.opacity = String(0.3 * opacity(node));
+      }),
+    );
+    marks.forEach((group, node) => {
+      show(group, kept(node));
+      group.style.opacity = String(opacity(node));
+    });
+    labels.forEach((label, node) => {
+      show(label, kept(node));
+      label.style.opacity = String(Math.max(opacity(node), 0.35));
+    });
 
     haloLayer.replaceChildren();
     halos.clear();
@@ -358,9 +396,13 @@ export function createScene(options: SceneOptions): SceneApi {
   // Met le dessin à la position courante de chacun ; les feuilles frémissent doucement.
   function draw(now: number) {
     marks.forEach((group, node) => group.setAttribute("transform", `translate(${node.x} ${node.y})`));
-    branches.forEach((path, node) => path.setAttribute("d", branchPath(node)));
+    branches.forEach((path, node) => {
+      const d = branchPath(node);
+      path.setAttribute("d", d);
+      goldFlows.get(node)!.setAttribute("d", d);
+    });
     for (const { master, node, path, flow } of silvers) {
-      const d = silverPath(master, node);
+      const d = curve(master, node);
       path.setAttribute("d", d);
       flow.setAttribute("d", d);
     }
@@ -513,7 +555,6 @@ export function createScene(options: SceneOptions): SceneApi {
 
   function select(personId: string | null) {
     selected = personId ? (forest?.byId.get(personId) ?? null) : null;
-    if (!selected) isolated = false;
     drawLabels();
     restyle();
     if (selected) stage.reveal(selected.x, selected.y);
@@ -542,10 +583,6 @@ export function createScene(options: SceneOptions): SceneApi {
       display = next;
       drawNodes();
       drawLabels();
-      restyle();
-    },
-    setIsolated(next) {
-      isolated = next && Boolean(selected);
       restyle();
     },
     setGeneration(next) {

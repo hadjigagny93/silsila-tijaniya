@@ -5624,40 +5624,47 @@ a.suluk-next-station {
   font-size: 0.8rem;
 }
 
-/* Chaînes argentées dans l'arbre : un fil argent foncé en pointillé, plus net autour de la personne choisie,
-   avec une traînée de lumière qui va du maître qui donne vers celui qui reçoit. */
+/* Chaînes argentées dans l'arbre : des branches comme les autres, seulement grises. Une traînée de lumière va
+   du maître qui donne vers celui qui reçoit : argent sur les chaînes argentées, jaune sur les chaînes dorées. */
 .t-silver {
   fill: none;
-  stroke: #5f6b7a;
-  stroke-width: 1.8;
-  stroke-dasharray: 5 4;
+  stroke: #7c8794;
   stroke-linecap: round;
   pointer-events: none;
+  transition: opacity 0.2s;
 }
 
-.t-silver.is-near {
-  stroke: #3f4a58;
-  stroke-width: 3;
-  stroke-dasharray: none;
+.t-silver-flow,
+.t-gold-flow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 9 91;
+  pointer-events: none;
+  animation: chain-flow 3s linear infinite;
 }
 
 .t-silver-flow {
-  fill: none;
   stroke: #eef2f7;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 9 91;
-  filter: drop-shadow(0 0 3px rgb(190 205 225 / 0.95)) drop-shadow(0 0 6px rgb(150 170 200 / 0.6));
-  pointer-events: none;
-  animation: silver-flow 3s linear infinite;
+  filter: drop-shadow(0 0 3px rgb(190 205 225 / 0.95));
 }
 
-.t-silver-flow.is-near {
-  stroke-width: 4.5;
+.t-gold-flow {
+  stroke: #ffd84a;
+  opacity: 0.85;
+}
+
+/* Une personne choisie : ses chaînes seules restent, leur lumière brille davantage. */
+.silsila-stage[data-chosen] .t-gold-flow {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px rgb(255 214 80 / 0.95)) drop-shadow(0 0 7px rgb(255 190 40 / 0.6));
   animation-duration: 2s;
 }
 
-@keyframes silver-flow {
+.silsila-stage[data-chosen] .t-silver-flow {
+  animation-duration: 2s;
+}
+
+@keyframes chain-flow {
   from {
     stroke-dashoffset: 0;
   }
@@ -5667,27 +5674,20 @@ a.suluk-next-station {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .t-silver-flow {
+  .t-silver-flow,
+  .t-gold-flow {
     animation: none;
-    opacity: 0 !important;
+    display: none;
   }
 }
 
 :root[data-theme="dark"] .t-silver {
-  stroke: #aab4c2;
-}
-
-:root[data-theme="dark"] .t-silver.is-near {
-  stroke: #dfe4ea;
+  stroke: #9aa4b1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .t-silver {
-    stroke: #aab4c2;
-  }
-
-  :root:not([data-theme="light"]) .t-silver.is-near {
-    stroke: #dfe4ea;
+    stroke: #9aa4b1;
   }
 }
 
