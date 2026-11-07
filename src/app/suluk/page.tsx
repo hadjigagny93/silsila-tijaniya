@@ -62,7 +62,7 @@ export default async function SulukPage({ searchParams }: { searchParams: Promis
           groups={groups}
           abdal={abdal}
           done={done}
-          station={focused && progress && !progress.finished ? focused.arabic : null}
+          station={focused ? focused.arabic : null}
         />
       )}
 

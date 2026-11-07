@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useNow } from "@/components/useNow";
 import { PRAYERS, type Exercise, type LitanyGroup, type SulukSettings } from "@/lib/data/types";
 import { addDays, dayIn, formatHijri, minuteIn, prayerTimes } from "@/lib/suluk";
-import { focusDay, stationById } from "@/lib/stations";
+import { stationById } from "@/lib/stations";
 import { t } from "@/messages/fr";
 import { mobileStore } from "./data";
 import { navigate, useLocation } from "./navigation";
@@ -61,14 +61,14 @@ function useNextWork(version: number) {
         mobileStore.getStationFocus("local"),
       ]);
       const station = focus ? stationById(focus.station) : undefined;
-      const running = focus && !focusDay(focus, today).finished;
       if (cancelled) return;
       setData({
         settings,
         groups,
         abdal,
         done: entries.map((entry) => `${entry.day}|${entry.litany}`),
-        station: station && running ? station.arabic : null,
+        // Toujours affichée tant qu'il y a une station du mois : son nom ouvre sa carte.
+        station: station ? station.arabic : null,
       });
     })();
     return () => {

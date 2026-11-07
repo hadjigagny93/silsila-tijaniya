@@ -73,12 +73,12 @@ export function SulukNext({
   groups: LitanyGroup[];
   abdal: Exercise[];
   done: string[];
-  // Nom arabe de la station du mois, en cours : il mène à l'Échiquier, en bas de la page.
+  // Nom arabe de la station du mois, en cours : il ouvre sa carte (/suluk/station).
   station?: string | null;
 }) {
   const now = useNow();
   const stationLink = station && (
-    <Link href="#echiquier" lang="ar" className="suluk-next-station" aria-label={t.echiquier.focus}>
+    <Link href="/suluk/station" lang="ar" className="suluk-next-station" aria-label={t.echiquier.focus}>
       {station}
     </Link>
   );

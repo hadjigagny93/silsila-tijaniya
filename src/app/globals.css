@@ -5760,3 +5760,19 @@ a.calendar-day:hover {
     overscroll-behavior: contain;
   }
 }
+
+/* L'Échiquier sans colonne de côté : les cercles prennent toute la largeur. */
+.echiquier-board.is-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* La station du mois, sur sa page : la carte à pleine largeur. */
+.max-w-3xl > div > .focus-card {
+  width: 100%;
+  aspect-ratio: auto;
+  margin: 0;
+}
+
+a.suluk-next-station {
+  border-bottom: 1px dotted color-mix(in srgb, var(--gold) 50%, transparent);
+}
