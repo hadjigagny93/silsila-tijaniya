@@ -1,6 +1,6 @@
 import { buildForest, type ForestNode, hash, subtreeOf } from "@/lib/silsilaForest";
 import { personImageUrl } from "./Avatar";
-import { prefersCalm, type SceneApi, type SceneOptions } from "./sceneTypes";
+import { prefersCalm, type SceneApi, type SceneOptions, type TreeDisplay } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 
 const ROW = 84;
@@ -106,6 +106,8 @@ export function createScene(options: SceneOptions): SceneApi {
     return { x: left, y: upper, width: right - left, height: prophetY + 90 - upper };
   };
   let selected: ForestNode | null = null;
+  // « name » : tous les noms à la fois ; « photo » : seulement ceux qui n'ont pas de photo.
+  let display: TreeDisplay = options.display ?? "photo";
   let generation = options.generation ?? null;
 
   const stage = createSvgStage(
@@ -288,12 +290,16 @@ export function createScene(options: SceneOptions): SceneApi {
     const taken: Box[] = [];
     const candidates = nodes
       .filter(
-        (node) => node.depth === 0 || node === selected || (node.person.kind !== "member" && !node.person.hasImage),
+        (node) =>
+          display === "name" ||
+          node.depth === 0 ||
+          node === selected ||
+          (node.person.kind !== "member" && !node.person.hasImage),
       )
       .sort((a, b) => Number(b === selected) - Number(a === selected) || a.depth - b.depth || b.desc - a.desc);
     for (const node of candidates) {
       if (node.depth < 0) continue;
-      const size = (node.depth === 0 ? 19 : 15.5) * textScale;
+      const size = (node.depth === 0 ? 19 : node.person.kind === "member" ? 12.5 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
       const offset = 18 * textScale;
       const x = node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
@@ -325,7 +331,8 @@ export function createScene(options: SceneOptions): SceneApi {
           box.y < other.y + other.height &&
           other.y < box.y + box.height,
       );
-      if (clash && node !== selected) {
+      // Tous les noms demandés : on les montre même serrés, il suffit de zoomer pour les lire.
+      if (clash && node !== selected && display !== "name") {
         label.remove();
         continue;
       }
@@ -587,6 +594,11 @@ export function createScene(options: SceneOptions): SceneApi {
 
   return {
     select,
+    setDisplay(next) {
+      display = next;
+      drawLabels();
+      restyle();
+    },
     setGeneration(next) {
       generation = next;
       restyle();

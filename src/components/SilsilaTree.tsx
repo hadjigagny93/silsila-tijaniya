@@ -11,7 +11,7 @@ import { Icon, type IconName } from "./Icon";
 import type { SceneApi } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
 import { useDragCard } from "./useDragCard";
-import { useShowSilver } from "./useShowSilver";
+import { useStoredToggle } from "./useStoredToggle";
 
 export type SilsilaView = "tree" | "planets";
 
@@ -76,7 +76,10 @@ export function SilsilaTree({
   const chosen = useRef<string | null>(initialId ?? null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
   const [view, setView] = useState<SilsilaView>(initialView);
-  const silver = useShowSilver();
+  const silver = useStoredToggle("silsila:chaines-argentees", true);
+  // Tous les noms à la fois ; par défaut, seulement ceux sans photo (les autres au survol).
+  const names = useStoredToggle("silsila:tous-les-noms", false);
+  const namesNow = useRef(false);
   const hasSilver = persons.some((person) => person.alsoFrom.length > 0);
   // Lu à la création de la scène, sans la recréer quand l'affichage change.
   const dark = useDarkTheme();
@@ -97,6 +100,11 @@ export function SilsilaTree({
     isolatedNow.current = next;
     setIsolated(next);
   }, []);
+
+  useEffect(() => {
+    namesNow.current = names.shown;
+    scene.current?.setDisplay?.(names.shown ? "name" : "photo");
+  }, [names.shown]);
 
   const remember = useCallback(
     (id: string | null) => {
@@ -124,6 +132,7 @@ export function SilsilaTree({
         if (chosen.current) scene.current.select(chosen.current);
         if (isolatedNow.current) scene.current.setIsolated?.(true);
         scene.current.setExploring?.(exploringNow.current);
+        if (namesNow.current) scene.current.setDisplay?.("name");
       })
       .catch((error) => {
         console.error(error);
@@ -466,6 +475,13 @@ export function SilsilaTree({
                 {rank}
               </button>
             ))}
+          </div>
+        )}
+        {view === "tree" && (
+          <div className="bar-group" role="group" aria-label={t.silsila.namesLabel}>
+            <button aria-pressed={names.shown} onClick={names.toggle}>
+              {t.silsila.namesToggle}
+            </button>
           </div>
         )}
         {view === "tree" && hasSilver && (

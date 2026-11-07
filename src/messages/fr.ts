@@ -68,6 +68,8 @@ export const t = {
     noResult: "Aucun nom ne correspond à cette recherche.",
     tree: "Voir toutes les chaînes en liste",
     viewLabel: "Mode d'affichage",
+    namesLabel: "Noms dans l'arbre",
+    namesToggle: "Tous les noms",
     silverLabel: "Chaînes argentées",
     silverToggle: "Argentées",
     silverLegend: "Chaîne argentée : un autre maître dont la personne a aussi reçu le wird. La branche pleine reste la chaîne dorée.",
