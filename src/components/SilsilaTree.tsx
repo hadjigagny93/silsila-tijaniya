@@ -10,6 +10,7 @@ import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 import type { SceneApi, TreeDisplay } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
+import { useDragCard } from "./useDragCard";
 import { useShowSilver } from "./useShowSilver";
 
 export type SilsilaView = "tree" | "planets";
@@ -69,6 +70,7 @@ export function SilsilaTree({
   canLink?: boolean;
 }) {
   const stage = useRef<HTMLDivElement>(null);
+  const drag = useDragCard();
   const labels = useRef<HTMLDivElement>(null);
   const scene = useRef<SceneApi | null>(null);
   const chosen = useRef<string | null>(initialId ?? null);
@@ -318,7 +320,7 @@ export function SilsilaTree({
       {failed && <p className="panel absolute inset-x-4 top-1/2 mx-auto max-w-md">{t.silsila.noWebgl}</p>}
 
       {person && selected ? (
-        <aside className="person-card-float" aria-label={person.displayName}>
+        <aside key="personne" className="person-card-float is-draggable" aria-label={person.displayName} {...drag}>
           <button onClick={() => scene.current?.reset()} aria-label={t.silsila.close} className="card-close">
             <Icon name="close" />
           </button>
@@ -369,7 +371,7 @@ export function SilsilaTree({
         </aside>
       ) : (
         pending.length > 0 && (
-          <aside className="person-card-float pending-float" aria-label={t.silsila.pending}>
+          <aside key="a-completer" className="person-card-float pending-float" aria-label={t.silsila.pending}>
             <button
               className="flex w-full items-center gap-3 text-start"
               onClick={() => setPendingOpen(!pendingOpen)}

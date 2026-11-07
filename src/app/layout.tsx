@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signOut } from "@/app/actions";
 import { Icon, Star } from "@/components/Icon";
 import { NavLink } from "@/components/NavLink";
+import { SidebarToggle } from "@/components/SidebarToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { generationsOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";
@@ -27,14 +28,17 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const store = getStore();
   const [session, persons] = await Promise.all([store.getSession(), store.listPersons()]);
   const generationCount = new Set(generationsOf(persons).values()).size;
-  const saved = (await cookies()).get("theme")?.value;
+  const jar = await cookies();
+  const saved = jar.get("theme")?.value;
   const theme = saved === "dark" || saved === "light" ? saved : undefined;
+  const sidebarHidden = jar.get("sidebar")?.value === "hidden";
 
   return (
-    <html lang="fr" data-theme={theme}>
+    <html lang="fr" data-theme={theme} data-sidebar={sidebarHidden ? "hidden" : undefined}>
       <body className="min-h-dvh md:flex">
         <ThemeToggle initialDark={theme === "dark"} />
-        <aside className="shrink-0 border-b border-line bg-surface md:sticky md:top-0 md:h-dvh md:w-(--sidebar-width) md:border-e md:border-b-0">
+        <SidebarToggle />
+        <aside className="site-sidebar shrink-0 border-b border-line bg-surface md:sticky md:top-0 md:h-dvh md:w-(--sidebar-width) md:border-e md:border-b-0">
           <nav className="flex flex-wrap items-center gap-x-2 gap-y-1 p-3 pe-16 md:h-full md:flex-col md:flex-nowrap md:items-stretch md:gap-1 md:p-4">
             <Link href="/" className="site-name me-auto px-3 py-2 md:me-0 md:mb-6">
               <Star />

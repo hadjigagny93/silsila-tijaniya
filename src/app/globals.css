@@ -23,6 +23,15 @@
   :root {
     --sidebar-width: 16.5rem;
   }
+
+  /* Menu caché (bouton en haut à gauche, ou ⌘\) : la page prend toute la largeur. */
+  :root[data-sidebar="hidden"] {
+    --sidebar-width: 0rem;
+  }
+
+  :root[data-sidebar="hidden"] .site-sidebar {
+    display: none;
+  }
 }
 
 /* Le choix du bouton prime ; sans choix, le thème suit celui de l'appareil. */
@@ -558,6 +567,42 @@ h3 {
   .theme-toggle {
     top: 1.1rem;
     inset-inline-end: 2.5rem;
+  }
+}
+
+/* Languette du menu, à mi-hauteur sur le bord de la barre latérale, ou contre le bord gauche quand elle est cachée.
+   Mac seulement. */
+.sidebar-toggle {
+  display: none;
+}
+
+@media (min-width: 48rem) {
+  .sidebar-toggle {
+    position: fixed;
+    z-index: 30;
+    top: 50%;
+    left: var(--sidebar-width);
+    display: flex;
+    width: 1.15rem;
+    height: 3.25rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-left: none;
+    border-radius: 0 0.6rem 0.6rem 0;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  .sidebar-toggle:hover {
+    width: 1.5rem;
+    color: var(--accent);
+  }
+
+  :root[data-sidebar="hidden"] .sidebar-toggle svg {
+    transform: rotate(180deg);
   }
 }
 
@@ -2108,6 +2153,18 @@ h3 {
   background: var(--surface);
   box-shadow: var(--shadow-overlay);
   padding: 1.25rem;
+}
+
+/* La carte se déplace en la tirant (hors boutons et liens). */
+.person-card-float.is-draggable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.person-card-float.is-draggable[data-dragging] {
+  cursor: grabbing;
+  box-shadow: 0 20px 44px -14px rgb(30 26 21 / 0.4), 0 0 0 1px var(--line);
 }
 
 .pending-float {

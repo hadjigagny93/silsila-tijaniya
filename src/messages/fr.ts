@@ -19,6 +19,7 @@ export const t = {
     biographies: "Biographies",
     account: "Mon compte",
     darkMode: "Passer en mode sombre",
+    toggleSidebar: "Cacher ou montrer le menu (⌘\\)",
     lightMode: "Passer en mode clair",
     admin: "Administration",
     adminModeration: "Modération",
