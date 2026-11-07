@@ -10,6 +10,7 @@ import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 import type { SceneApi, TreeDisplay } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
+import { useShowSilver } from "./useShowSilver";
 
 export type SilsilaView = "tree" | "planets";
 
@@ -74,6 +75,8 @@ export function SilsilaTree({
   const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
   const [view, setView] = useState<SilsilaView>(initialView);
   const [display, setDisplay] = useState<TreeDisplay>("photo");
+  const silver = useShowSilver();
+  const hasSilver = persons.some((person) => person.alsoFrom.length > 0);
   // Lu à la création de la scène, sans la recréer quand l'affichage change.
   const shown = useRef<TreeDisplay>("photo");
   const dark = useDarkTheme();
@@ -95,11 +98,14 @@ export function SilsilaTree({
     setIsolated(next);
   }, []);
 
-  const remember = useCallback((id: string | null) => {
-    chosen.current = id;
-    setSelectedId(id);
-    if (!id) markIsolated(false);
-  }, [markIsolated]);
+  const remember = useCallback(
+    (id: string | null) => {
+      chosen.current = id;
+      setSelectedId(id);
+      if (!id) markIsolated(false);
+    },
+    [markIsolated],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -140,7 +146,8 @@ export function SilsilaTree({
   const tree = useMemo(() => childrenOf(persons), [persons]);
   const known = useMemo(() => new Set(persons.map((person) => person.id)), [persons]);
   const pending = persons.filter(
-    (person) => person.kind !== "prophet" && person.kind !== "member" && (!person.mouqaddamId || !known.has(person.mouqaddamId)),
+    (person) =>
+      person.kind !== "prophet" && person.kind !== "member" && (!person.mouqaddamId || !known.has(person.mouqaddamId)),
   );
 
   const describe = (person: PublicPerson) => {
@@ -229,6 +236,7 @@ export function SilsilaTree({
       data-view={view}
       data-dark={dark || undefined}
       data-exploring={exploring || undefined}
+      data-silver={silver.shown ? undefined : "off"}
       aria-label={t.silsila.title}
     >
       <div ref={stage} className="absolute inset-0" />
@@ -315,7 +323,11 @@ export function SilsilaTree({
           </button>
           <div className="flex items-center gap-4">
             <span className="card-avatar">
-              {person.kind === "prophet" ? <span className="saw text-4xl">ﷺ</span> : <Avatar person={person} size={78} />}
+              {person.kind === "prophet" ? (
+                <span className="saw text-4xl">ﷺ</span>
+              ) : (
+                <Avatar person={person} size={78} />
+              )}
             </span>
             <div className="min-w-0">
               <h2 className="text-[28px] leading-tight">{person.displayName}</h2>
@@ -356,7 +368,11 @@ export function SilsilaTree({
       ) : (
         pending.length > 0 && (
           <aside className="person-card-float pending-float" aria-label={t.silsila.pending}>
-            <button className="flex w-full items-center gap-3 text-start" onClick={() => setPendingOpen(!pendingOpen)} aria-expanded={pendingOpen}>
+            <button
+              className="flex w-full items-center gap-3 text-start"
+              onClick={() => setPendingOpen(!pendingOpen)}
+              aria-expanded={pendingOpen}
+            >
               <span className="text-gold">
                 <Icon name="branch" />
               </span>
@@ -377,7 +393,9 @@ export function SilsilaTree({
                           {item.displayName}
                         </span>
                         <span className="picker-detail">
-                          {[t.admin.disciples(tree.get(item.id)?.length ?? 0), item.birthCity].filter(Boolean).join(" · ")}
+                          {[t.admin.disciples(tree.get(item.id)?.length ?? 0), item.birthCity]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </span>
                       </span>
                       <Link href="/admin/silsila" className="profile-link mt-0">
@@ -409,7 +427,11 @@ export function SilsilaTree({
           <Icon name="recenter" />
         </button>
         {view === "tree" && (
-          <button onClick={() => scene.current?.rearrange?.()} aria-label={t.silsila.rearrange} title={t.silsila.rearrange}>
+          <button
+            onClick={() => scene.current?.rearrange?.()}
+            aria-label={t.silsila.rearrange}
+            title={t.silsila.rearrange}
+          >
             <Icon name="wind" />
           </button>
         )}
@@ -458,6 +480,13 @@ export function SilsilaTree({
                 {t.silsila.displays[option]}
               </button>
             ))}
+          </div>
+        )}
+        {view === "tree" && hasSilver && (
+          <div className="bar-group" role="group" aria-label={t.silsila.silverLabel}>
+            <button aria-pressed={silver.shown} onClick={silver.toggle} className="bar-silver">
+              {t.silsila.silverToggle}
+            </button>
           </div>
         )}
         <p className="bar-legend">

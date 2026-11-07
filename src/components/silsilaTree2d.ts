@@ -173,12 +173,16 @@ export function createScene(options: SceneOptions): SceneApi {
   }
 
   // Chaînes argentées : un trait fin du maître vers le disciple, en plus de la branche dorée.
-  const silvers: { master: ForestNode; node: ForestNode; path: SVGPathElement }[] = [];
+  // Une traînée de lumière glisse le long du fil, du maître qui donne vers celui qui reçoit.
+  const silvers: { master: ForestNode; node: ForestNode; path: SVGPathElement; flow: SVGPathElement }[] = [];
   for (const node of nodes) {
     for (const masterId of node.person.alsoFrom ?? []) {
       const master = forest?.byId.get(masterId);
-      if (master && master !== node)
-        silvers.push({ master, node, path: svg("path", { class: "t-silver" }, silverLayer) });
+      if (!master || master === node) continue;
+      const path = svg("path", { class: "t-silver" }, silverLayer);
+      const flow = svg("path", { class: "t-silver-flow", pathLength: 100 }, silverLayer);
+      flow.style.animationDelay = `${-hash(node.person.id + masterId) * 3}s`;
+      silvers.push({ master, node, path, flow });
     }
   }
 
@@ -318,10 +322,13 @@ export function createScene(options: SceneOptions): SceneApi {
       path.style.strokeWidth = String(golden ? base + 1.6 : base);
       path.style.opacity = String((golden ? 1 : 0.5) * opacity(node));
     });
-    for (const { master, node, path } of silvers) {
+    for (const { master, node, path, flow } of silvers) {
       const near = Boolean(selected && (selected === node || selected === master));
+      const seen = Math.min(opacity(node), opacity(master));
       path.classList.toggle("is-near", near);
-      path.style.opacity = String(Math.min(opacity(node), opacity(master)) * (near ? 1 : 0.75));
+      flow.classList.toggle("is-near", near);
+      path.style.opacity = String(seen * (near ? 1 : 0.85));
+      flow.style.opacity = String(seen);
     }
     leafMarks.forEach((items, node) => items.forEach((item) => (item.style.opacity = String(0.3 * opacity(node)))));
     marks.forEach((group, node) => (group.style.opacity = String(opacity(node))));
@@ -352,7 +359,11 @@ export function createScene(options: SceneOptions): SceneApi {
   function draw(now: number) {
     marks.forEach((group, node) => group.setAttribute("transform", `translate(${node.x} ${node.y})`));
     branches.forEach((path, node) => path.setAttribute("d", branchPath(node)));
-    for (const { master, node, path } of silvers) path.setAttribute("d", silverPath(master, node));
+    for (const { master, node, path, flow } of silvers) {
+      const d = silverPath(master, node);
+      path.setAttribute("d", d);
+      flow.setAttribute("d", d);
+    }
     leafMarks.forEach((items, node) => {
       const sway = calm ? 0 : Math.sin(now / 900 + hash(node.person.id) * 6) * 7;
       const angle = hash(node.person.id + "f") * 360 + sway;
