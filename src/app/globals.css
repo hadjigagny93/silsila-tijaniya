@@ -5744,6 +5744,11 @@ a.suluk-next-station {
   font-size: 0.8rem;
 }
 
+.silver-profile {
+  margin-top: 0.1rem;
+  font-size: 0.8rem;
+}
+
 /* Chaînes argentées dans l'arbre : des branches comme les autres, seulement grises. Une traînée de lumière va
    du maître qui donne vers celui qui reçoit : argent sur les chaînes argentées, jaune sur les chaînes dorées. */
 .t-silver {

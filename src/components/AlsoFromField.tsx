@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";
@@ -68,7 +69,15 @@ export function MastersField({
               return (
                 <li key={id}>
                   <Avatar person={master} size={30} />
-                  <span className="min-w-0 flex-1">{master.displayName}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block">{master.displayName}</span>
+                    {master.kind !== "prophet" && (
+                      <Link href={`/admin/mouqaddams/${id}`} className="profile-link silver-profile">
+                        {t.admin.viewProfile(master.displayName)}
+                        <Icon name="arrowR" size={14} />
+                      </Link>
+                    )}
+                  </span>
                   <button type="button" className="button-quiet silver-promote" onClick={() => promote(id)}>
                     {t.admin.makeGolden}
                   </button>
