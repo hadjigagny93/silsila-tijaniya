@@ -42,36 +42,36 @@
 /* Le choix du bouton prime ; sans choix, le thème suit celui de l'appareil. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #0d1320;
-    --surface: #151d2d;
+    --background: #0a0a0a;
+    --surface: #161616;
     --foreground: #ece5d5;
     --muted: #a49c8b;
-    --line: #273246;
+    --line: #2b2b2b;
     --accent: #8fcbb4;
-    --accent-contrast: #0d1320;
+    --accent-contrast: #0a0a0a;
     --gold: #d8b467;
-    --field-line: #66728a;
-    --stage: #090e19;
+    --field-line: #6b6b6b;
+    --stage: #050505;
     --danger: #e58a72;
-    --danger-soft: #2a1b1d;
+    --danger-soft: #261a1a;
     --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(236 229 213 / 0.08), 0 0 0 1px var(--line);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --background: #0d1320;
-  --surface: #151d2d;
+  --background: #0a0a0a;
+  --surface: #161616;
   --foreground: #ece5d5;
   --muted: #a49c8b;
-  --line: #273246;
+  --line: #2b2b2b;
   --accent: #8fcbb4;
-  --accent-contrast: #0d1320;
+  --accent-contrast: #0a0a0a;
   --gold: #d8b467;
-  --field-line: #66728a;
-  --stage: #090e19;
+  --field-line: #6b6b6b;
+  --stage: #050505;
   --danger: #e58a72;
-  --danger-soft: #2a1b1d;
+  --danger-soft: #261a1a;
   --shadow-overlay: 0 16px 40px -12px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(236 229 213 / 0.08), 0 0 0 1px var(--line);
   color-scheme: dark;
 }
