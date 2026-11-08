@@ -47,6 +47,12 @@ function defs(root: SVGSVGElement, id: string) {
   svg("circle", { cx: 0.5, cy: 0.5, r: 0.5 }, clip);
 }
 
+// Taille du disque (et de la photo) : les pôles spirituels (Qutb) sont agrandis.
+function discRadius(person: ForestNode["person"]) {
+  if (person.qutb) return person.kind === "member" ? 10 : 20;
+  return person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
+}
+
 // L'arbre de la maquette : le Prophète ﷺ en médaillon à la racine, le Cheikh au sommet du
 // tronc, puis un éventail où chaque génération monte d'un cran.
 export function createScene(options: SceneOptions): SceneApi {
@@ -251,17 +257,16 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const kind = node.person.kind;
       const group = svg("g", { "data-id": node.person.id, class: "t-hit" }, nodeLayer);
-      svg("circle", { r: 12, class: "t-target" }, group);
-      // Pôle spirituel (Qutb) : un halo bleu vif qui respire autour de la photo.
+      // Pôle spirituel (Qutb) : photo agrandie, et un halo bleu vif qui respire autour.
+      const radius = discRadius(node.person);
+      svg("circle", { r: Math.max(12, radius), class: "t-target" }, group);
       if (node.person.qutb) {
-        const size = node.depth === 0 || kind === "cheikh" ? 30 : kind === "mouqaddam" ? 22 : 14;
-        svg("circle", { r: size, fill: `url(#${id}q)`, class: "t-qutb" }, group);
+        svg("circle", { r: node.depth === 0 ? 30 : radius * 2.2, fill: `url(#${id}q)`, class: "t-qutb" }, group);
       }
       if (node.depth === 0) {
         svg("circle", { r: 46, fill: `url(#${id}g)` }, group);
         star(group, 11, "var(--gold)");
       } else {
-        const radius = kind === "cheikh" ? 13 : kind === "mouqaddam" ? 8.5 : 5;
         const qutb = node.person.qutb ? " t-disc-qutb" : "";
         svg("circle", { r: radius, class: `t-disc t-disc-${kind}${qutb}`, style: `stroke:${COLOR[kind]}` }, group);
         if (node.person.hasImage && radius > 6) {
@@ -308,7 +313,7 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const size = (node.depth === 0 ? 19 : node.person.kind === "member" ? 12.5 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
-      const offset = 18 * textScale;
+      const offset = (node.person.qutb ? 26 : 18) * textScale;
       const x = node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
       const label = svg(
         "text",
