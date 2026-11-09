@@ -2126,6 +2126,39 @@ h3 {
   text-shadow: 0 0 8px var(--stage), 0 0 4px var(--stage);
 }
 
+.silsila-stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.1rem;
+  text-shadow: 0 0 8px var(--stage), 0 0 4px var(--stage);
+}
+
+.silsila-stats div {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.silsila-stats dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.silsila-stats dd {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--gold);
+}
+
+.silsila-stats small {
+  margin-left: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 .silsila-search {
   position: relative;
   display: flex;
