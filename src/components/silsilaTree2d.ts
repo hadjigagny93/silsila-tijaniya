@@ -17,6 +17,9 @@ const COOLING = 0.992;
 const REST = 0.02;
 const MIN_WIDTH = 1100;
 const LEAF_SPACE = 15;
+// Chaînes à compléter, en bas : une rangée par génération dans chaque groupe, une place par bout de branche.
+const STRAY_ROW = 70;
+const STRAY_SPACE = 150;
 const COLOR = { prophet: "var(--gold)", cheikh: "var(--gold)", mouqaddam: "var(--accent)", member: "var(--muted)" };
 let instances = 0;
 
@@ -96,6 +99,55 @@ export function createScene(options: SceneOptions): SceneApi {
     forest.root.y = prophetY;
   }
 
+  // Chaînes à compléter : sous le médaillon, chaque groupe a son premier maillon en bas et, au-dessus de lui,
+  // ceux qui ont pris de lui. Une personne seule reste un rond isolé. Les groupes se rangent côte à côte,
+  // sur plusieurs rangées s'il le faut.
+  const strays = forest?.strays ?? [];
+  const strayTop = prophetY + 150;
+  let strayBottom = prophetY + 90;
+  {
+    const groups = strays.map((root) => {
+      const members = [...subtreeOf(root)];
+      const slot = new Map<ForestNode, number>();
+      let count = 0;
+      const placeLocal = (node: ForestNode): number => {
+        const value = node.children.length
+          ? node.children.map(placeLocal).reduce((total, item) => total + item, 0) / node.children.length
+          : count++;
+        slot.set(node, value);
+        return value;
+      };
+      placeLocal(root);
+      const height = Math.max(...members.map((node) => node.depth)) - 1;
+      return { members, slot, width: count * STRAY_SPACE, height };
+    });
+    const rowWidth = Math.max(width * 0.6, 600);
+    let row: typeof groups = [];
+    let y = strayTop;
+    const flush = () => {
+      if (!row.length) return;
+      const ground = y + Math.max(...row.map((group) => group.height)) * STRAY_ROW;
+      const total = row.reduce((sum, group) => sum + group.width, 0) + (row.length - 1) * STRAY_SPACE;
+      let x = center - total / 2;
+      for (const group of row) {
+        for (const node of group.members) {
+          node.x = x + (group.slot.get(node)! + 0.5) * STRAY_SPACE;
+          node.y = ground - (node.depth - 1) * STRAY_ROW;
+        }
+        x += group.width + STRAY_SPACE;
+      }
+      // De la place pour le nom sous le rond.
+      strayBottom = ground + 70;
+      y = ground + STRAY_ROW + 24;
+      row = [];
+    };
+    for (const group of groups) {
+      if (row.length && row.reduce((sum, other) => sum + other.width + STRAY_SPACE, group.width) > rowWidth) flush();
+      row.push(group);
+    }
+    flush();
+  }
+
   // Point de départ de chaque personne : l'éventail, vers lequel « Réorganiser » la ramène.
   const home = new Map(nodes.map((node) => [node, { x: node.x, y: node.y }]));
   const motion = new Map(nodes.map((node) => [node, { vx: 0, vy: 0 }]));
@@ -110,7 +162,7 @@ export function createScene(options: SceneOptions): SceneApi {
     const left = Math.min(...xs, center - 300) - 60;
     const right = Math.max(...xs, center + 300) + 60;
     const upper = Math.min(...ys, top) - 50;
-    return { x: left, y: upper, width: right - left, height: prophetY + 90 - upper };
+    return { x: left, y: upper, width: right - left, height: Math.max(prophetY + 90, strayBottom) - upper };
   };
   let selected: ForestNode | null = null;
   // « name » : tous les noms à la fois ; « photo » : seulement ceux qui n'ont pas de photo.
@@ -247,6 +299,14 @@ export function createScene(options: SceneOptions): SceneApi {
       labelLayer,
     );
     caption.textContent = "LE PROPHÈTE MUḤAMMAD ﷺ";
+    if (strays.length) {
+      const pending = svg(
+        "text",
+        { x: center, y: strayTop - 34, "text-anchor": "middle", class: "t-caption" },
+        labelLayer,
+      );
+      pending.textContent = "CHAÎNES À COMPLÉTER";
+    }
   }
 
   const marks = new Map<ForestNode, SVGGElement>();
@@ -314,13 +374,16 @@ export function createScene(options: SceneOptions): SceneApi {
       const size = (node.depth === 0 ? 19 : node.person.kind === "member" ? 12.5 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
       const offset = (node.person.qutb ? 26 : 18) * textScale;
-      const x = node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
+      // Chaînes à compléter : le nom sous le rond, centré, pour que les groupes voisins ne se gênent pas.
+      const below = Boolean(node.stray);
+      const x = below ? node.x : node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
+      const y = below ? node.y + discRadius(node.person) + size : node.y + 5;
       const label = svg(
         "text",
         {
           x,
-          y: node.y + 5,
-          "text-anchor": left ? "end" : "start",
+          y,
+          "text-anchor": below ? "middle" : left ? "end" : "start",
           class: node === selected ? "t-label t-label-chosen" : "t-label",
           style: `font-size:${size}px`,
         },
@@ -331,8 +394,8 @@ export function createScene(options: SceneOptions): SceneApi {
       const gap = 4 * textScale;
       const textWidth = label.getComputedTextLength() || node.person.displayName.length * size * 0.5;
       const box = {
-        x: (left ? x - textWidth : x) - gap,
-        y: node.y - size - gap / 2,
+        x: (below ? x - textWidth / 2 : left ? x - textWidth : x) - gap,
+        y: y - 5 - size - gap / 2,
         width: textWidth + gap * 2,
         height: size * 1.3 + gap,
       };
@@ -350,6 +413,7 @@ export function createScene(options: SceneOptions): SceneApi {
       }
       taken.push(box);
       label.dataset.offset = String(x - node.x);
+      label.dataset.rise = String(y - node.y);
       labels.set(node, label);
     }
   }
@@ -363,7 +427,7 @@ export function createScene(options: SceneOptions): SceneApi {
     const linked = (master: ForestNode, node: ForestNode) => !up || up.has(node) || down!.has(master);
     const show = (element: SVGElement, on: boolean) => (element.style.display = on ? "" : "none");
     const opacity = (node: ForestNode) =>
-      generation !== null && !selected ? (node.depth === generation ? 1 : 0.2) : 1;
+      generation !== null && !selected ? (node.depth === generation && !node.stray ? 1 : 0.2) : 1;
 
     branches.forEach((path, node) => {
       const on = linked(node.parent!, node);
@@ -403,7 +467,8 @@ export function createScene(options: SceneOptions): SceneApi {
     halos.clear();
     if (generation !== null && !selected) {
       for (const node of nodes) {
-        if (node.depth === generation) halos.set(node, svg("circle", { r: 16, fill: `url(#${id}a)` }, haloLayer));
+        if (node.depth === generation && !node.stray)
+          halos.set(node, svg("circle", { r: 16, fill: `url(#${id}a)` }, haloLayer));
       }
     }
     markLayer.replaceChildren();
@@ -444,7 +509,7 @@ export function createScene(options: SceneOptions): SceneApi {
     });
     labels.forEach((label, node) => {
       label.setAttribute("x", String(node.x + Number(label.dataset.offset)));
-      label.setAttribute("y", String(node.y + 5));
+      label.setAttribute("y", String(node.y + Number(label.dataset.rise)));
     });
     halos.forEach((halo, node) => {
       halo.setAttribute("cx", String(node.x));
@@ -460,7 +525,8 @@ export function createScene(options: SceneOptions): SceneApi {
 
   // Un pas de la simulation : ressorts, répulsion, hauteur de génération.
   function step(alpha: number) {
-    const moving = nodes.filter((node) => node.depth >= 1);
+    // Les chaînes à compléter restent posées en bas, hors de la simulation.
+    const moving = nodes.filter((node) => node.depth >= 1 && !node.stray);
     for (let first = 0; first < moving.length; first++) {
       const a = moving[first];
       const pushA = motion.get(a)!;
@@ -541,7 +607,7 @@ export function createScene(options: SceneOptions): SceneApi {
   // Saisir une personne la déplace avec toute sa branche ; elle reste où on la pose.
   function grab(personId: string, x: number, y: number) {
     const node = forest?.byId.get(personId);
-    if (!node || node.depth < 1) return null;
+    if (!node || node.depth < 1 || node.stray) return null;
     const branch = [...subtreeOf(node)];
     let last = { x, y };
     pinned.add(node);
@@ -582,6 +648,7 @@ export function createScene(options: SceneOptions): SceneApi {
 
   function select(personId: string | null) {
     selected = personId ? (forest?.byId.get(personId) ?? null) : null;
+    hover.textContent = "";
     drawLabels();
     restyle();
     if (selected) stage.reveal(selected.x, selected.y);
@@ -619,7 +686,7 @@ export function createScene(options: SceneOptions): SceneApi {
     rearrange() {
       pinned.clear();
       home.forEach((point, node) => {
-        if (node.depth < 1) return;
+        if (node.depth < 1 || node.stray) return;
         node.x = point.x + (hash(node.person.id + "r") - 0.5) * 30;
         node.y = point.y;
       });

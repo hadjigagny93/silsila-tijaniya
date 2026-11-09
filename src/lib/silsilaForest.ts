@@ -2,6 +2,8 @@ import { childrenOf } from "@/lib/chain";
 import type { PublicPerson } from "@/lib/data/types";
 
 // Arbre des chaînes reliées au Prophète ﷺ : profondeur 0 pour le Cheikh, puis une par génération.
+// Les chaînes à compléter (sans maître, ou dont le maître n'existe plus) forment des petits groupes à part,
+// leur premier maillon à la profondeur 1.
 export type ForestNode = {
   person: PublicPerson;
   parent: ForestNode | null;
@@ -11,6 +13,8 @@ export type ForestNode = {
   desc: number;
   x: number;
   y: number;
+  // Chaîne qui ne remonte pas (encore) au Prophète ﷺ : dessinée à part, en bas de l'arbre.
+  stray?: boolean;
 };
 
 // Position stable d'un chargement à l'autre.
@@ -43,7 +47,24 @@ export function buildForest(persons: PublicPerson[]) {
     node.children.forEach(walk);
   };
   walk(root);
-  return { root, nodes, byId: new Map(nodes.map((node) => [node.person.id, node])) };
+
+  const known = new Set(persons.map((person) => person.id));
+  const strays = persons
+    .filter(
+      (person) =>
+        person.kind !== "prophet" &&
+        person.kind !== "member" &&
+        (!person.mouqaddamId || !known.has(person.mouqaddamId)),
+    )
+    .map((person) => grow(person, null, 1))
+    .sort((a, b) => b.desc - a.desc || a.person.displayName.localeCompare(b.person.displayName));
+  const mark = (node: ForestNode) => {
+    node.stray = true;
+    nodes.push(node);
+    node.children.forEach(mark);
+  };
+  strays.forEach(mark);
+  return { root, nodes, strays, byId: new Map(nodes.map((node) => [node.person.id, node])) };
 }
 
 export function chainTo(node: ForestNode) {
