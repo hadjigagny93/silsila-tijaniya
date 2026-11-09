@@ -1,6 +1,6 @@
 import { buildForest, type ForestNode, hash, subtreeOf } from "@/lib/silsilaForest";
 import { personImageUrl } from "./Avatar";
-import { prefersCalm, type SceneApi, type SceneOptions, type TreeDisplay } from "./sceneTypes";
+import { COLOR, discRadius, prefersCalm, type SceneApi, type SceneOptions, type TreeDisplay } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 
 const ROW = 84;
@@ -20,7 +20,6 @@ const LEAF_SPACE = 15;
 // Chaînes à compléter, en bas : une rangée par génération dans chaque groupe, une place par bout de branche.
 const STRAY_ROW = 70;
 const STRAY_SPACE = 150;
-const COLOR = { prophet: "var(--gold)", cheikh: "var(--gold)", mouqaddam: "var(--accent)", member: "var(--muted)" };
 let instances = 0;
 
 // Étoile à huit branches : deux carrés, dont l'un tourné de 45°.
@@ -48,12 +47,6 @@ function defs(root: SVGSVGElement, id: string) {
   }
   const clip = svg("clipPath", { id: id + "c", clipPathUnits: "objectBoundingBox" }, definitions);
   svg("circle", { cx: 0.5, cy: 0.5, r: 0.5 }, clip);
-}
-
-// Taille du disque (et de la photo) : les pôles spirituels (Qutb) sont agrandis.
-function discRadius(person: ForestNode["person"]) {
-  if (person.qutb) return person.kind === "member" ? 10 : 20;
-  return person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
 }
 
 // L'arbre de la maquette : le Prophète ﷺ en médaillon à la racine, le Cheikh au sommet du

@@ -2598,6 +2598,7 @@ h3 {
   height: 100%;
   cursor: grab;
   touch-action: none;
+  user-select: none;
 }
 
 .svg-stage:active {
@@ -5860,4 +5861,86 @@ a.suluk-next-station {
   width: 1.4rem;
   border-top: 2px dashed #5f6b7a;
   content: "";
+}
+
+/* Carte du monde : océan, terres et frontières suivent le thème ; traits fins quel que soit le zoom. */
+.map-stage .m-ocean {
+  fill: color-mix(in srgb, #3f86c4 13%, var(--stage));
+}
+.map-stage .m-grid {
+  fill: none;
+  stroke: color-mix(in srgb, var(--foreground) 7%, transparent);
+  stroke-width: 0.6px;
+  vector-effect: non-scaling-stroke;
+}
+.map-stage .m-land {
+  fill: color-mix(in srgb, var(--foreground) 5%, var(--stage));
+}
+.map-stage .m-border {
+  fill: none;
+  stroke: color-mix(in srgb, var(--foreground) 22%, transparent);
+  stroke-width: 0.7px;
+  vector-effect: non-scaling-stroke;
+}
+.map-stage .m-arc,
+.map-stage .m-arc-silver {
+  fill: none;
+  stroke-width: 1.6px;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.map-stage .m-arc {
+  stroke: var(--gold);
+  opacity: 0.8;
+}
+.map-stage .m-city {
+  fill: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  paint-order: stroke;
+  stroke: var(--stage);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+.map-stage .m-pin {
+  transition: opacity 0.2s;
+}
+.map-stage .m-name {
+  display: none;
+  fill: var(--foreground);
+  font-family: var(--font-display);
+  font-size: 14px;
+  paint-order: stroke;
+  stroke: var(--stage);
+  stroke-width: 3.5px;
+  pointer-events: none;
+}
+.map-stage .m-pin:hover .m-name,
+.map-stage .m-pin.is-named:not(.is-crowded) .m-name,
+.map-stage .m-pin.is-chosen .m-name,
+.map-stage[data-names] .m-name {
+  display: inline;
+}
+.map-stage .m-pin:hover {
+  opacity: 1 !important;
+}
+.map-stage .m-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2px;
+  opacity: 0;
+}
+.map-stage .m-pin.is-chosen .m-ring {
+  opacity: 1;
+}
+.map-note {
+  position: absolute;
+  bottom: 128px;
+  left: 24px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
 }

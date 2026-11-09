@@ -67,6 +67,8 @@ export function SilsilaTree({
   const silver = useStoredToggle("silsila:chaines-argentees", true);
   // Tous les noms à la fois ; par défaut, seulement ceux sans photo (les autres au survol).
   const names = useStoredToggle("silsila:tous-les-noms", false);
+  // Deux vues des mêmes chaînes : l'arbre, ou la carte du monde.
+  const map = useStoredToggle("silsila:carte", false);
   const namesNow = useRef(false);
   const hasSilver = persons.some((person) => person.alsoFrom.length > 0);
   // Lu à la création de la scène, sans la recréer quand l'affichage change.
@@ -93,7 +95,7 @@ export function SilsilaTree({
 
   useEffect(() => {
     let cancelled = false;
-    import("./silsilaTree2d")
+    (map.shown ? import("./silsilaMap2d") : import("./silsilaTree2d"))
       .then(({ createScene }) => {
         if (cancelled || !stage.current || !labels.current) return;
         scene.current = createScene({
@@ -120,7 +122,7 @@ export function SilsilaTree({
     };
     // L'arbre suit le thème par ses couleurs : il n'est pas recréé quand le thème change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persons, remember]);
+  }, [persons, remember, map.shown]);
 
   const generations = useMemo(() => generationsOf(persons), [persons]);
   const ranks = useMemo(() => [...new Set(generations.values())].sort((a, b) => a - b), [generations]);
@@ -389,13 +391,15 @@ export function SilsilaTree({
         <button onClick={() => scene.current?.overview()} aria-label={t.silsila.resetView}>
           <Icon name="recenter" />
         </button>
-        <button
-          onClick={() => scene.current?.rearrange?.()}
-          aria-label={t.silsila.rearrange}
-          title={t.silsila.rearrange}
-        >
-          <Icon name="wind" />
-        </button>
+        {!map.shown && (
+          <button
+            onClick={() => scene.current?.rearrange?.()}
+            aria-label={t.silsila.rearrange}
+            title={t.silsila.rearrange}
+          >
+            <Icon name="wind" />
+          </button>
+        )}
       </div>
 
       <div className="silsila-bar">
@@ -408,6 +412,14 @@ export function SilsilaTree({
           <Icon name={exploring ? "close" : "compass"} size={17} />
           {exploring ? t.silsila.exploreLeave : t.silsila.explore}
         </button>
+        <div className="bar-group" role="group" aria-label={t.silsila.viewLabel}>
+          <button aria-pressed={!map.shown} onClick={() => map.shown && map.toggle()}>
+            {t.silsila.viewTree}
+          </button>
+          <button aria-pressed={map.shown} onClick={() => !map.shown && map.toggle()}>
+            {t.silsila.viewMap}
+          </button>
+        </div>
         {ranks.length > 0 && (
           <div className="bar-group" role="group" aria-label={t.silsila.generationLabel}>
             <span className="bar-label">{t.silsila.generationBar}</span>

@@ -32,7 +32,10 @@ export function createSvgStage(
   content: Box | (() => Box),
   onTap: (id: string | null) => void,
   grab?: (id: string, x: number, y: number) => Grab | null,
+  // La carte du monde zoome bien plus loin que l'arbre, et redessine ses repères à chaque changement d'échelle.
+  options: { maxScale?: number; onView?: (scale: number) => void } = {},
 ) {
+  const maxScale = options.maxScale ?? MAX_SCALE;
   const calm = prefersCalm();
   const insets = { ...INSETS };
   const box = () => (typeof content === "function" ? content() : content);
@@ -50,6 +53,7 @@ export function createSvgStage(
     world.classList.toggle("is-gliding", glide && !calm);
     world.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
     root.dataset.far = String(view.scale < 0.55);
+    options.onView?.(view.scale);
   }
 
   function frame(box: Box, glide: boolean, limit = 1.6) {
@@ -68,7 +72,7 @@ export function createSvgStage(
   }
 
   function zoomAt(scale: number, x: number, y: number, glide: boolean) {
-    const next = Math.min(Math.max(scale, fitted * 0.6), MAX_SCALE);
+    const next = Math.min(Math.max(scale, fitted * 0.6), maxScale);
     view.x = x - ((x - view.x) / view.scale) * next;
     view.y = y - ((y - view.y) / view.scale) * next;
     view.scale = next;
@@ -126,7 +130,7 @@ export function createSvgStage(
   const pinch = attachPinch(
     root,
     view,
-    (scale) => Math.min(Math.max(scale, fitted * 0.6), MAX_SCALE),
+    (scale) => Math.min(Math.max(scale, fitted * 0.6), maxScale),
     () => {
       moved = true;
       press = null;

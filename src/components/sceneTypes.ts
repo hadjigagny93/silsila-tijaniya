@@ -31,3 +31,16 @@ export function prefersCalm() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+// Couleur du contour de chaque personne, dans l'arbre comme sur la carte.
+export const COLOR = {
+  prophet: "var(--gold)",
+  cheikh: "var(--gold)",
+  mouqaddam: "var(--accent)",
+  member: "var(--muted)",
+};
+
+// Taille du disque (et de la photo) : les pôles spirituels (Qutb) sont agrandis.
+export function discRadius(person: PublicPerson) {
+  if (person.qutb) return person.kind === "member" ? 10 : 20;
+  return person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
+}
