@@ -18,7 +18,7 @@ const ORDER = { prophet: 0, cheikh: 1, mouqaddam: 2, member: 3 };
 let instances = 0;
 
 type Pin = { person: PublicPerson; place: Place; group: SVGGElement; x: number; y: number };
-type City = { name: string; x: number; y: number; pins: Pin[] };
+type City = { x: number; y: number; pins: Pin[] };
 
 // La carte du monde : chaque personne dont on connaît la ville (ou au moins le pays) y est posée,
 // reliée à son maître par une chaîne dorée, et aux autres par des chaînes argentées.
@@ -44,7 +44,7 @@ export function createScene(options: SceneOptions): SceneApi {
     const place = placeOf(person);
     if (!place) continue;
     const [x, y] = projection([place.lon, place.lat])!;
-    const city = cities.get(place.key) ?? { name: place.name, x, y, pins: [] };
+    const city = cities.get(place.key) ?? { x, y, pins: [] };
     cities.set(place.key, city);
     const pin = { person, place, group: null as unknown as SVGGElement, x, y };
     city.pins.push(pin);
@@ -107,15 +107,13 @@ export function createScene(options: SceneOptions): SceneApi {
   svg("path", { d: path(mesh(topology, topology.objects.countries, (a, b) => a !== b))!, class: "m-border" }, base);
   const goldLayer = layer("m-arcs");
   const silverLayer = layer("t-silvers");
-  const cityLayer = layer("m-cities");
   const pinLayer = layer("m-pins");
 
   // Chaque personne : sa photo (ou un rond), son halo de Qutb, et son nom, montré au survol.
   for (const pin of pins.values()) {
     const { person } = pin;
     const radius = Math.max(discRadius(person), person.kind === "member" ? 6 : 10);
-    const named = person.kind !== "member" && !person.hasImage;
-    const group = svg("g", { "data-id": person.id, class: `t-hit m-pin${named ? " is-named" : ""}` }, pinLayer);
+    const group = svg("g", { "data-id": person.id, class: "t-hit m-pin" }, pinLayer);
     svg("circle", { r: Math.max(radius, 12), class: "t-target" }, group);
     if (person.qutb) svg("circle", { r: radius * 2.2, fill: `url(#${id}q)`, class: "t-qutb" }, group);
     svg("circle", { r: radius + 5, class: "m-ring" }, group);
@@ -181,12 +179,10 @@ export function createScene(options: SceneOptions): SceneApi {
       );
       if (near) {
         near.pins.push(...city.pins);
-        near.name += ` · ${city.name}`;
       } else {
         groups.push({ ...city, pins: [...city.pins] });
       }
     }
-    cityLayer.replaceChildren();
     for (const group of groups) {
       group.pins.forEach((pin, index) => {
         const angle = index * 2.39996;
@@ -194,20 +190,7 @@ export function createScene(options: SceneOptions): SceneApi {
         pin.x = group.x + Math.cos(angle) * distance * k;
         pin.y = group.y + Math.sin(angle) * distance * k;
         pin.group.setAttribute("transform", `translate(${pin.x} ${pin.y}) scale(${k})`);
-        // Un groupe chargé ne montre ses noms qu'au survol : il suffit de zoomer pour qu'il se dénoue.
-        pin.group.classList.toggle("is-crowded", group.pins.length > 6);
       });
-      const names = group.name.split(" · ");
-      const label = svg(
-        "text",
-        {
-          transform: `translate(${group.x} ${group.y + (spread(group.pins.length) + 16) * k}) scale(${k})`,
-          "text-anchor": "middle",
-          class: "m-city",
-        },
-        cityLayer,
-      );
-      label.textContent = names.length > 3 ? `${names.slice(0, 3).join(" · ")} …` : group.name;
     }
     for (const { from, to, path } of arcs) {
       const dx = to.x - from.x;
@@ -249,8 +232,9 @@ export function createScene(options: SceneOptions): SceneApi {
       pin.group.classList.toggle("is-chosen", pin.person.id === selected);
     }
     for (const { from, to, path } of arcs) {
-      const on = selected ? linked.has(from.person.id) && linked.has(to.person.id) : true;
-      path.style.opacity = on ? "" : "0.06";
+      // Les chaînes n'apparaissent que pour la personne choisie : celles qui mènent à elle et qui partent d'elle.
+      const on = Boolean(selected) && linked.has(from.person.id) && linked.has(to.person.id);
+      path.style.display = on ? "" : "none";
     }
   }
 

@@ -5894,17 +5894,6 @@ a.suluk-next-station {
   stroke: var(--gold);
   opacity: 0.8;
 }
-.map-stage .m-city {
-  fill: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  paint-order: stroke;
-  stroke: var(--stage);
-  stroke-width: 3px;
-  pointer-events: none;
-}
 .map-stage .m-pin {
   transition: opacity 0.2s;
 }
@@ -5919,7 +5908,6 @@ a.suluk-next-station {
   pointer-events: none;
 }
 .map-stage .m-pin:hover .m-name,
-.map-stage .m-pin.is-named:not(.is-crowded) .m-name,
 .map-stage .m-pin.is-chosen .m-name,
 .map-stage[data-names] .m-name {
   display: inline;
