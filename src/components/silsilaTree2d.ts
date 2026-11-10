@@ -142,6 +142,8 @@ export function createScene(options: SceneOptions): SceneApi {
   }
 
   // Point de départ de chaque personne : l'éventail, vers lequel « Réorganiser » la ramène.
+  const origin = new Map(nodes.map((node) => [node, { x: node.x, y: node.y }]));
+  // Où chacun revient au repos : l'éventail, puis là où on a posé sa branche en la tirant.
   const home = new Map(nodes.map((node) => [node, { x: node.x, y: node.y }]));
   const motion = new Map(nodes.map((node) => [node, { vx: 0, vy: 0 }]));
   const pinned = new Set<ForestNode>();
@@ -613,6 +615,10 @@ export function createScene(options: SceneOptions): SceneApi {
           if (member !== node && pinned.has(member)) continue;
           member.x += dx;
           member.y = Math.min(member.y + dy, base - 24);
+          // Ses disciples restent autour de lui : leur place de repos suit la branche.
+          const rest = home.get(member)!;
+          rest.x += dx;
+          rest.y = Math.min(rest.y + dy, base - 24);
         }
         heat(0.35);
       },
@@ -678,7 +684,8 @@ export function createScene(options: SceneOptions): SceneApi {
     setExploring: stage.setExploring,
     rearrange() {
       pinned.clear();
-      home.forEach((point, node) => {
+      origin.forEach((point, node) => {
+        home.set(node, { ...point });
         if (node.depth < 1 || node.stray) return;
         node.x = point.x + (hash(node.person.id + "r") - 0.5) * 30;
         node.y = point.y;
