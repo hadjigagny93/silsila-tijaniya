@@ -129,18 +129,6 @@ export function SilsilaTree({
   const generationSize = [...generations.values()].filter((rank) => rank === generation).length;
   const tree = useMemo(() => childrenOf(persons), [persons]);
   const known = useMemo(() => new Set(persons.map((person) => person.id)), [persons]);
-  // En tête : combien de mouqaddams (cheikhs compris), et combien de chaînes les relient : chaque
-  // transmission d'un maître connu à un mouqaddam, dorée ou argentée, compte pour une arête.
-  const stats = useMemo(() => {
-    const masters = persons.filter((person) => person.kind === "cheikh" || person.kind === "mouqaddam");
-    let golden = 0;
-    let silvers = 0;
-    for (const person of masters) {
-      if (person.mouqaddamId && known.has(person.mouqaddamId)) golden++;
-      silvers += person.alsoFrom.filter((id) => known.has(id)).length;
-    }
-    return { mouqaddams: masters.length, chains: golden + silvers, silvers };
-  }, [persons, known]);
   const pending = persons.filter(
     (person) =>
       person.kind !== "prophet" && person.kind !== "member" && (!person.mouqaddamId || !known.has(person.mouqaddamId)),
@@ -227,19 +215,6 @@ export function SilsilaTree({
         <p className="eyebrow">{t.silsila.eyebrow}</p>
         <h1 className="silsila-title">{t.silsila.heading}</h1>
         <p className="silsila-intro">{t.silsila.lead}</p>
-        <dl className="silsila-stats">
-          <div>
-            <dt>{t.silsila.statMouqaddams(stats.mouqaddams)}</dt>
-            <dd>{stats.mouqaddams.toLocaleString("fr-FR")}</dd>
-          </div>
-          <div>
-            <dt>{t.silsila.statChains(stats.chains)}</dt>
-            <dd>
-              {stats.chains.toLocaleString("fr-FR")}
-              {stats.silvers > 0 && <small>{t.silsila.statSilvers(stats.silvers)}</small>}
-            </dd>
-          </div>
-        </dl>
         <div className="mt-6 flex flex-wrap items-start gap-3">
           <div className="silsila-search">
             <label className="sr-only" htmlFor="tree-search">
