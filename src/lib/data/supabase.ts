@@ -276,6 +276,16 @@ export const supabaseStore: Store = {
     return data ? Buffer.from(data.data as string, "base64") : null;
   },
 
+  async listPortraits() {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("public_portraits").select("person_id");
+    if (!error) return (data ?? []).map((row) => row.person_id as string);
+    // Vue pas encore créée (migration 0015) : toutes les images publiques, même répétées.
+    const fallback = await supabase.from("public_persons").select("id").eq("has_image", true);
+    check(fallback.error);
+    return (fallback.data ?? []).map((row) => row.id as string);
+  },
+
   async linkMouqaddam(personId, mouqaddamId) {
     const supabase = await createClient();
     check((await supabase.from("persons").update({ mouqaddam_id: mouqaddamId }).eq("id", personId)).error);

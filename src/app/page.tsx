@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { FacesBand } from "@/components/FacesBand";
 import { Icon, Star } from "@/components/Icon";
 import { chainOf, generationsOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";
 import type { PublicPerson } from "@/lib/data/types";
 import { placeOf } from "@/lib/places";
 import { t } from "@/messages/fr";
+
+// Mélange de Fisher-Yates : la page est rendue côté serveur à chaque visite.
+function shuffled<T>(list: T[]) {
+  const copy = [...list];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 // Une vraie chaîne de la base, différente chaque jour : la plus longue possible, avec un visage au bout si on peut.
 function chainOfTheDay(persons: PublicPerson[]) {
@@ -24,7 +35,14 @@ function chainOfTheDay(persons: PublicPerson[]) {
 
 export default async function Home() {
   const store = getStore();
-  const [persons, biographies] = await Promise.all([store.listPersons(), store.listBiographies()]);
+  const [persons, biographies, portraits] = await Promise.all([
+    store.listPersons(),
+    store.listBiographies(),
+    store.listPortraits(),
+  ]);
+  // Les visages, dans un ordre nouveau à chaque visite.
+  const byId = new Map(persons.map((person) => [person.id, person]));
+  const faces = shuffled(portraits.flatMap((id) => byId.get(id) ?? []));
   const generations = generationsOf(persons);
   const chain = chainOfTheDay(persons);
   const places = new Set(persons.map((person) => placeOf(person)?.name).filter(Boolean));
@@ -94,6 +112,14 @@ export default async function Home() {
           </div>
         ))}
       </dl>
+
+      {faces.length >= 8 && (
+        <section className="home-faces">
+          <p className="label text-center">{t.home.facesLabel}</p>
+          <h2 className="mt-2 text-center text-[32px]">{t.home.facesTitle}</h2>
+          <FacesBand persons={faces} label={t.home.facesLabel} />
+        </section>
+      )}
 
       {cheikhs.length > 0 && (
         <section className="home-cheikhs">

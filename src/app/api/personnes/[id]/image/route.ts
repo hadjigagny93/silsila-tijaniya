@@ -8,7 +8,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   return new Response(new Uint8Array(image), {
     headers: {
       "Content-Type": "image/jpeg",
-      "Cache-Control": "no-cache",
+      // En ligne, les photos ne changent qu'à la publication depuis le Mac : le CDN de Vercel les garde une heure.
+      "Cache-Control": process.env.SQLITE_PATH
+        ? "no-cache"
+        : "public, max-age=600, s-maxage=3600, stale-while-revalidate=86400",
       "X-Content-Type-Options": "nosniff",
     },
   });

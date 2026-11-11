@@ -214,6 +214,8 @@ export type Store = {
   // Image en JPEG, encodée en base64.
   setPersonImage(personId: string, base64: string | null): Promise<void>;
   getPersonImage(personId: string): Promise<Uint8Array | null>;
+  // Personnes publiques avec une image propre : une image partagée par plusieurs (calligraphie par défaut) est écartée.
+  listPortraits(): Promise<string[]>;
   linkMouqaddam(personId: string, mouqaddamId: string): Promise<void>;
   // Ville et pays de naissance (ou de décès), sans toucher au reste de la fiche.
   setPlace(personId: string, kind: "birth" | "death", city: string | null, country: string | null): Promise<void>;
