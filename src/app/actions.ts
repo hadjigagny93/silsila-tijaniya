@@ -287,11 +287,10 @@ export async function updateMouqaddam(form: FormData) {
 export async function setPersonPlace(form: FormData) {
   await requireAdmin();
   const personId = text(form, "personId", 36);
-  const kind = form.get("kind") === "death" ? "death" : "birth";
-  const city = optional(form, `${kind}City`, 120);
-  const country = optional(form, `${kind}Country`, 120);
   if (!personId) throw new Error("Personne inconnue.");
-  await getStore().setPlace(personId, kind, city, country);
+  for (const kind of ["birth", "death"] as const) {
+    await getStore().setPlace(personId, kind, optional(form, `${kind}City`, 120), optional(form, `${kind}Country`, 120));
+  }
 }
 
 export async function deleteMouqaddam(form: FormData) {

@@ -36,16 +36,16 @@ export function PlaceQuickForm({
         event.preventDefault();
         const form = new FormData(event.currentTarget);
         form.set("personId", person.id);
-        form.set("kind", kind);
         const value = (name: string) => String(form.get(name) ?? "").trim() || null;
         startSaving(async () => {
           try {
             await setPersonPlace(form);
-            onSaved(
-              kind === "birth"
-                ? { ...person, birthCity: value("birthCity"), birthCountry: value("birthCountry") }
-                : { ...person, deathCity: value("deathCity"), deathCountry: value("deathCountry") },
-            );
+            onSaved({
+              birthCity: value("birthCity"),
+              birthCountry: value("birthCountry"),
+              deathCity: value("deathCity"),
+              deathCountry: value("deathCountry"),
+            });
           } catch {
             setFailed(true);
           }
@@ -60,13 +60,17 @@ export function PlaceQuickForm({
           </label>
         ))}
       </div>
-      <PlaceFields
-        key={kind}
-        prefix={kind}
-        city={(kind === "birth" ? person.birthCity : person.deathCity) ?? ""}
-        country={(kind === "birth" ? person.birthCountry : person.deathCountry) ?? ""}
-        choices={choices}
-      />
+      {/* Les deux restent remplis en passant de l'un à l'autre, et s'enregistrent ensemble. */}
+      {(["birth", "death"] as const).map((option) => (
+        <div key={option} className="place-quick-fields" hidden={kind !== option}>
+          <PlaceFields
+            prefix={option}
+            city={(option === "birth" ? person.birthCity : person.deathCity) ?? ""}
+            country={(option === "birth" ? person.birthCountry : person.deathCountry) ?? ""}
+            choices={choices}
+          />
+        </div>
+      ))}
       {failed && <p className="text-sm text-danger">{t.errors.invalid}</p>}
       <div className="flex gap-2">
         <button type="submit" className="button" disabled={saving}>

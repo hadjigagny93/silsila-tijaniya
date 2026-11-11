@@ -2352,6 +2352,15 @@ h3 {
   border: 1px solid var(--line);
 }
 
+.place-quick-fields {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.place-quick-fields[hidden] {
+  display: none;
+}
+
 .place-quick .place-toggle {
   top: 1.375rem;
 }
