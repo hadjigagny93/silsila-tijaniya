@@ -2,12 +2,14 @@ import Link from "next/link";
 import { addMouqaddam, createPersonBiography, deleteBiography, deleteMouqaddam, updateMouqaddam } from "@/app/actions";
 import { coverUrl, shownCover } from "@/lib/coverUrl";
 import type { Biography, PublicPerson } from "@/lib/data/types";
+import type { PlaceChoices } from "@/lib/places";
 import { t } from "@/messages/fr";
 import { DangerConfirm } from "./DangerConfirm";
 import { EditHeader } from "./EditHeader";
 import { Icon } from "./Icon";
 import { ImageField } from "./ImageField";
 import { NicknamesField } from "./NicknamesField";
+import { PlaceFields } from "./PlaceFields";
 import { Segmented } from "./Segmented";
 import { MastersField } from "./AlsoFromField";
 import type { Placement } from "./TransmissionField";
@@ -22,7 +24,15 @@ function Block({ number, title }: { number: string; title: string }) {
   );
 }
 
-function PlaceRow({ kind, person }: { kind: "birth" | "death"; person?: PublicPerson }) {
+function PlaceRow({
+  kind,
+  person,
+  choices,
+}: {
+  kind: "birth" | "death";
+  person?: PublicPerson;
+  choices: PlaceChoices;
+}) {
   const year = kind === "birth" ? person?.birthDate : person?.deathDate;
   const city = kind === "birth" ? person?.birthCity : person?.deathCity;
   const country = kind === "birth" ? person?.birthCountry : person?.deathCountry;
@@ -35,14 +45,7 @@ function PlaceRow({ kind, person }: { kind: "birth" | "death"; person?: PublicPe
         <span className="field-label">{label}</span>
         <YearField name={`${prefix}Date`} label={`${label} : ${t.admin.yearPrecision}`} defaultValue={year ?? null} />
       </div>
-      <label className="block">
-        <span className="field-label">{t.admin.city}</span>
-        <input name={`${prefix}City`} maxLength={120} defaultValue={city ?? ""} className="field" />
-      </label>
-      <label className="block">
-        <span className="field-label">{t.admin.country}</span>
-        <input name={`${prefix}Country`} maxLength={120} defaultValue={country ?? ""} className="field" />
-      </label>
+      <PlaceFields prefix={prefix} city={city ?? ""} country={country ?? ""} choices={choices} />
     </div>
   );
 }
@@ -51,6 +54,7 @@ function PlaceRow({ kind, person }: { kind: "birth" | "death"; person?: PublicPe
 export function MouqaddamForm({
   person,
   parents,
+  places,
   biographies,
   details,
   placements,
@@ -61,6 +65,8 @@ export function MouqaddamForm({
 }: {
   person?: PublicPerson;
   parents: PublicPerson[];
+  // Les villes et pays proposés dans les listes déroulantes.
+  places: PlaceChoices;
   biographies: Biography[];
   details: Record<string, string>;
   placements: Record<string, Placement>;
@@ -140,8 +146,8 @@ export function MouqaddamForm({
 
           <Block number="02" title={t.admin.blockLife} />
           <div className="space-y-4">
-            <PlaceRow kind="birth" person={person} />
-            <PlaceRow kind="death" person={person} />
+            <PlaceRow kind="birth" person={person} choices={places} />
+            <PlaceRow kind="death" person={person} choices={places} />
             <label className="block">
               <span className="field-label">{t.admin.zawiya}</span>
               <input name="zawiya" maxLength={200} defaultValue={person?.zawiya ?? ""} className="field" />

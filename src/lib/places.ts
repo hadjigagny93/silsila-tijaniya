@@ -165,6 +165,107 @@ function cityPoint(city: string) {
   return null;
 }
 
+// Les noms tels qu'on les écrit, pour la liste de choix du profil, avec le pays de chaque ville.
+const NAMED: Record<string, string[]> = {
+  Sénégal: [
+    "Dakar",
+    "Rufisque",
+    "Tivaouane",
+    "Ndiassane",
+    "Pire",
+    "Thiès",
+    "Kaolack",
+    "Léona",
+    "Médina Baye",
+    "Saint-Louis",
+    "Podor",
+    "Dagana",
+    "Mpal",
+    "Louga",
+    "Kébémer",
+    "Linguère",
+    "Djolof",
+    "Touba",
+    "Diourbel",
+    "Mbour",
+    "Fatick",
+    "Kaffrine",
+    "Nioro du Rip",
+    "Tambacounda",
+    "Ziguinchor",
+    "Matam",
+  ],
+  Mauritanie: ["Nouakchott", "Chinguetti", "Atar", "Boutilimit", "Tidjikja", "Kiffa", "Kaédi", "Rosso", "Nouadhibou"],
+  Mali: ["Bamako", "Bandiagara", "Ségou", "Nioro du Sahel", "Tombouctou", "Djenné", "Kayes"],
+  Maroc: ["Fès", "Marrakech", "Rabat", "Salé", "Casablanca", "Meknès", "Tanger", "Tétouan", "Oujda", "Demnate"],
+  Algérie: ["Aïn Madhi", "Laghouat", "Témacine", "Touggourt", "Tlemcen", "Alger", "Oran"],
+  Tunisie: ["Tunis"],
+  Libye: ["Tripoli"],
+  Égypte: ["Le Caire"],
+  "Arabie saoudite": ["La Mecque", "Médine"],
+  Syrie: ["Damas"],
+  Turquie: ["Istanbul"],
+  Nigeria: ["Kano", "Abuja", "Lagos", "Zaria", "Sokoto", "Maiduguri"],
+  Niger: ["Niamey"],
+  Ghana: ["Accra", "Kumasi"],
+  Gambie: ["Banjul"],
+  Guinée: ["Conakry"],
+  "Guinée-Bissau": ["Bissau"],
+  "Côte d'Ivoire": ["Abidjan"],
+  "Burkina Faso": ["Ouagadougou"],
+  Tchad: ["N'Djamena"],
+  Soudan: ["Khartoum"],
+  "Royaume-Uni": ["Londres"],
+  France: ["Paris", "Marseille", "Lyon"],
+  Belgique: ["Bruxelles"],
+  Espagne: ["Madrid"],
+  Italie: ["Rome", "Milan"],
+  "États-Unis": ["New York", "Washington", "Atlanta"],
+  Canada: ["Montréal"],
+};
+const COUNTRY_NAMES = [...Object.keys(NAMED), "Cameroun", "Angleterre"];
+
+export type PlaceChoices = {
+  // Chaque ville avec son pays quand on le connaît : choisir la ville remplit le pays s'il est vide.
+  cities: { name: string; country: string | null }[];
+  countries: string[];
+};
+
+// La liste de choix des champs Ville et Pays : les lieux connus de la carte, et ceux déjà écrits
+// dans les profils, sans doublon (accents et majuscules ignorés).
+export function placeChoices(persons: PublicPerson[]): PlaceChoices {
+  const cities = new Map<string, { name: string; country: string | null }>();
+  const countries = new Map<string, string>();
+  const addCity = (name: string | null, country: string | null) => {
+    const clean = name?.trim();
+    if (!clean) return;
+    const key = normalize(clean);
+    const known = cities.get(key);
+    if (!known) cities.set(key, { name: clean, country: country?.trim() || null });
+    else if (!known.country && country?.trim()) known.country = country.trim();
+  };
+  const addCountry = (name: string | null) => {
+    const clean = name?.trim();
+    if (clean && !countries.has(normalize(clean))) countries.set(normalize(clean), clean);
+  };
+  for (const [country, names] of Object.entries(NAMED)) for (const name of names) addCity(name, country);
+  COUNTRY_NAMES.forEach(addCountry);
+  for (const person of persons) {
+    addCity(person.birthCity, person.birthCountry);
+    addCity(person.deathCity, person.deathCountry);
+    addCity(person.city, null);
+    addCountry(person.birthCountry);
+    addCountry(person.deathCountry);
+  }
+  const byName = (a: string, b: string) => a.localeCompare(b, "fr");
+  return {
+    cities: [...cities.values()].sort((a, b) => byName(a.name, b.name)),
+    countries: [...countries.values()].sort(byName),
+  };
+}
+
+export const matchesPlace = (text: string, query: string) => normalize(text).includes(normalize(query));
+
 export type Place = {
   key: string;
   // Nom affiché sur la carte : la ville reconnue, ou le pays.

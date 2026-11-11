@@ -7,6 +7,7 @@ import { listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import { personDetails } from "@/lib/personDetails";
 import { placementsFor } from "@/lib/placements";
+import { placeChoices } from "@/lib/places";
 import { t } from "@/messages/fr";
 
 type Props = {
@@ -41,6 +42,7 @@ export default async function EditMouqaddamPage({ params, searchParams }: Props)
     <MouqaddamForm
       person={person}
       parents={parents}
+      places={placeChoices(persons)}
       biographies={biographies}
       details={personDetails(persons)}
       placements={placementsFor(persons, parents)}

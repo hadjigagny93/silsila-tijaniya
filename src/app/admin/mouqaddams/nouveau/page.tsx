@@ -7,6 +7,7 @@ import { listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import { personDetails } from "@/lib/personDetails";
 import { placementsFor } from "@/lib/placements";
+import { placeChoices } from "@/lib/places";
 import { t } from "@/messages/fr";
 
 export const metadata: Metadata = { title: t.admin.addNew };
@@ -27,6 +28,7 @@ export default async function NewMouqaddamPage({ searchParams }: { searchParams:
   return (
     <MouqaddamForm
       parents={parents}
+      places={placeChoices(persons)}
       biographies={biographies}
       details={personDetails(persons)}
       placements={placementsFor(persons, parents)}

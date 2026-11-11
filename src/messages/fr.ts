@@ -272,6 +272,7 @@ export const t = {
     death: "Décès",
     city: "Ville",
     country: "Pays",
+    placeList: (label: string) => `Liste : ${label.toLowerCase()}`,
     photoOptional: "(facultative)",
     blockIdentity: "Identité",
     kindCheikh: "Cheikh",
