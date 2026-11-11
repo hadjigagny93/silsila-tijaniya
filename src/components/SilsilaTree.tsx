@@ -292,10 +292,12 @@ export function SilsilaTree({
               </div>
             )}
           </div>
-          <Link href="/mon-compte" className="button silsila-cta">
-            <Icon name="plus" size={16} />
-            {t.silsila.add}
-          </Link>
+          {canLink && (
+            <Link href="/mon-compte" className="button silsila-cta">
+              <Icon name="plus" size={16} />
+              {t.silsila.add}
+            </Link>
+          )}
           {canLink && (
             <Link href="/admin/silsila" className="button-quiet silsila-cta">
               <Icon name="link" size={16} />

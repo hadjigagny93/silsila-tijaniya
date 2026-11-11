@@ -86,9 +86,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     </form>
                   )}
                 </>
-              ) : (
-                <NavLink href="/connexion" icon="user">{t.nav.signIn}</NavLink>
-              )}
+              ) : null /* Pas de création de compte sur le site pour le moment. */}
             </div>
           </nav>
         </aside>

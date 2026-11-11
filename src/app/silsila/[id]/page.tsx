@@ -92,7 +92,8 @@ export default async function PersonPage({ params, searchParams }: Props) {
         ))}
       </ol>
 
-      {person.kind !== "prophet" && !session?.local && (
+      {/* Signalement : seulement pour un compte du site (les comptes sont fermés pour le moment). */}
+      {person.kind !== "prophet" && session && !session.local && (
         <section className="mt-8 border-t border-line pt-6">
           {ok && <p role="status" className="mb-3 text-accent">{t.silsila.reportSent}</p>}
           {erreur && <p role="alert" className="mb-3 text-gold">{t.errors.invalid}</p>}

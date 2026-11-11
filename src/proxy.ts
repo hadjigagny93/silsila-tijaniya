@@ -1,9 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const LOCAL_ONLY =
+  /^\/(suluk|echiquier|connexion|mon-compte|admin|auth|appairage)(\/|$)|^\/biographies\/(nouvelle|[^/]+\/modifier)\/?$/;
+
 export async function proxy(request: NextRequest) {
-  // Le Suluk et l'Échiquier sont personnels : seulement dans les apps Mac et iPhone, pas en ligne.
-  if (!process.env.SQLITE_PATH && /^\/(suluk|echiquier)(\/|$)/.test(request.nextUrl.pathname)) {
+  // En ligne, le site se lit seulement : le Suluk et l'Échiquier restent dans les apps Mac et iPhone,
+  // et il n'y a pas encore de comptes (connexion, mon compte, admin, modification des biographies).
+  if (!process.env.SQLITE_PATH && LOCAL_ONLY.test(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
