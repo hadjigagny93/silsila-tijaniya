@@ -60,7 +60,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             {/* « Ajouter une silsila » se fait depuis la page Silsila : elle reste allumée sur /admin/silsila. */}
             <NavLink href="/silsila" icon="tree" also="/admin/silsila">{t.nav.silsila}</NavLink>
             <NavLink href="/biographies" icon="book">{t.nav.biographies}</NavLink>
-            <NavLink href="/suluk" icon="path">{t.nav.suluk}</NavLink>
+            {/* Le Suluk est personnel : il reste sur le Mac et l'iPhone, pas sur le site. */}
+            {session?.local && <NavLink href="/suluk" icon="path">{t.nav.suluk}</NavLink>}
             {session?.isAdmin && (
               <>
                 <NavLink href="/admin/mouqaddams" icon="users">{t.nav.adminMouqaddams}</NavLink>
