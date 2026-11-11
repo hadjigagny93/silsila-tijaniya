@@ -353,116 +353,119 @@ export function SilsilaTree({
           </div>
         </aside>
       ) : (
-        <div className="pending-floats">
-          {pending.length > 0 && (
-            <aside key="a-completer" className="person-card-float pending-float" aria-label={t.silsila.pending}>
-              <button
-                className="flex w-full items-center gap-3 text-start"
-                onClick={() => setPendingOpen(!pendingOpen)}
-                aria-expanded={pendingOpen}
-              >
-                <span className="text-gold">
-                  <Icon name="branch" />
-                </span>
-                <span className="flex-1 font-display text-[22px]">{t.silsila.pending}</span>
-                <span className="count-badge">{pending.length}</span>
-              </button>
-              {pendingOpen && (
-                <>
-                  <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.pendingText}</p>
-                  <ul className="pending-mini">
-                    {pending.slice(0, 5).map((item) => (
-                      <li key={item.id}>
-                        <span className="pending-avatar">
-                          <Avatar person={item} size={34} />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="picker-name truncate" title={item.displayName}>
-                            {item.displayName}
+        // Chaînes et lieux à compléter : du travail d'admin, pas pour les visiteurs du site.
+        canLink && (
+          <div className="pending-floats">
+            {pending.length > 0 && (
+              <aside key="a-completer" className="person-card-float pending-float" aria-label={t.silsila.pending}>
+                <button
+                  className="flex w-full items-center gap-3 text-start"
+                  onClick={() => setPendingOpen(!pendingOpen)}
+                  aria-expanded={pendingOpen}
+                >
+                  <span className="text-gold">
+                    <Icon name="branch" />
+                  </span>
+                  <span className="flex-1 font-display text-[22px]">{t.silsila.pending}</span>
+                  <span className="count-badge">{pending.length}</span>
+                </button>
+                {pendingOpen && (
+                  <>
+                    <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.pendingText}</p>
+                    <ul className="pending-mini">
+                      {pending.slice(0, 5).map((item) => (
+                        <li key={item.id}>
+                          <span className="pending-avatar">
+                            <Avatar person={item} size={34} />
                           </span>
-                          <span className="picker-detail">
-                            {[t.admin.disciples(tree.get(item.id)?.length ?? 0), item.birthCity]
-                              .filter(Boolean)
-                              .join(" · ")}
+                          <span className="min-w-0 flex-1">
+                            <span className="picker-name truncate" title={item.displayName}>
+                              {item.displayName}
+                            </span>
+                            <span className="picker-detail">
+                              {[t.admin.disciples(tree.get(item.id)?.length ?? 0), item.birthCity]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </span>
                           </span>
-                        </span>
-                        <Link href="/admin/silsila" className="profile-link mt-0">
-                          {t.admin.link}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                  {pending.length > 5 && (
-                    <Link href="/admin/silsila" className="profile-link">
-                      {t.silsila.pendingMore(pending.length - 5)}
-                      <Icon name="arrowR" size={16} />
-                    </Link>
-                  )}
-                </>
-              )}
-            </aside>
-          )}
-          {unplaced.length > 0 && (
-            <aside key="lieux" className="person-card-float pending-float" aria-label={t.silsila.unplaced}>
-              <button
-                className="flex w-full items-center gap-3 text-start"
-                onClick={() => setPlacesOpen(!placesOpen)}
-                aria-expanded={placesOpen}
-              >
-                <span className="text-gold">
-                  <Icon name="pin" />
-                </span>
-                <span className="flex-1 font-display text-[22px]">{t.silsila.unplaced}</span>
-                <span className="count-badge">{unplaced.length}</span>
-              </button>
-              {placesOpen && (
-                <>
-                  <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.unplacedText}</p>
-                  <ul className="pending-mini pending-scroll">
-                    {unplaced.map((item) => (
-                      <li key={item.id}>
-                        <span className="pending-avatar">
-                          <Avatar person={item} size={34} />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="picker-name truncate" title={item.displayName}>
-                            {item.displayName}
+                          <Link href="/admin/silsila" className="profile-link mt-0">
+                            {t.admin.link}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    {pending.length > 5 && (
+                      <Link href="/admin/silsila" className="profile-link">
+                        {t.silsila.pendingMore(pending.length - 5)}
+                        <Icon name="arrowR" size={16} />
+                      </Link>
+                    )}
+                  </>
+                )}
+              </aside>
+            )}
+            {unplaced.length > 0 && (
+              <aside key="lieux" className="person-card-float pending-float" aria-label={t.silsila.unplaced}>
+                <button
+                  className="flex w-full items-center gap-3 text-start"
+                  onClick={() => setPlacesOpen(!placesOpen)}
+                  aria-expanded={placesOpen}
+                >
+                  <span className="text-gold">
+                    <Icon name="pin" />
+                  </span>
+                  <span className="flex-1 font-display text-[22px]">{t.silsila.unplaced}</span>
+                  <span className="count-badge">{unplaced.length}</span>
+                </button>
+                {placesOpen && (
+                  <>
+                    <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.unplacedText}</p>
+                    <ul className="pending-mini pending-scroll">
+                      {unplaced.map((item) => (
+                        <li key={item.id}>
+                          <span className="pending-avatar">
+                            <Avatar person={item} size={34} />
                           </span>
-                          <span className="picker-detail">
-                            {[t.kinds[item.kind], t.admin.disciples(tree.get(item.id)?.length ?? 0)].join(" · ")}
+                          <span className="min-w-0 flex-1">
+                            <span className="picker-name truncate" title={item.displayName}>
+                              {item.displayName}
+                            </span>
+                            <span className="picker-detail">
+                              {[t.kinds[item.kind], t.admin.disciples(tree.get(item.id)?.length ?? 0)].join(" · ")}
+                            </span>
                           </span>
-                        </span>
-                        {placing !== item.id &&
-                          (canLink ? (
-                            <button className="profile-link mt-0" onClick={() => setPlacing(item.id)}>
-                              {t.silsila.complete}
-                            </button>
-                          ) : (
-                            <Link href={`/admin/mouqaddams/${item.id}`} className="profile-link mt-0">
-                              {t.silsila.complete}
-                            </Link>
-                          ))}
-                        {placing === item.id && (
-                          <PlaceQuickForm
-                            person={item}
-                            choices={choices}
-                            onCancel={() => setPlacing(null)}
-                            onSaved={(next) => {
-                              setPlacing(null);
-                              setPlaced((current) => new Map(current).set(item.id, { ...item, ...next }));
-                              // Sur la carte, la personne apparaît aussitôt ; l'arbre, lui, garde sa forme.
-                              if (map.shown) router.refresh();
-                            }}
-                          />
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </aside>
-          )}
-        </div>
+                          {placing !== item.id &&
+                            (canLink ? (
+                              <button className="profile-link mt-0" onClick={() => setPlacing(item.id)}>
+                                {t.silsila.complete}
+                              </button>
+                            ) : (
+                              <Link href={`/admin/mouqaddams/${item.id}`} className="profile-link mt-0">
+                                {t.silsila.complete}
+                              </Link>
+                            ))}
+                          {placing === item.id && (
+                            <PlaceQuickForm
+                              person={item}
+                              choices={choices}
+                              onCancel={() => setPlacing(null)}
+                              onSaved={(next) => {
+                                setPlacing(null);
+                                setPlaced((current) => new Map(current).set(item.id, { ...item, ...next }));
+                                // Sur la carte, la personne apparaît aussitôt ; l'arbre, lui, garde sa forme.
+                                if (map.shown) router.refresh();
+                              }}
+                            />
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </aside>
+            )}
+          </div>
+        )
       )}
 
       <div className="zoom-panel">
