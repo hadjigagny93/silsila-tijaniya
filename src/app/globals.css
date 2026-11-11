@@ -6566,3 +6566,52 @@ a.suluk-next-station {
     font-size: 14px;
   }
 }
+
+/* App Mac : « Publier sur le site », en bas du menu, au-dessus des chiffres. */
+.publish {
+  margin-top: auto;
+}
+
+.publish + .sidebar-stats {
+  margin-top: 0.75rem;
+}
+
+.publish-button {
+  width: 100%;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--background);
+  text-align: start;
+}
+
+.publish-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.publish-status {
+  display: none;
+  margin-top: 0.35rem;
+  padding: 0 0.75rem;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.publish-status [data-ok="true"] {
+  color: var(--accent);
+}
+
+.publish-status [data-ok="false"] {
+  color: var(--danger);
+}
+
+@media (min-width: 48rem) {
+  .publish-status {
+    display: block;
+  }
+}
+
+:root[data-rail] .publish-status {
+  display: none;
+}

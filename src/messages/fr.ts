@@ -34,6 +34,18 @@ export const t = {
       `${persons} personne${persons > 1 ? "s" : ""} · ${generations} génération${generations > 1 ? "s" : ""}`,
     offline: "Hors ligne · Administrateur",
   },
+  publish: {
+    label: "Publier sur le site",
+    busy: "Publication…",
+    hint: "Recopie cette base sur le site en ligne : silsila, photos, biographies.",
+    never: "Jamais publié depuis cette app.",
+    last: (date: Date) =>
+      `Dernière publication : ${date.toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`,
+    done: (persons: number, images: number, biographies: number) =>
+      `Site à jour : ${persons} personnes, ${images} photos, ${biographies} biographies.`,
+    failed: "La publication a échoué. Vérifiez la connexion internet et réessayez.",
+    missingKey: "Clé de publication absente (publication.json).",
+  },
   home: {
     arabic: "السلسلة التجانية",
     title: "De chaque disciple jusqu'au Prophète ﷺ",
