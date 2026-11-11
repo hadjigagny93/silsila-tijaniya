@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "@/app/actions";
 import { Icon, Star } from "@/components/Icon";
 import { NavLink } from "@/components/NavLink";
+import { PublishButton } from "@/components/PublishButton";
 import { SidebarToggle } from "@/components/SidebarToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { generationsOf } from "@/lib/chain";
@@ -112,6 +113,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 </>
               )}
 
+              {/* Mac seulement : le bouton se cache de lui-même sur l'iPhone, sans route de publication. */}
+              {session?.local && <PublishButton />}
               <p className="sidebar-stats">
                 {t.nav.stats(persons.length, generationCount)}
                 {session?.local && <span className="block">{t.nav.offline}</span>}
