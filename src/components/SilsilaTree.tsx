@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { chainOf, childrenOf, generationsOf } from "@/lib/chain";
 import type { PublicPerson } from "@/lib/data/types";
 import { periodOf } from "@/lib/dates";
+import { placeOf } from "@/lib/places";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
@@ -79,6 +80,7 @@ export function SilsilaTree({
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [pendingOpen, setPendingOpen] = useState(false);
+  const [placesOpen, setPlacesOpen] = useState(false);
   // Exploration : titre, recherche et bouton d'ajout s'effacent, la molette déplace l'arbre.
   const [exploring, setExploring] = useState(false);
   const exploringNow = useRef(false);
@@ -132,6 +134,18 @@ export function SilsilaTree({
   const pending = persons.filter(
     (person) =>
       person.kind !== "prophet" && person.kind !== "member" && (!person.mouqaddamId || !known.has(person.mouqaddamId)),
+  );
+  // Ceux que la carte ne sait pas placer (ni ville ni pays connus), ceux qui ont le plus de disciples d'abord.
+  const unplaced = useMemo(
+    () =>
+      persons
+        .filter((person) => person.kind !== "prophet" && person.kind !== "member" && !placeOf(person))
+        .sort(
+          (a, b) =>
+            (tree.get(b.id)?.length ?? 0) - (tree.get(a.id)?.length ?? 0) ||
+            a.displayName.localeCompare(b.displayName, "fr"),
+        ),
+    [persons, tree],
   );
 
   const describe = (person: PublicPerson) => {
@@ -331,54 +345,96 @@ export function SilsilaTree({
           </div>
         </aside>
       ) : (
-        pending.length > 0 && (
-          <aside key="a-completer" className="person-card-float pending-float" aria-label={t.silsila.pending}>
-            <button
-              className="flex w-full items-center gap-3 text-start"
-              onClick={() => setPendingOpen(!pendingOpen)}
-              aria-expanded={pendingOpen}
-            >
-              <span className="text-gold">
-                <Icon name="branch" />
-              </span>
-              <span className="flex-1 font-display text-[22px]">{t.silsila.pending}</span>
-              <span className="count-badge">{pending.length}</span>
-            </button>
-            {pendingOpen && (
-              <>
-                <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.pendingText}</p>
-                <ul className="pending-mini">
-                  {pending.slice(0, 5).map((item) => (
-                    <li key={item.id}>
-                      <span className="pending-avatar">
-                        <Avatar person={item} size={34} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="picker-name truncate" title={item.displayName}>
-                          {item.displayName}
+        <div className="pending-floats">
+          {pending.length > 0 && (
+            <aside key="a-completer" className="person-card-float pending-float" aria-label={t.silsila.pending}>
+              <button
+                className="flex w-full items-center gap-3 text-start"
+                onClick={() => setPendingOpen(!pendingOpen)}
+                aria-expanded={pendingOpen}
+              >
+                <span className="text-gold">
+                  <Icon name="branch" />
+                </span>
+                <span className="flex-1 font-display text-[22px]">{t.silsila.pending}</span>
+                <span className="count-badge">{pending.length}</span>
+              </button>
+              {pendingOpen && (
+                <>
+                  <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.pendingText}</p>
+                  <ul className="pending-mini">
+                    {pending.slice(0, 5).map((item) => (
+                      <li key={item.id}>
+                        <span className="pending-avatar">
+                          <Avatar person={item} size={34} />
                         </span>
-                        <span className="picker-detail">
-                          {[t.admin.disciples(tree.get(item.id)?.length ?? 0), item.birthCity]
-                            .filter(Boolean)
-                            .join(" · ")}
+                        <span className="min-w-0 flex-1">
+                          <span className="picker-name truncate" title={item.displayName}>
+                            {item.displayName}
+                          </span>
+                          <span className="picker-detail">
+                            {[t.admin.disciples(tree.get(item.id)?.length ?? 0), item.birthCity]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
                         </span>
-                      </span>
-                      <Link href="/admin/silsila" className="profile-link mt-0">
-                        {t.admin.link}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-                {pending.length > 5 && (
-                  <Link href="/admin/silsila" className="profile-link">
-                    {t.silsila.pendingMore(pending.length - 5)}
-                    <Icon name="arrowR" size={16} />
-                  </Link>
-                )}
-              </>
-            )}
-          </aside>
-        )
+                        <Link href="/admin/silsila" className="profile-link mt-0">
+                          {t.admin.link}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  {pending.length > 5 && (
+                    <Link href="/admin/silsila" className="profile-link">
+                      {t.silsila.pendingMore(pending.length - 5)}
+                      <Icon name="arrowR" size={16} />
+                    </Link>
+                  )}
+                </>
+              )}
+            </aside>
+          )}
+          {unplaced.length > 0 && (
+            <aside key="lieux" className="person-card-float pending-float" aria-label={t.silsila.unplaced}>
+              <button
+                className="flex w-full items-center gap-3 text-start"
+                onClick={() => setPlacesOpen(!placesOpen)}
+                aria-expanded={placesOpen}
+              >
+                <span className="text-gold">
+                  <Icon name="pin" />
+                </span>
+                <span className="flex-1 font-display text-[22px]">{t.silsila.unplaced}</span>
+                <span className="count-badge">{unplaced.length}</span>
+              </button>
+              {placesOpen && (
+                <>
+                  <p className="mt-2 font-serif-text text-[15px] text-muted">{t.silsila.unplacedText}</p>
+                  <ul className="pending-mini pending-scroll">
+                    {unplaced.map((item) => (
+                      <li key={item.id}>
+                        <span className="pending-avatar">
+                          <Avatar person={item} size={34} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="picker-name truncate" title={item.displayName}>
+                            {item.displayName}
+                          </span>
+                          <span className="picker-detail">
+                            {[t.kinds[item.kind], t.admin.disciples(tree.get(item.id)?.length ?? 0)].join(" · ")}
+                          </span>
+                        </span>
+                        <Link href={`/admin/mouqaddams/${item.id}`} className="profile-link mt-0">
+                          {t.silsila.complete}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </aside>
+          )}
+        </div>
       )}
 
       <div className="zoom-panel">
