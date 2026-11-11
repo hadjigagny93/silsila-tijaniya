@@ -99,6 +99,16 @@ const CITIES: Record<string, Point> = {
   ouagadougou: [12.3714, -1.5197],
   "n'djamena": [12.1348, 15.0557],
   khartoum: [15.5007, 32.5599],
+  kordofan: [13.1843, 30.2167],
+  "el obeid": [13.1843, 30.2167],
+  // Afrique australe et de l'Est
+  pretoria: [-25.7479, 28.2293],
+  "le cap": [-33.9249, 18.4241],
+  "cape town": [-33.9249, 18.4241],
+  johannesburg: [-26.2041, 28.0473],
+  durban: [-29.8587, 31.0218],
+  nairobi: [-1.2921, 36.8219],
+  "dar es salaam": [-6.7924, 39.2083],
   // Europe et Amériques
   londres: [51.5074, -0.1278],
   paris: [48.8566, 2.3522],
@@ -145,6 +155,110 @@ const COUNTRIES: Record<string, Point> = {
   italie: [41.9028, 12.4964],
   "etats-unis": [38.9072, -77.0369],
   canada: [45.4215, -75.6972],
+  "afrique du sud": [-25.7479, 28.2293],
+  benin: [6.4969, 2.6289],
+  togo: [6.1725, 1.2314],
+  "sierra leone": [8.4657, -13.2317],
+  liberia: [6.3156, -10.8074],
+  "cap-vert": [14.933, -23.5133],
+  gabon: [0.4162, 9.4673],
+  congo: [-4.2634, 15.2429],
+  "republique democratique du congo": [-4.4419, 15.2663],
+  centrafrique: [4.3947, 18.5582],
+  ethiopie: [9.03, 38.74],
+  somalie: [2.0469, 45.3182],
+  kenya: [-1.2921, 36.8219],
+  tanzanie: [-6.163, 35.7516],
+  ouganda: [0.3476, 32.5825],
+  mozambique: [-25.9692, 32.5732],
+  madagascar: [-18.8792, 47.5079],
+  comores: [-11.7172, 43.2473],
+  "soudan du sud": [4.8594, 31.5713],
+  erythree: [15.3229, 38.9251],
+  djibouti: [11.5721, 43.1456],
+  yemen: [15.3694, 44.191],
+  oman: [23.588, 58.3829],
+  "emirats arabes unis": [24.4539, 54.3773],
+  qatar: [25.2854, 51.531],
+  koweit: [29.3759, 47.9774],
+  jordanie: [31.9539, 35.9106],
+  liban: [33.8938, 35.5018],
+  palestine: [31.9038, 35.2034],
+  irak: [33.3152, 44.3661],
+  iran: [35.6892, 51.389],
+  pakistan: [33.6844, 73.0479],
+  inde: [28.6139, 77.209],
+  indonesie: [-6.2088, 106.8456],
+  malaisie: [3.139, 101.6869],
+  allemagne: [52.52, 13.405],
+  "pays-bas": [52.3676, 4.9041],
+  suisse: [46.948, 7.4474],
+  portugal: [38.7223, -9.1393],
+  bresil: [-15.7939, -47.8828],
+  "trinite-et-tobago": [10.6549, -61.5019],
+};
+
+// Les pays écrits en anglais (ou autrement) : on les ramène au nom français ci-dessus.
+const COUNTRY_ALIASES: Record<string, string> = {
+  "south africa": "afrique du sud",
+  senegal: "senegal",
+  mauritania: "mauritanie",
+  morocco: "maroc",
+  algeria: "algerie",
+  tunisia: "tunisie",
+  libya: "libye",
+  egypt: "egypte",
+  sudan: "soudan",
+  chad: "tchad",
+  "ivory coast": "cote d'ivoire",
+  "cote divoire": "cote d'ivoire",
+  gambia: "gambie",
+  "the gambia": "gambie",
+  guinea: "guinee",
+  "guinea-bissau": "guinee-bissau",
+  "guinee bissau": "guinee-bissau",
+  cameroon: "cameroun",
+  "saudi arabia": "arabie saoudite",
+  arabie: "arabie saoudite",
+  syria: "syrie",
+  turkey: "turquie",
+  england: "angleterre",
+  "united kingdom": "royaume-uni",
+  uk: "royaume-uni",
+  belgium: "belgique",
+  spain: "espagne",
+  italy: "italie",
+  usa: "etats-unis",
+  "united states": "etats-unis",
+  "etats unis": "etats-unis",
+  germany: "allemagne",
+  netherlands: "pays-bas",
+  switzerland: "suisse",
+  ethiopia: "ethiopie",
+  somalia: "somalie",
+  tanzania: "tanzanie",
+  uganda: "ouganda",
+  comoros: "comores",
+  "south sudan": "soudan du sud",
+  eritrea: "erythree",
+  jordan: "jordanie",
+  lebanon: "liban",
+  iraq: "irak",
+  india: "inde",
+  indonesia: "indonesie",
+  malaysia: "malaisie",
+  brazil: "bresil",
+  "cape verde": "cap-vert",
+  "central african republic": "centrafrique",
+  "dr congo": "republique democratique du congo",
+  rdc: "republique democratique du congo",
+  "trinidad and tobago": "trinite-et-tobago",
+};
+
+// Le nom français d'un pays (sa clé) : « South Africa » et « Afrique du Sud » sont un même point.
+const countryKey = (country: string) => {
+  const key = normalize(country);
+  return COUNTRIES[key] ? key : COUNTRY_ALIASES[key] && COUNTRIES[COUNTRY_ALIASES[key]] ? COUNTRY_ALIASES[key] : null;
 };
 
 const normalize = (text: string) =>
@@ -214,7 +328,10 @@ const NAMED: Record<string, string[]> = {
   "Côte d'Ivoire": ["Abidjan"],
   "Burkina Faso": ["Ouagadougou"],
   Tchad: ["N'Djamena"],
-  Soudan: ["Khartoum"],
+  Soudan: ["Khartoum", "Kordofan"],
+  "Afrique du Sud": ["Pretoria", "Le Cap", "Johannesburg", "Durban"],
+  Kenya: ["Nairobi"],
+  Tanzanie: ["Dar es Salaam"],
   "Royaume-Uni": ["Londres"],
   France: ["Paris", "Marseille", "Lyon"],
   Belgique: ["Bruxelles"],
@@ -223,7 +340,49 @@ const NAMED: Record<string, string[]> = {
   "États-Unis": ["New York", "Washington", "Atlanta"],
   Canada: ["Montréal"],
 };
-const COUNTRY_NAMES = [...Object.keys(NAMED), "Cameroun", "Angleterre"];
+const COUNTRY_NAMES = [
+  "Bénin",
+  "Togo",
+  "Sierra Leone",
+  "Liberia",
+  "Cap-Vert",
+  "Gabon",
+  "Congo",
+  "République démocratique du Congo",
+  "Centrafrique",
+  "Éthiopie",
+  "Somalie",
+  "Ouganda",
+  "Mozambique",
+  "Madagascar",
+  "Comores",
+  "Soudan du Sud",
+  "Érythrée",
+  "Djibouti",
+  "Yémen",
+  "Oman",
+  "Émirats arabes unis",
+  "Qatar",
+  "Koweït",
+  "Jordanie",
+  "Liban",
+  "Palestine",
+  "Irak",
+  "Iran",
+  "Pakistan",
+  "Inde",
+  "Indonésie",
+  "Malaisie",
+  "Allemagne",
+  "Pays-Bas",
+  "Suisse",
+  "Portugal",
+  "Brésil",
+  "Trinité-et-Tobago",
+  ...Object.keys(NAMED),
+  "Cameroun",
+  "Angleterre",
+];
 
 export type PlaceChoices = {
   // Chaque ville avec son pays quand on le connaît : choisir la ville remplit le pays s'il est vide.
@@ -297,9 +456,11 @@ export function placeOf(person: PublicPerson): Place | null {
     }
   }
   for (const [, country] of candidates) {
-    const point = country ? COUNTRIES[normalize(country)] : null;
-    if (point)
-      return { key: `p:${normalize(country!)}`, name: country!.trim(), lat: point[0], lon: point[1], precise: false };
+    const key = country ? countryKey(country) : null;
+    if (key) {
+      const [lat, lon] = COUNTRIES[key];
+      return { key: `p:${key}`, name: country!.trim(), lat, lon, precise: false };
+    }
   }
   return null;
 }
