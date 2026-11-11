@@ -30,6 +30,8 @@ type PublicRow = {
   death_country: string | null;
   zawiya: string | null;
   nicknames: string | null;
+  qutb: boolean;
+  short: boolean;
 };
 
 type BiographyRow = {
@@ -72,6 +74,7 @@ function personColumns(input: NewMouqaddam) {
     zawiya: input.zawiya,
     nicknames: input.nicknames.join("\n") || null,
     biography_slug: input.biographySlug,
+    qutb: input.qutb,
   };
 }
 
@@ -87,10 +90,20 @@ export const supabaseStore: Store = {
     const { data, error } = await supabase
       .from("public_persons")
       .select(
-        "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames",
+        "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames, qutb, short",
       );
     check(error);
-    return ((data ?? []) as PublicRow[]).map((row) => ({
+    const rows = (data ?? []) as PublicRow[];
+    // Chaînes argentées : seulement vers des maîtres visibles, et pas pour une personne en affichage court.
+    const links = await supabase.from("person_links").select("person_id, master_id").order("created_at");
+    check(links.error);
+    const visible = new Set(rows.map((row) => row.id));
+    const alsoFrom = new Map<string, string[]>();
+    for (const link of (links.data ?? []) as { person_id: string; master_id: string }[]) {
+      if (!visible.has(link.master_id)) continue;
+      alsoFrom.set(link.person_id, [...(alsoFrom.get(link.person_id) ?? []), link.master_id]);
+    }
+    return rows.map((row) => ({
       id: row.id,
       kind: row.kind,
       displayName: row.display_name,
@@ -106,9 +119,8 @@ export const supabaseStore: Store = {
       deathCountry: row.death_country,
       zawiya: row.zawiya,
       nicknames: row.nicknames?.split("\n") ?? [],
-      qutb: false,
-      // Les chaînes argentées ne vivent encore que dans les bases locales (Mac et iPhone).
-      alsoFrom: [],
+      qutb: row.qutb,
+      alsoFrom: row.short ? [] : (alsoFrom.get(row.id) ?? []).filter((id) => id !== row.mouqaddam_id),
     }));
   },
 
@@ -285,8 +297,13 @@ export const supabaseStore: Store = {
     check((await supabase.from("reports").update({ status: "closed" }).eq("id", id)).error);
   },
 
-  async setAlsoFrom() {
-    throw new Error("Les chaînes argentées ne sont pas encore disponibles en ligne.");
+  async setAlsoFrom(personId, masterIds) {
+    const supabase = await createClient();
+    check((await supabase.from("person_links").delete().eq("person_id", personId)).error);
+    const rows = [...new Set(masterIds)]
+      .filter((id) => id !== personId)
+      .map((masterId) => ({ person_id: personId, master_id: masterId }));
+    if (rows.length) check((await supabase.from("person_links").insert(rows)).error);
   },
 
   async setHidden(personId, hidden) {

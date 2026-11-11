@@ -12,7 +12,8 @@
     "dist": "npm run desktop:build && electron-builder --mac",
     "mobile:dev": "vite --config mobile/vite.config.ts",
     "mobile:build": "vite build --config mobile/vite.config.ts",
-    "mobile:ios": "npm run mobile:build && cap sync ios"
+    "mobile:ios": "npm run mobile:build && cap sync ios",
+    "publier": "node scripts/publier-supabase.mjs"
   },
   "dependencies": {
     "@fontsource-variable/eb-garamond": "^5.3.0",
