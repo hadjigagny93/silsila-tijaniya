@@ -1,0 +1,290 @@
+/* Propre à l'app iPhone : encoche et barre d'accueil, pastille de synchronisation, écran d'association. */
+body.mobile-app {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.mobile-app .theme-toggle {
+  top: calc(env(safe-area-inset-top) + 0.75rem);
+}
+
+/* En haut à droite, sous le bouton du thème : en bas, elle cacherait la barre des vues de la silsila. */
+.sync-badge {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 4.4rem);
+  right: 0.75rem;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  padding: 0.4rem 0.8rem;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.12);
+  color: var(--muted);
+  font-size: 0.8rem;
+  backdrop-filter: blur(8px);
+}
+
+.sync-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.sync-badge.is-syncing .sync-badge-dot {
+  background: var(--gold);
+  animation: sync-pulse 1s ease-in-out infinite;
+}
+
+.sync-badge.is-offline .sync-badge-dot {
+  background: #b4533a;
+}
+
+@keyframes sync-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.pairing-screen {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 2.5rem) 1.25rem 3rem;
+}
+
+.mobile-failure {
+  padding: calc(env(safe-area-inset-top) + 2rem) 1.25rem;
+}
+
+.text-danger {
+  color: #b4533a;
+}
+
+/* Derrière l'heure et la batterie : le contenu ne passe pas dessous en défilant. */
+body.mobile-app::before {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 40;
+  height: env(safe-area-inset-top);
+  background: var(--background);
+  content: "";
+}
+
+/* En-tête et onglets de l'app iPhone : la barre latérale du Mac et son bouton de thème sont masqués. */
+body.mobile-app aside,
+body.mobile-app > .theme-toggle,
+body.mobile-app .theme-toggle:not(.mobile-tabs .theme-toggle) {
+  display: none;
+}
+
+body.mobile-app {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body.mobile-app main {
+  padding-top: 1.25rem;
+}
+
+/* L'en-tête défile avec la page : avec la prochaine œuvre, il prendrait trop de place s'il restait fixé. */
+.mobile-tabs {
+  position: relative;
+  z-index: 35;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--background) 94%, transparent);
+  padding: 0.6rem 1rem 0.7rem;
+  backdrop-filter: blur(10px);
+}
+
+.mobile-tabs-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-tabs-prayer {
+  margin-right: auto;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.mobile-tabs-prayer strong {
+  font-family: var(--font-sans, inherit);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.mobile-tabs-icon,
+.mobile-tabs .theme-toggle {
+  position: static;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.mobile-tabs-icon.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.mobile-tabs .sync-badge {
+  position: static;
+  flex: none;
+  padding: 0.35rem 0.6rem;
+  box-shadow: none;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.mobile-tabs-date {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.mobile-tabs-date span:first-child {
+  text-transform: capitalize;
+}
+
+.mobile-tabs-bar {
+  width: 1px;
+  height: 1em;
+  background: var(--line);
+}
+
+.mobile-tabs-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.mobile-tabs-dots span {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: width 0.25s ease;
+}
+
+.mobile-tabs-dots span.is-active {
+  width: 1.1rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.mobile-tabs-list {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mobile-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-tab {
+  flex: 1 0 auto;
+  border-radius: 999px;
+  padding: 0.45rem 0.7rem;
+  color: var(--foreground);
+  font-size: 0.92rem;
+  white-space: nowrap;
+}
+
+.mobile-tab[aria-current="page"] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+/* La page arrive du côté du glissement. */
+body.mobile-app[data-slide="left"] main {
+  animation: slide-from-right 0.3s ease-out;
+}
+
+body.mobile-app[data-slide="right"] main {
+  animation: slide-from-left 0.3s ease-out;
+}
+
+@keyframes slide-from-right {
+  from {
+    opacity: 0.4;
+    transform: translateX(14%);
+  }
+}
+
+@keyframes slide-from-left {
+  from {
+    opacity: 0.4;
+    transform: translateX(-14%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.mobile-app[data-slide] main {
+    animation: none;
+  }
+}
+
+/* « Prochaine œuvre » dans l'en-tête, en plus compact ; la carte de la page Suluk n'est plus utile. */
+.mobile-tabs .suluk-next {
+  gap: 0;
+  margin: 0.6rem 0 0;
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.8rem;
+}
+
+.mobile-tabs .suluk-next.is-empty {
+  min-height: 4.5rem;
+}
+
+.mobile-tabs .suluk-next-label {
+  font-size: 0.65rem;
+}
+
+.mobile-tabs .suluk-next-when {
+  font-size: 1.45rem;
+}
+
+.mobile-tabs .suluk-next-name {
+  font-size: 0.95rem;
+}
+
+.mobile-tabs .suluk-next-detail {
+  overflow: hidden;
+  font-size: 0.95rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-tabs .suluk-next-hours {
+  font-size: 0.75rem;
+}
+
+.mobile-tabs .suluk-next-station {
+  top: 0.45rem;
+  font-size: 1.25rem;
+}
+
+body.mobile-app main .suluk-next {
+  display: none;
+}

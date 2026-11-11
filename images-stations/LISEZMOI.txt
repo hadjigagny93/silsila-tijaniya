@@ -1,0 +1,5 @@
+Images des stations du modèle ascendant (Échiquier).
+Une image rectangulaire par station, nommée d'après l'identifiant de la station :
+yaqaza.jpg, tawba.jpg, muhasaba.jpg, sabr.webp… (jpg, png ou webp).
+La liste des identifiants est dans src/lib/stations.ts.
+Une station sans image garde la teinte de sa strate.
