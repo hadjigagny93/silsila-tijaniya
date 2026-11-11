@@ -6513,3 +6513,56 @@ a.suluk-next-station {
     height: 112px;
   }
 }
+
+/* Site en ligne : une barre fine en haut à la place du menu latéral. */
+@media (min-width: 48rem) {
+  :root[data-topbar] {
+    --sidebar-width: 0rem;
+  }
+}
+
+.site-topbar {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.site-topbar-inner {
+  display: flex;
+  min-height: 3.9rem;
+  max-width: 76rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 auto;
+  padding: 0.4rem 4rem 0.4rem 1rem;
+}
+
+.site-topbar-nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+:root[data-topbar] .theme-toggle {
+  top: 0.575rem;
+}
+
+@media (max-width: 39.99rem) {
+  .site-topbar-inner {
+    gap: 0.5rem;
+    padding-inline: 0.75rem 3.6rem;
+  }
+
+  .site-topbar .site-name small {
+    display: none;
+  }
+
+  .site-topbar .nav-link {
+    gap: 0.4rem;
+    padding: 0.5rem;
+    font-size: 14px;
+  }
+}

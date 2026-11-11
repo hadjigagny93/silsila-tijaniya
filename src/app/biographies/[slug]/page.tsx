@@ -58,7 +58,8 @@ export default async function BiographyPage({ params }: Props) {
           )}
         </div>
 
-        {biography.draft && hasText && (
+        {/* « Brouillon » : une note de travail pour l'admin, pas pour les visiteurs. */}
+        {session?.isAdmin && biography.draft && hasText && (
           <p className="mt-4 rounded-md border border-line bg-surface p-3 text-sm text-muted">{t.biographies.draft}</p>
         )}
 

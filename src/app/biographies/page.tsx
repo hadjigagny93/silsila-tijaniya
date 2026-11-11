@@ -102,7 +102,7 @@ export default async function BiographiesPage() {
                     <span className="bio-tile-text">
                       {owner && <Avatar person={owner} size={48} />}
                       <span className="bio-tile-label">
-                        {[periods.get(biography.slug), biography.draft && t.biographies.draftLabel]
+                        {[periods.get(biography.slug), session?.isAdmin && biography.draft && t.biographies.draftLabel]
                           .filter(Boolean)
                           .join(" · ") || t.home.biographiesLabel}
                       </span>
