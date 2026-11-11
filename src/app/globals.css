@@ -6046,3 +6046,305 @@ a.suluk-next-station {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* Accueil : un bandeau de nuit à sable, une vraie chaîne qui remonte au Prophète ﷺ, puis les chiffres et les cheikhs. */
+.home-hero {
+  margin: -2.5rem calc(50% - (100vw - var(--sidebar-width)) / 2) 0;
+  background:
+    radial-gradient(ellipse 60% 70% at 28% 45%, rgb(10 15 26 / 0.62), transparent 70%),
+    url("/motif.svg") center / 140px,
+    linear-gradient(170deg, #0d1320 0%, #1e2f4d 45%, #4a5a6e 75%, #a08c6c 100%);
+  background-blend-mode: normal, soft-light, normal;
+  padding: clamp(3rem, 7vw, 5.5rem) 1rem clamp(3rem, 6vw, 4.5rem);
+  color: #f1ece3;
+}
+
+.home-hero-inner {
+  display: grid;
+  max-width: 68rem;
+  margin: 0 auto;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+@media (min-width: 60rem) {
+  .home-hero-inner {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 4rem;
+  }
+}
+
+.home-arabic {
+  color: #d8b467;
+  font-family: var(--font-arabic);
+  font-size: clamp(26px, 3.4vw, 34px);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.home-title {
+  margin-top: 0.5rem;
+  color: #fbf8f2;
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 68px);
+  font-weight: 400;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.home-intro {
+  max-width: 34rem;
+  margin-top: 1.25rem;
+  color: rgb(241 236 227 / 0.82);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.home-actions .home-primary {
+  background: #d8b467;
+  color: #14100a;
+}
+
+.home-actions .home-primary:hover {
+  background: #e6c47c;
+}
+
+.home-actions .home-secondary {
+  border: 1px solid rgb(241 236 227 / 0.4);
+  background: rgb(13 19 32 / 0.25);
+  color: #f1ece3;
+}
+
+.home-actions .home-secondary:hover {
+  border-color: #f1ece3;
+}
+
+/* La chaîne : un fil d'or du Prophète ﷺ (en haut) jusqu'au dernier disciple. */
+.home-chain {
+  border: 1px solid rgb(241 236 227 / 0.18);
+  border-radius: var(--radius-lg);
+  background: rgb(13 19 32 / 0.55);
+  backdrop-filter: blur(6px);
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.home-chain .label {
+  color: #d8b467;
+}
+
+.home-chain ol {
+  position: relative;
+  margin-top: 1rem;
+}
+
+.home-chain ol::before {
+  position: absolute;
+  top: 0.9rem;
+  bottom: 1.1rem;
+  left: 6px;
+  width: 2px;
+  background: linear-gradient(#d8b467, rgb(216 180 103 / 0.35));
+  content: "";
+}
+
+.home-chain li {
+  position: relative;
+  display: flex;
+  min-height: 2.1rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding-left: 1.6rem;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.home-chain li a {
+  color: rgb(241 236 227 / 0.88);
+}
+
+.home-chain li a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.home-chain li[data-end] {
+  font-size: 20px;
+}
+
+.home-chain li[data-end] a {
+  color: #fbf8f2;
+}
+
+.home-chain-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: grid;
+  width: 14px;
+  height: 14px;
+  place-items: center;
+  border: 2px solid #d8b467;
+  border-radius: 999px;
+  background: #14192a;
+  color: #d8b467;
+  transform: translateY(-50%);
+}
+
+.home-chain li:first-child .home-chain-dot {
+  border: 0;
+  background: none;
+}
+
+.home-chain .avatar {
+  box-shadow: 0 0 0 1px rgb(216 180 103 / 0.5);
+}
+
+.home-chain-foot {
+  margin-top: 0.9rem;
+  border-top: 1px solid rgb(241 236 227 / 0.15);
+  padding-top: 0.75rem;
+  color: rgb(241 236 227 / 0.6);
+  font-size: 14px;
+}
+
+/* Les chiffres, posés à cheval sur le bandeau. */
+.home-stats {
+  position: relative;
+  display: grid;
+  max-width: 60rem;
+  margin: -2.25rem auto 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-overlay);
+}
+
+@media (min-width: 40rem) {
+  .home-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.home-stats div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  padding: 1.25rem 0.5rem;
+  text-align: center;
+}
+
+.home-stats div + div {
+  border-left: 1px solid var(--line);
+}
+
+@media (max-width: 39.99rem) {
+  .home-stats div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .home-stats div:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+}
+
+.home-stats dd {
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4vw, 44px);
+  line-height: 1;
+}
+
+.home-stats dt {
+  margin-top: 0.4rem;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.home-cheikhs {
+  margin-top: 4.5rem;
+}
+
+.home-cheikhs ul {
+  display: grid;
+  max-width: 60rem;
+  margin: 2rem auto 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem 1rem;
+}
+
+@media (min-width: 48rem) {
+  .home-cheikhs ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.home-cheikhs li a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.home-cheikhs .avatar {
+  object-fit: cover;
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--gold);
+  transition: transform 0.2s ease;
+}
+
+.home-cheikhs li a:hover .avatar {
+  transform: translateY(-3px);
+}
+
+.home-cheikhs li a:hover span {
+  color: var(--accent);
+}
+
+.home-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 2rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.home-more:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.home-band {
+  height: 120px;
+  margin-top: 4.5rem;
+  opacity: 0.85;
+}
+
+:root[data-theme="dark"] .home-band {
+  opacity: 0.35;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .home-band {
+    opacity: 0.35;
+  }
+}
+
+.home-cards {
+  max-width: 60rem;
+  margin: 3rem auto 1rem;
+}
