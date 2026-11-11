@@ -2332,6 +2332,34 @@ h3 {
   pointer-events: auto;
 }
 
+.pending-scroll li:has(.place-quick) {
+  flex-wrap: wrap;
+}
+
+/* Le petit formulaire de lieu, sous le nom, dans la liste qui défile : sa liste déroulante pousse le contenu. */
+.place-quick {
+  display: grid;
+  flex-basis: 100%;
+  gap: 0.6rem;
+  padding: 0.2rem 0 0.4rem;
+}
+
+.place-quick .place-list {
+  position: static;
+  margin-top: 4px;
+  max-height: 10rem;
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+
+.place-quick .place-toggle {
+  top: 1.375rem;
+}
+
+.place-quick .field-label {
+  font-size: 13px;
+}
+
 .pending-scroll {
   max-height: 22rem;
   overflow-y: auto;

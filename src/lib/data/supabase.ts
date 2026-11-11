@@ -269,6 +269,12 @@ export const supabaseStore: Store = {
     check((await supabase.from("persons").update({ mouqaddam_id: mouqaddamId }).eq("id", personId)).error);
   },
 
+  async setPlace(personId, kind, city, country) {
+    const supabase = await createClient();
+    const fields = kind === "birth" ? { birth_city: city, birth_country: country } : { death_city: city, death_country: country };
+    check((await supabase.from("persons").update(fields).eq("id", personId)).error);
+  },
+
   async resolveRequest(id, status) {
     const supabase = await createClient();
     check((await supabase.from("mouqaddam_requests").update({ status }).eq("id", id)).error);

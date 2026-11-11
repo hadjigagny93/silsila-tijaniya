@@ -215,6 +215,8 @@ export type Store = {
   setPersonImage(personId: string, base64: string | null): Promise<void>;
   getPersonImage(personId: string): Promise<Uint8Array | null>;
   linkMouqaddam(personId: string, mouqaddamId: string): Promise<void>;
+  // Ville et pays de naissance (ou de décès), sans toucher au reste de la fiche.
+  setPlace(personId: string, kind: "birth" | "death", city: string | null, country: string | null): Promise<void>;
   resolveRequest(id: string, status: "accepted" | "rejected"): Promise<void>;
   closeReport(id: string): Promise<void>;
   setHidden(personId: string, hidden: boolean): Promise<void>;

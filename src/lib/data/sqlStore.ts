@@ -630,6 +630,12 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run("update persons set mouqaddam_id = ? where id = ?", [mouqaddamId, personId]);
     },
 
+    async setPlace(personId, kind, city, country) {
+      await findPerson(personId);
+      const [cityColumn, countryColumn] = kind === "birth" ? ["birth_city", "birth_country"] : ["death_city", "death_country"];
+      await run(`update persons set ${cityColumn} = ?, ${countryColumn} = ? where id = ?`, [city, country, personId]);
+    },
+
     async setAlsoFrom(personId, masterIds) {
       const person = await findPerson(personId);
       const wanted = new Set(masterIds.filter((id) => id && id !== personId && id !== person.mouqaddam_id));

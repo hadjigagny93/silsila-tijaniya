@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { chainOf, childrenOf, generationsOf } from "@/lib/chain";
 import type { PublicPerson } from "@/lib/data/types";
 import { periodOf } from "@/lib/dates";
-import { placeOf } from "@/lib/places";
+import { placeChoices, placeOf } from "@/lib/places";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { PlaceQuickForm } from "./PlaceQuickForm";
 import type { SceneApi } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
 import { useDragCard } from "./useDragCard";
@@ -60,6 +62,7 @@ export function SilsilaTree({
   canLink?: boolean;
 }) {
   const stage = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const drag = useDragCard();
   const labels = useRef<HTMLDivElement>(null);
   const scene = useRef<SceneApi | null>(null);
@@ -81,6 +84,9 @@ export function SilsilaTree({
   const [active, setActive] = useState(0);
   const [pendingOpen, setPendingOpen] = useState(false);
   const [placesOpen, setPlacesOpen] = useState(false);
+  // Lieux complétés ici même : la personne quitte la liste sans recharger l'arbre.
+  const [placed, setPlaced] = useState<Map<string, PublicPerson>>(new Map());
+  const [placing, setPlacing] = useState<string | null>(null);
   // Exploration : titre, recherche et bouton d'ajout s'effacent, la molette déplace l'arbre.
   const [exploring, setExploring] = useState(false);
   const exploringNow = useRef(false);
@@ -139,14 +145,16 @@ export function SilsilaTree({
   const unplaced = useMemo(
     () =>
       persons
+        .map((person) => placed.get(person.id) ?? person)
         .filter((person) => person.kind !== "prophet" && person.kind !== "member" && !placeOf(person))
         .sort(
           (a, b) =>
             (tree.get(b.id)?.length ?? 0) - (tree.get(a.id)?.length ?? 0) ||
             a.displayName.localeCompare(b.displayName, "fr"),
         ),
-    [persons, tree],
+    [persons, tree, placed],
   );
+  const choices = useMemo(() => placeChoices(persons), [persons]);
 
   const describe = (person: PublicPerson) => {
     const rank = generations.get(person.id);
@@ -424,9 +432,29 @@ export function SilsilaTree({
                             {[t.kinds[item.kind], t.admin.disciples(tree.get(item.id)?.length ?? 0)].join(" · ")}
                           </span>
                         </span>
-                        <Link href={`/admin/mouqaddams/${item.id}`} className="profile-link mt-0">
-                          {t.silsila.complete}
-                        </Link>
+                        {placing !== item.id &&
+                          (canLink ? (
+                            <button className="profile-link mt-0" onClick={() => setPlacing(item.id)}>
+                              {t.silsila.complete}
+                            </button>
+                          ) : (
+                            <Link href={`/admin/mouqaddams/${item.id}`} className="profile-link mt-0">
+                              {t.silsila.complete}
+                            </Link>
+                          ))}
+                        {placing === item.id && (
+                          <PlaceQuickForm
+                            person={item}
+                            choices={choices}
+                            onCancel={() => setPlacing(null)}
+                            onSaved={(next) => {
+                              setPlacing(null);
+                              setPlaced((current) => new Map(current).set(item.id, { ...item, ...next }));
+                              // Sur la carte, la personne apparaît aussitôt ; l'arbre, lui, garde sa forme.
+                              if (map.shown) router.refresh();
+                            }}
+                          />
+                        )}
                       </li>
                     ))}
                   </ul>

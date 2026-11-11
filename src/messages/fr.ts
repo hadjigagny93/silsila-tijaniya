@@ -80,6 +80,7 @@ export const t = {
     unplaced: "Localisations à compléter",
     unplacedText: "Personnes dont on ne connaît encore ni la ville ni le pays : elles n'apparaissent pas sur la carte.",
     complete: "Compléter",
+    placeOf: "Lieu à compléter",
     prophetShort: "Le Prophète ﷺ",
     generationLabel: "Génération",
     generationAll: "Toutes",
