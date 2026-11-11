@@ -625,6 +625,16 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       return row ? new Uint8Array(row.data) : null;
     },
 
+    async listPortraits() {
+      const rows = await all<{ person_id: string }>(
+        `select person_id from person_images as image
+         join persons on persons.id = image.person_id
+         where image.deleted = 0 and persons.deleted = 0 and hidden = 0 and display_mode <> 'short'
+           and (select count(*) from person_images as other where other.deleted = 0 and other.data = image.data) = 1`,
+      );
+      return rows.map((row) => row.person_id);
+    },
+
     async linkMouqaddam(personId, mouqaddamId) {
       await assertLink(await findPerson(personId), mouqaddamId);
       await run("update persons set mouqaddam_id = ? where id = ?", [mouqaddamId, personId]);

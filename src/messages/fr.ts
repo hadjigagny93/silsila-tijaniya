@@ -50,6 +50,8 @@ export const t = {
       biographies: "biographies",
       places: "lieux sur la carte",
     },
+    facesLabel: "Les visages de la silsila",
+    facesTitle: "Ceux qui ont reçu et transmis le wird",
     cheikhsLabel: "Les cheikhs de la voie",
     cheikhsTitle: "Des vies à découvrir",
     allBiographies: "Toutes les biographies",

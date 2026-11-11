@@ -6348,3 +6348,168 @@ a.suluk-next-station {
   max-width: 60rem;
   margin: 3rem auto 1rem;
 }
+
+/* Bande de portraits : deux rangées qui défilent en sens contraires, bords estompés, arrêt au survol. */
+.home-faces {
+  margin-top: 4.5rem;
+}
+
+.faces {
+  display: grid;
+  gap: 1rem;
+  margin: 2rem calc(50% - (100vw - var(--sidebar-width)) / 2) 0;
+  overflow: hidden;
+  padding: 0.75rem 0;
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.faces-row {
+  display: flex;
+  width: max-content;
+  animation: faces-left var(--faces-duration, 80s) linear infinite;
+}
+
+.faces-row[data-reverse] {
+  animation-name: faces-right;
+}
+
+.faces:hover .faces-row,
+.faces:focus-within .faces-row {
+  animation-play-state: paused;
+}
+
+.faces-track {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-right: 1rem;
+}
+
+@keyframes faces-left {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes faces-right {
+  from {
+    transform: translateX(-50%);
+  }
+}
+
+/* Formats alternés : portrait haut, carré, portrait moyen. */
+.face {
+  position: relative;
+  display: block;
+  width: 132px;
+  height: 168px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--line);
+  box-shadow: 0 10px 24px -14px rgb(30 26 21 / 0.55), 0 0 0 1px rgb(166 124 46 / 0.25);
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.faces-track li:nth-child(3n + 2) .face {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+}
+
+.faces-track li:nth-child(3n) .face {
+  width: 116px;
+  height: 146px;
+}
+
+.face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.28) saturate(0.85) contrast(1.02);
+  transition:
+    filter 0.35s ease,
+    transform 0.6s ease;
+}
+
+.face:hover,
+.face:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px -14px rgb(30 26 21 / 0.7), 0 0 0 2px var(--gold);
+}
+
+.face:hover img,
+.face:focus-visible img {
+  filter: none;
+  transform: scale(1.06);
+}
+
+.face-name {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 1.5rem 0.6rem 0.55rem;
+  background: linear-gradient(transparent, rgb(13 19 32 / 0.85));
+  color: #fbf8f2;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Les noms complets sont longs : trois lignes au plus, le reste sur la fiche. */
+.face-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.faces-track li:nth-child(3n + 2) .face-name {
+  padding: 1.25rem 1.1rem 1.2rem;
+  -webkit-line-clamp: 2;
+}
+
+.face:hover .face-name,
+.face:focus-visible .face-name {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faces {
+    overflow-x: auto;
+  }
+
+  .faces-row,
+  .faces-row[data-reverse] {
+    animation: none;
+  }
+
+  .faces-track[aria-hidden] {
+    display: none;
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .faces-track {
+    gap: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .face {
+    width: 100px;
+    height: 128px;
+  }
+
+  .faces-track li:nth-child(3n + 2) .face {
+    width: 92px;
+    height: 92px;
+  }
+
+  .faces-track li:nth-child(3n) .face {
+    width: 90px;
+    height: 112px;
+  }
+}
