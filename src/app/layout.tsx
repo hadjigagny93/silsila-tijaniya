@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { signOut } from "@/app/actions";
@@ -46,6 +47,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       style={width >= 190 && width <= 380 ? ({ "--sidebar-open": `${width}px` } as React.CSSProperties) : undefined}
     >
       <body className="min-h-dvh md:flex">
+        {/* Mesure d'audience sans cookies, seulement sur le site : jamais dans les apps Mac et iPhone. */}
+        {!session?.local && <Analytics />}
         <ThemeToggle initialDark={theme === "dark"} />
         <SidebarToggle />
         <aside className="site-sidebar shrink-0 border-b border-line bg-surface md:sticky md:top-0 md:h-dvh md:w-(--sidebar-width) md:border-e md:border-b-0">
