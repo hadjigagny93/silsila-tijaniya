@@ -11,7 +11,7 @@ import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
 import { PlaceQuickForm } from "./PlaceQuickForm";
-import type { SceneApi } from "./sceneTypes";
+import { DEFAULT_LINEAGE, type Lineage, type SceneApi } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
 import { useDragCard } from "./useDragCard";
 import { useStoredToggle } from "./useStoredToggle";
@@ -79,6 +79,9 @@ export function SilsilaTree({
   const dark = useDarkTheme();
   const [generation, setGeneration] = useState<number | null>(null);
   const generationNow = useRef<number | null>(null);
+  // Pour la personne choisie : ses shouyoukhs seulement au départ ; les disciples s'ajoutent d'un bouton.
+  const [lineage, setLineage] = useState<Lineage>(DEFAULT_LINEAGE);
+  const lineageNow = useRef<Lineage>(DEFAULT_LINEAGE);
   const [failed, setFailed] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -112,6 +115,7 @@ export function SilsilaTree({
           persons,
           dark,
           generation: generationNow.current,
+          lineage: lineageNow.current,
           onSelect: remember,
         });
         if (chosen.current) scene.current.select(chosen.current);
@@ -341,6 +345,27 @@ export function SilsilaTree({
                 t.silsila.incomplete
               )}
             </p>
+          )}
+          {person.kind !== "prophet" && (
+            <div className="lineage-toggle" role="group" aria-label={t.silsila.lineage}>
+              {(["masters", "disciples"] as const).map((side) => (
+                <button
+                  key={side}
+                  type="button"
+                  aria-pressed={lineage[side]}
+                  onClick={() => {
+                    const next = { ...lineage, [side]: !lineage[side] };
+                    // L'une des deux vues reste toujours allumée.
+                    if (!next.masters && !next.disciples) return;
+                    lineageNow.current = next;
+                    setLineage(next);
+                    scene.current?.setLineage?.(next);
+                  }}
+                >
+                  {side === "masters" ? t.silsila.masters : t.silsila.disciples}
+                </button>
+              ))}
+            </div>
           )}
           <div className="card-actions mt-4 space-y-2.5">
             <Link href={`/silsila/${person.id}`} className="button w-full">
