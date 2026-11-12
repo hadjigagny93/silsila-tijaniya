@@ -45,8 +45,7 @@ export const COLOR = {
   member: "var(--muted)",
 };
 
-// Taille du disque (et de la photo) : les pôles spirituels (Qutb) sont agrandis.
+// Taille du disque (et de la photo), selon le rang seulement : le Qutb reste une donnée de l'admin, sans effet visible.
 export function discRadius(person: PublicPerson) {
-  if (person.qutb) return person.kind === "member" ? 10 : 20;
   return person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
 }

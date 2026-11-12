@@ -48,7 +48,6 @@ function defs(root: SVGSVGElement, id: string) {
   for (const [suffix, color, strength] of [
     ["g", "var(--gold)", 0.55],
     ["a", "var(--accent)", 0.45],
-    ["q", "#2f8cff", 0.95],
   ] as const) {
     const gradient = svg("radialGradient", { id: id + suffix }, definitions);
     svg("stop", { offset: "0%", style: `stop-color:${color};stop-opacity:${strength}` }, gradient);
@@ -322,18 +321,14 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const kind = node.person.kind;
       const group = svg("g", { "data-id": node.person.id, class: "t-hit" }, nodeLayer);
-      // Pôle spirituel (Qutb) : photo agrandie, et un halo bleu vif qui respire autour.
+      // Pôle spirituel (Qutb) : photo agrandie.
       const radius = discRadius(node.person);
       svg("circle", { r: Math.max(12, radius), class: "t-target" }, group);
-      if (node.person.qutb) {
-        svg("circle", { r: node.depth === 0 ? 30 : radius * 2.2, fill: `url(#${id}q)`, class: "t-qutb" }, group);
-      }
       if (node.depth === 0) {
         svg("circle", { r: 46, fill: `url(#${id}g)` }, group);
         star(group, 11, "var(--gold)");
       } else {
-        const qutb = node.person.qutb ? " t-disc-qutb" : "";
-        svg("circle", { r: radius, class: `t-disc t-disc-${kind}${qutb}`, style: `stroke:${COLOR[kind]}` }, group);
+        svg("circle", { r: radius, class: `t-disc t-disc-${kind}`, style: `stroke:${COLOR[kind]}` }, group);
         if (node.person.hasImage && radius > 6) {
           const image = svg(
             "image",
@@ -378,7 +373,7 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const size = (node.depth === 0 ? 19 : node.person.kind === "member" ? 12.5 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
-      const offset = (node.person.qutb ? 26 : 18) * textScale;
+      const offset = 18 * textScale;
       // Chaînes à compléter : le nom sous le rond, centré, pour que les groupes voisins ne se gênent pas.
       const below = Boolean(node.stray);
       const x = below ? node.x : node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
