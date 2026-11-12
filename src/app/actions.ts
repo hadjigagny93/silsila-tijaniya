@@ -194,6 +194,7 @@ async function createBiographyFor(personId: string, person: { name: string }) {
     body: "",
     sources: "",
     draft: true,
+    localOnly: true,
     cover: null,
     personId,
   });
@@ -255,6 +256,7 @@ async function syncBiography(
     sources: biography.sources.join("\n"),
     cover: biography.cover,
     draft: biography.draft,
+    localOnly: biography.localOnly,
     personId,
   });
 }
@@ -366,6 +368,7 @@ export async function saveBiography(form: FormData) {
         body: text(form, "body", 200000),
         sources: text(form, "sources", 50000),
         draft: form.get("draft") === "on",
+        localOnly: form.get("localOnly") === "on",
         cover: optional(form, "cover", 200),
         personId: optional(form, "personId", 36),
       }),

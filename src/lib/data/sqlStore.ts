@@ -219,8 +219,12 @@ async function addMissingColumns(driver: SqlDriver) {
     await driver.exec("alter table suluk_settings add column timezone text not null default 'Africa/Dakar'");
   }
 
-  if (!(await columnsOf(driver, "biographies")).has("cover")) {
+  const biographyColumns = await columnsOf(driver, "biographies");
+  if (!biographyColumns.has("cover")) {
     await driver.exec("alter table biographies add column cover text");
+  }
+  if (!biographyColumns.has("local_only")) {
+    await driver.exec("alter table biographies add column local_only integer not null default 0");
   }
 
   // L'historique des degrés n'avait pas de clé : chaque changement reçoit un identifiant.
@@ -311,6 +315,7 @@ type BiographyRow = {
   body: string;
   sources: string;
   draft: number;
+  local_only?: number | null;
   cover: string | null;
 };
 
@@ -382,6 +387,7 @@ function toBiography(row: BiographyRow): Biography {
       .map((line) => line.trim())
       .filter(Boolean),
     draft: row.draft === 1,
+    localOnly: row.local_only === 1,
     cover: row.cover,
   };
 }
@@ -691,15 +697,16 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       return row ? toBiography(row) : null;
     },
 
-    async saveBiography({ slug, name, summary, body, sources, draft, cover, personId }) {
+    async saveBiography({ slug, name, summary, body, sources, draft, localOnly, cover, personId }) {
       await run(
-        `insert into biographies (slug, name, summary, body, sources, draft, cover)
-         values (?, ?, ?, ?, ?, ?, ?)
+        `insert into biographies (slug, name, summary, body, sources, draft, local_only, cover)
+         values (?, ?, ?, ?, ?, ?, ?, ?)
          on conflict (slug) do update set
            name = excluded.name, summary = excluded.summary,
            body = excluded.body, sources = excluded.sources, draft = excluded.draft,
+           local_only = excluded.local_only,
            cover = excluded.cover, updated_at = datetime('now'), deleted = 0`,
-        [slug, name, summary, body, sources, draft ? 1 : 0, cover],
+        [slug, name, summary, body, sources, draft ? 1 : 0, localOnly ? 1 : 0, cover],
       );
       await releaseBiography(slug);
       if (personId) await run("update persons set biography_slug = ? where id = ?", [slug, personId]);

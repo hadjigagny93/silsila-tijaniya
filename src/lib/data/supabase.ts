@@ -53,6 +53,7 @@ function toBiography(row: BiographyRow): Biography {
     body: row.body,
     sources: row.sources.split("\n").map((line) => line.trim()).filter(Boolean),
     draft: row.draft,
+    localOnly: false,
     cover: row.cover,
   };
 }

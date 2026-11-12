@@ -88,6 +88,13 @@ export function BiographyForm({
                 <span className="block text-sm text-muted">{t.biographies.formDraftHelp}</span>
               </span>
             </label>
+            <label className="check-row mt-3">
+              <input type="checkbox" name="localOnly" defaultChecked={biography?.localOnly ?? true} />
+              <span>
+                <span className="block font-semibold">{t.biographies.localOnlyLabel}</span>
+                <span className="block text-sm text-muted">{t.biographies.localOnlyHelp}</span>
+              </span>
+            </label>
           </section>
 
           <section className="panel">
