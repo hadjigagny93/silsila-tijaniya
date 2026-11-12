@@ -280,6 +280,11 @@ export async function updateMouqaddam(form: FormData) {
       if (image) await getStore().setPersonImage(personId, image);
       else if (removeImage) await getStore().setPersonImage(personId, null);
       if (before) await syncBiography(before, fields, personId);
+      // Case « Publier sur le site » de la biographie montrée sur le profil.
+      const published = optional(form, "biographyPublishSlug", 120);
+      if (published && (await getStore().getBiography(published))) {
+        await getStore().setBiographyLocalOnly(published, form.get("biographyPublished") !== "on");
+      }
     },
     `${page}?ok=1`,
     `${page}?erreur=1`,

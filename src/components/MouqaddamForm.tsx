@@ -186,13 +186,33 @@ export function MouqaddamForm({
                   <span className="min-w-0 flex-1">
                     <span className="picker-name">{biography.name}</span>
                     <span className="picker-detail">
-                      {emptyBiography ? t.admin.biographyEmpty : t.admin.biographyMeta(biography.draft)}
+                      {emptyBiography
+                        ? t.admin.biographyEmpty
+                        : t.admin.biographyStatus(biography.draft, !biography.localOnly)}
                     </span>
                   </span>
                   <Link href={`/biographies/${biography.slug}/modifier`} className="profile-link mt-0">
                     {emptyBiography ? t.admin.biographyWrite : t.admin.biographyEdit}
                   </Link>
                 </div>
+              ) : null}
+
+              {biography ? (
+                <label className="check-row">
+                  <input type="hidden" name="biographyPublishSlug" value={biography.slug} />
+                  <input
+                    type="checkbox"
+                    name="biographyPublished"
+                    defaultChecked={!biography.localOnly && !emptyBiography}
+                    disabled={emptyBiography}
+                  />
+                  <span>
+                    <span className="block font-semibold">{t.admin.biographyPublish}</span>
+                    <span className="block text-sm text-muted">
+                      {emptyBiography ? t.admin.biographyPublishEmpty : t.admin.biographyPublishHelp}
+                    </span>
+                  </span>
+                </label>
               ) : (
                 <div className="linked-card">
                   <span className="min-w-0 flex-1 text-muted">{t.admin.biographyNone}</span>

@@ -234,6 +234,7 @@ export type Store = {
   getBiography(slug: string): Promise<Biography | null>;
   saveBiography(input: BiographyInput): Promise<void>;
   setBiographyCover(slug: string, cover: string | null): Promise<void>;
+  setBiographyLocalOnly(slug: string, localOnly: boolean): Promise<void>;
   deleteBiography(slug: string): Promise<void>;
   // Suluk : espace privé, chacun ne lit et n'écrit que son propre wird.
   getSulukSettings(userId: string): Promise<SulukSettings | null>;
