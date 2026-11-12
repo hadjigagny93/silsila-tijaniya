@@ -52,10 +52,7 @@ export function createScene(options: SceneOptions): SceneApi {
   }
   for (const city of cities.values()) {
     city.pins.sort(
-      (a, b) =>
-        Number(b.person.qutb) - Number(a.person.qutb) ||
-        ORDER[a.person.kind] - ORDER[b.person.kind] ||
-        a.person.displayName.localeCompare(b.person.displayName),
+      (a, b) => ORDER[a.person.kind] - ORDER[b.person.kind] || a.person.displayName.localeCompare(b.person.displayName),
     );
   }
 
@@ -96,9 +93,6 @@ export function createScene(options: SceneOptions): SceneApi {
   const definitions = svg("defs", {}, stage.root);
   const clip = svg("clipPath", { id: id + "c", clipPathUnits: "objectBoundingBox" }, definitions);
   svg("circle", { cx: 0.5, cy: 0.5, r: 0.5 }, clip);
-  const glow = svg("radialGradient", { id: id + "q" }, definitions);
-  svg("stop", { offset: "0%", style: "stop-color:#2f8cff;stop-opacity:0.95" }, glow);
-  svg("stop", { offset: "100%", style: "stop-color:#2f8cff;stop-opacity:0" }, glow);
 
   const layer = (name: string) => svg("g", { class: name }, stage.world);
   const base = layer("m-base");
@@ -110,20 +104,14 @@ export function createScene(options: SceneOptions): SceneApi {
   const silverLayer = layer("t-silvers");
   const pinLayer = layer("m-pins");
 
-  // Chaque personne : sa photo (ou un rond), son halo de Qutb, et son nom, montré au survol.
+  // Chaque personne : sa photo (ou un rond), et son nom, montré au survol.
   for (const pin of pins.values()) {
     const { person } = pin;
     const radius = Math.max(discRadius(person), person.kind === "member" ? 6 : 10);
     const group = svg("g", { "data-id": person.id, class: "t-hit m-pin" }, pinLayer);
     svg("circle", { r: Math.max(radius, 12), class: "t-target" }, group);
-    if (person.qutb) svg("circle", { r: radius * 2.2, fill: `url(#${id}q)`, class: "t-qutb" }, group);
     svg("circle", { r: radius + 5, class: "m-ring" }, group);
-    const qutb = person.qutb ? " t-disc-qutb" : "";
-    svg(
-      "circle",
-      { r: radius, class: `t-disc t-disc-${person.kind}${qutb}`, style: `stroke:${COLOR[person.kind]}` },
-      group,
-    );
+    svg("circle", { r: radius, class: `t-disc t-disc-${person.kind}`, style: `stroke:${COLOR[person.kind]}` }, group);
     if (person.hasImage) {
       const image = svg(
         "image",
