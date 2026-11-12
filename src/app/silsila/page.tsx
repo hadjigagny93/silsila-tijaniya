@@ -49,6 +49,7 @@ export default async function SilsilaPage({
         persons={persons}
         initialId={persons.some((person) => person.id === personne) ? personne : undefined}
         canLink={Boolean(session?.isAdmin)}
+        canContribute={!session?.local}
       />
 
       {/* Légende des chaînes argentées, dès qu'il y en a une. */}

@@ -91,6 +91,18 @@ export default async function BiographyPage({ params }: Props) {
           </section>
         )}
 
+        {!session?.local && person && (
+          <aside className="contrib-invite">
+            <div>
+              <h2>{t.contribute.bioCta}</h2>
+              <p>{t.contribute.bioCtaText}</p>
+            </div>
+            <Link href={`/contribuer/biographie?personne=${person.id}`} className="button">
+              {t.contribute.bioCtaButton}
+            </Link>
+          </aside>
+        )}
+
         <p className="label mt-10 flex flex-wrap justify-between gap-4 border-t border-line pt-5">
           <Link href="/biographies" className="hover:underline">
             ← {t.biographies.back}
