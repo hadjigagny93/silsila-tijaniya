@@ -36,10 +36,11 @@ function chainOfTheDay(persons: PublicPerson[]) {
 
 export default async function Home() {
   const store = getStore();
-  const [persons, biographies, portraits] = await Promise.all([
+  const [persons, biographies, portraits, session] = await Promise.all([
     store.listPersons(),
     store.listBiographies(),
     store.listPortraits(),
+    store.getSession(),
   ]);
   // Les visages, dans un ordre nouveau à chaque visite.
   const byId = new Map(persons.map((person) => [person.id, person]));
@@ -118,6 +119,19 @@ export default async function Home() {
       )}
 
       <div className="pattern-band home-band" aria-hidden />
+
+      {!session?.local && (
+        <aside className="contrib-invite home-invite">
+          <div>
+            <h2>{t.contribute.homeTitle}</h2>
+            <p>{t.contribute.homeText}</p>
+          </div>
+          <Link href="/contribuer" className="button">
+            <Icon name="edit" size={16} />
+            {t.nav.contribute}
+          </Link>
+        </aside>
+      )}
 
       <div className="card-grid home-cards">
         <Link href="/silsila" className="group block">

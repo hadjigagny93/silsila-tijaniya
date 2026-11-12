@@ -55,11 +55,14 @@ export function SilsilaTree({
   persons,
   initialId,
   canLink = false,
+  canContribute = false,
 }: {
   persons: PublicPerson[];
   initialId?: string;
   // Admin : un bouton mène à « Ajouter une silsila » (relier une personne à son maître).
   canLink?: boolean;
+  // Site : « Vous en savez plus ? » mène à l'assistant de contribution.
+  canContribute?: boolean;
 }) {
   const stage = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -373,6 +376,12 @@ export function SilsilaTree({
               <Link href={`/biographies/${person.biographySlug}`} className="profile-link mx-auto flex w-fit">
                 {t.silsila.biography}
                 <Icon name="arrowR" size={16} />
+              </Link>
+            )}
+            {canContribute && person.kind !== "prophet" && (
+              <Link href={`/contribuer?personne=${person.id}`} className="card-contribute">
+                <Icon name="edit" size={14} />
+                {t.contribute.cardLink}
               </Link>
             )}
           </div>

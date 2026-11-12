@@ -71,6 +71,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <NavLink href="/biographies" icon="book">
                   {t.nav.biographies}
                 </NavLink>
+                <NavLink href="/contribuer" icon="edit">
+                  {t.nav.contribute}
+                </NavLink>
               </nav>
             </div>
           </header>
@@ -105,6 +108,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/admin/mouqaddams" icon="users">
                     {t.nav.adminMouqaddams}
                   </NavLink>
+                  {session.local && (
+                    <NavLink href="/admin/contributions" icon="upload">
+                      {t.nav.inbox}
+                    </NavLink>
+                  )}
                   {!session.local && (
                     <NavLink href="/admin" icon="shield">
                       {t.nav.adminModeration}
