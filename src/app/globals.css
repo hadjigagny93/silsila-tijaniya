@@ -6604,3 +6604,7 @@ a.suluk-next-station {
   background: var(--gold);
   content: "";
 }
+
+.count-up {
+  font-variant-numeric: tabular-nums;
+}

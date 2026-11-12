@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { CountUp } from "@/components/CountUp";
 import { FacesBand } from "@/components/FacesBand";
 import { Icon, Star } from "@/components/Icon";
 import { chainOf, generationsOf } from "@/lib/chain";
@@ -50,7 +51,8 @@ export default async function Home() {
   const stats = [
     [persons.length, t.home.stats.persons],
     [new Set(generations.values()).size, t.home.stats.generations],
-    [biographies.length, t.home.stats.biographies],
+    // Seules les biographies déjà rédigées comptent : beaucoup de fiches attendent encore leur texte.
+    [biographies.filter((biography) => biography.body.trim().length >= 150).length, t.home.stats.biographies],
     [places.size, t.home.stats.places],
   ] as const;
 
@@ -100,7 +102,9 @@ export default async function Home() {
         {stats.map(([value, label]) => (
           <div key={label}>
             <dt>{label}</dt>
-            <dd>{value}</dd>
+            <dd>
+              <CountUp value={value} />
+            </dd>
           </div>
         ))}
       </dl>
