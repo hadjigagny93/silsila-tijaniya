@@ -5904,6 +5904,35 @@ a.suluk-next-station {
   animation-duration: 2s;
 }
 
+/* Famille du Prophète ﷺ : halo bleu vif autour de la photo, qui respire doucement. */
+.t-family {
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: family-glow 2.8s ease-in-out infinite;
+}
+.t-disc-family {
+  stroke: #2f8cff !important;
+  stroke-width: 2.2px;
+  filter: drop-shadow(0 0 3px #2f8cff) drop-shadow(0 0 7px rgba(47, 140, 255, 0.8));
+}
+@keyframes family-glow {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-family {
+    animation: none;
+  }
+}
+
 @keyframes chain-flow {
   from {
     stroke-dashoffset: 0;

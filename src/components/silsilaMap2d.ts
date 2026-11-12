@@ -93,6 +93,9 @@ export function createScene(options: SceneOptions): SceneApi {
   const definitions = svg("defs", {}, stage.root);
   const clip = svg("clipPath", { id: id + "c", clipPathUnits: "objectBoundingBox" }, definitions);
   svg("circle", { cx: 0.5, cy: 0.5, r: 0.5 }, clip);
+  const glow = svg("radialGradient", { id: id + "q" }, definitions);
+  svg("stop", { offset: "0%", style: "stop-color:#2f8cff;stop-opacity:0.95" }, glow);
+  svg("stop", { offset: "100%", style: "stop-color:#2f8cff;stop-opacity:0" }, glow);
 
   const layer = (name: string) => svg("g", { class: name }, stage.world);
   const base = layer("m-base");
@@ -110,8 +113,18 @@ export function createScene(options: SceneOptions): SceneApi {
     const radius = Math.max(discRadius(person), person.kind === "member" ? 6 : 10);
     const group = svg("g", { "data-id": person.id, class: "t-hit m-pin" }, pinLayer);
     svg("circle", { r: Math.max(radius, 12), class: "t-target" }, group);
+    // Famille du Prophète ﷺ : halo bleu.
+    if (person.prophetFamily) svg("circle", { r: radius * 2.4, fill: `url(#${id}q)`, class: "t-family" }, group);
     svg("circle", { r: radius + 5, class: "m-ring" }, group);
-    svg("circle", { r: radius, class: `t-disc t-disc-${person.kind}`, style: `stroke:${COLOR[person.kind]}` }, group);
+    svg(
+      "circle",
+      {
+        r: radius,
+        class: `t-disc t-disc-${person.kind}${person.prophetFamily ? " t-disc-family" : ""}`,
+        style: `stroke:${COLOR[person.kind]}`,
+      },
+      group,
+    );
     if (person.hasImage) {
       const image = svg(
         "image",

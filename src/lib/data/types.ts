@@ -18,8 +18,10 @@ export type PublicPerson = {
   nicknames: string[];
   // Autres maîtres dont la personne a aussi reçu le wird : les chaînes argentées (la dorée est mouqaddamId).
   alsoFrom: string[];
-  // Pôle spirituel (Qutb) : un halo bleu entoure sa photo dans l'arbre.
+  // Pôle spirituel (Qutb) : donnée gardée pour l'admin, sans effet visible.
   qutb: boolean;
+  // Famille du Prophète ﷺ : un halo bleu entoure sa photo dans la Silsila.
+  prophetFamily: boolean;
   hasImage: boolean;
   // Change avec l'image : force le navigateur à recharger la nouvelle.
   imageVersion?: string | null;
@@ -71,6 +73,7 @@ export type NewMouqaddam = {
   zawiya: string | null;
   nicknames: string[];
   qutb: boolean;
+  prophetFamily: boolean;
   biographySlug: string | null;
 };
 

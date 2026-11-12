@@ -24,6 +24,7 @@ type PersonRow = {
   zawiya: string | null;
   nicknames: string | null;
   qutb: string | null;
+  prophet_family: string | null;
 };
 
 type BiographyRow = {
@@ -92,6 +93,7 @@ export async function collect(rows: Rows) {
       zawiya: row.zawiya,
       nicknames: row.nicknames,
       qutb: row.qutb === "1",
+      prophet_family: row.prophet_family === "1",
       // Pas de user_id : les comptes du Mac ne sont pas ceux du site.
     }));
 

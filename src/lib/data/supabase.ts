@@ -31,6 +31,7 @@ type PublicRow = {
   zawiya: string | null;
   nicknames: string | null;
   qutb: boolean;
+  prophet_family?: boolean | null;
   short: boolean;
 };
 
@@ -75,6 +76,7 @@ function personColumns(input: NewMouqaddam) {
     nicknames: input.nicknames.join("\n") || null,
     biography_slug: input.biographySlug,
     qutb: input.qutb,
+    prophet_family: input.prophetFamily,
   };
 }
 
@@ -87,11 +89,11 @@ async function releaseBiography(slug: string) {
 export const supabaseStore: Store = {
   async listPersons() {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("public_persons")
-      .select(
-        "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames, qutb, short",
-      );
+    const columns =
+      "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames, qutb, short";
+    let { data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family`);
+    // Migration 0016 pas encore passée : la colonne manque, le site s'affiche sans halo.
+    if (error) ({ data, error } = await supabase.from("public_persons").select(columns));
     check(error);
     const rows = (data ?? []) as PublicRow[];
     // Chaînes argentées : seulement vers des maîtres visibles, et pas pour une personne en affichage court.
@@ -120,6 +122,7 @@ export const supabaseStore: Store = {
       zawiya: row.zawiya,
       nicknames: row.nicknames?.split("\n") ?? [],
       qutb: row.qutb,
+      prophetFamily: Boolean(row.prophet_family),
       alsoFrom: row.short ? [] : (alsoFrom.get(row.id) ?? []).filter((id) => id !== row.mouqaddam_id),
     }));
   },
