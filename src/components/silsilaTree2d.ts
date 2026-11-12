@@ -16,8 +16,8 @@ const ROW = 84;
 // Forces de l'arbre vivant : chaque branche est un ressort vers son maître, les personnes se
 // repoussent, et chaque génération reste à sa hauteur pour que la graine garde le bas.
 const SPRING = 0.03;
-const SPRING_LENGTH = { branch: 78, leaf: 58 };
-const REPULSION = 1400;
+const SPRING_LENGTH = { branch: 82, leaf: 66 };
+const REPULSION = 2200;
 const REPULSION_RANGE = 170;
 const HEIGHT_PULL = 0.014;
 const SIDE_PULL = 0.0025;
@@ -25,7 +25,10 @@ const DAMPING = 0.82;
 const COOLING = 0.992;
 const REST = 0.02;
 const MIN_WIDTH = 1100;
-const LEAF_SPACE = 15;
+const LEAF_SPACE = 19;
+// Deux photos ne se touchent pas : en deçà de cet écart entre leurs bords, elles s'écartent franchement.
+const CLEARANCE = 6;
+const COLLISION = 0.35;
 // Chaînes à compléter, en bas : une rangée par génération dans chaque groupe, une place par bout de branche.
 const STRAY_ROW = 70;
 const STRAY_SPACE = 150;
@@ -553,7 +556,8 @@ export function createScene(options: SceneOptions): SceneApi {
         if (Math.abs(dx) > REPULSION_RANGE || Math.abs(dy) > REPULSION_RANGE) continue;
         const distance = Math.max(Math.hypot(dx, dy), 4);
         if (distance > REPULSION_RANGE) continue;
-        const force = (REPULSION / (distance * distance)) * alpha;
+        const touching = discRadius(a.person) + discRadius(b.person) + CLEARANCE - distance;
+        const force = (REPULSION / (distance * distance)) * alpha + (touching > 0 ? touching * COLLISION : 0);
         const fx = (dx / distance) * force;
         const fy = (dy / distance) * force;
         pushA.vx += fx;
