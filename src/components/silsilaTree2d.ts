@@ -362,21 +362,15 @@ export function createScene(options: SceneOptions): SceneApi {
     draw(performance.now());
   }
 
-  // Noms permanents : le Cheikh, la personne choisie, et les mouqaddams et cheikhs sans photo, sans chevauchement,
-  // les plus portants d'abord. Les autres montrent leur nom au survol de leur photo.
+  // Pas de noms permanents : seule la personne choisie garde le sien (ou tous, avec le bouton « Noms »).
+  // Les autres montrent leur nom au survol de leur photo.
   const labels = new Map<ForestNode, SVGTextElement>();
   function drawLabels() {
     labelLayer.querySelectorAll(".t-label").forEach((label) => label.remove());
     labels.clear();
     const taken: Box[] = [];
     const candidates = nodes
-      .filter(
-        (node) =>
-          display === "name" ||
-          node.depth === 0 ||
-          node === selected ||
-          (node.person.kind !== "member" && !node.person.hasImage),
-      )
+      .filter((node) => display === "name" || node === selected)
       .sort((a, b) => Number(b === selected) - Number(a === selected) || a.depth - b.depth || b.desc - a.desc);
     for (const node of candidates) {
       if (node.depth < 0) continue;
