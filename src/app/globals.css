@@ -6047,7 +6047,7 @@ a.suluk-next-station {
   font-size: 13px;
 }
 
-/* Accueil : un bandeau de nuit à sable, une vraie chaîne qui remonte au Prophète ﷺ, puis les chiffres et les cheikhs. */
+/* Accueil : un bandeau de nuit à sable, une vraie chaîne qui remonte au Prophète ﷺ, puis les chiffres. */
 .home-hero {
   margin: -2.5rem calc(50% - (100vw - var(--sidebar-width)) / 2) 0;
   background:
@@ -6269,63 +6269,6 @@ a.suluk-next-station {
   color: var(--muted);
   font-size: 13px;
   letter-spacing: 0.5px;
-}
-
-.home-cheikhs {
-  margin-top: 4.5rem;
-}
-
-.home-cheikhs ul {
-  display: grid;
-  max-width: 60rem;
-  margin: 2rem auto 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.75rem 1rem;
-}
-
-@media (min-width: 48rem) {
-  .home-cheikhs ul {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-.home-cheikhs li a {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: 18px;
-  line-height: 1.25;
-}
-
-.home-cheikhs .avatar {
-  object-fit: cover;
-  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--gold);
-  transition: transform 0.2s ease;
-}
-
-.home-cheikhs li a:hover .avatar {
-  transform: translateY(-3px);
-}
-
-.home-cheikhs li a:hover span {
-  color: var(--accent);
-}
-
-.home-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 2rem;
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.home-more:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .home-band {
