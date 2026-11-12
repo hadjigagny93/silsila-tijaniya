@@ -12,22 +12,22 @@ import {
 } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 
-const ROW = 84;
+const ROW = 100;
 // Forces de l'arbre vivant : chaque branche est un ressort vers son maître, les personnes se
 // repoussent, et chaque génération reste à sa hauteur pour que la graine garde le bas.
 const SPRING = 0.03;
 const SPRING_LENGTH = { branch: 82, leaf: 66 };
-const REPULSION = 2200;
-const REPULSION_RANGE = 170;
+const REPULSION = 3600;
+const REPULSION_RANGE = 230;
 const HEIGHT_PULL = 0.014;
 const SIDE_PULL = 0.0025;
 const DAMPING = 0.82;
 const COOLING = 0.992;
 const REST = 0.02;
 const MIN_WIDTH = 1100;
-const LEAF_SPACE = 19;
+const LEAF_SPACE = 30;
 // Deux photos ne se touchent pas : en deçà de cet écart entre leurs bords, elles s'écartent franchement.
-const CLEARANCE = 6;
+const CLEARANCE = 14;
 const COLLISION = 0.35;
 // Chaînes à compléter, en bas : une rangée par génération dans chaque groupe, une place par bout de branche.
 const STRAY_ROW = 70;
