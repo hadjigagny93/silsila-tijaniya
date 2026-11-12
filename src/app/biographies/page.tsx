@@ -1,51 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
-import { generationsOf } from "@/lib/chain";
+import { type BiographyEntry, BiographyIndex } from "@/components/BiographyIndex";
+import { Icon } from "@/components/Icon";
+import { biographySections, placeLabel } from "@/lib/biographySections";
 import { coverStyle, listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import type { Biography, PublicPerson } from "@/lib/data/types";
-import { compareBirthYears, periodOf } from "@/lib/dates";
+import { periodOf } from "@/lib/dates";
 import { t } from "@/messages/fr";
 
 export const metadata: Metadata = { title: t.biographies.title };
 
-type Section = { id: string; title: string; biographies: Biography[] };
-
-// Le Prophète ﷺ et le Cheikh ouvrent la page ; ce qui n'est pas relié la ferme.
-function sectionsOf(biographies: Biography[], persons: PublicPerson[]) {
-  const generations = generationsOf(persons);
-  const owners = new Map(persons.map((person) => [person.biographySlug, person]));
-  const prophet = persons.find((person) => person.kind === "prophet");
-
-  const origins: Biography[] = [];
-  const pending: Biography[] = [];
-  const ranked = new Map<number, Biography[]>();
-  for (const biography of biographies) {
-    const owner = owners.get(biography.slug);
-    const rank = owner && generations.get(owner.id);
-    if (rank) ranked.set(rank, [...(ranked.get(rank) ?? []), biography]);
-    else if (owner && (owner.id === prophet?.id || owner.mouqaddamId === prophet?.id)) origins.push(biography);
-    else pending.push(biography);
-  }
-
-  const birthOf = (biography: Biography) => owners.get(biography.slug)?.birthDate ?? null;
-  const inOrder = (list: Biography[]) =>
-    [...list].sort(
-      (a, b) => compareBirthYears(birthOf(a), birthOf(b)) || a.name.localeCompare(b.name, "fr"),
-    );
-
-  const sections: Section[] = [
-    { id: "origines", title: t.biographies.origins, biographies: inOrder(origins) },
-    ...[...ranked.keys()].sort((a, b) => a - b).map((rank) => ({
-      id: `generation-${rank}`,
-      title: t.biographies.generation(rank),
-      biographies: inOrder(ranked.get(rank)!),
-    })),
-    { id: "a-preciser", title: t.biographies.noGeneration, biographies: inOrder(pending) },
-  ];
-  return sections.filter((section) => section.biographies.length > 0);
-}
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
 
 export default async function BiographiesPage() {
   const store = getStore();
@@ -54,71 +25,91 @@ export default async function BiographiesPage() {
     store.listPersons(),
     store.getSession(),
   ]);
-  const periods = new Map(
-    persons.map((person) => [person.biographySlug, periodOf(person.birthDate, person.deathDate)]),
-  );
   const owners = new Map(persons.map((person) => [person.biographySlug, person]));
-  const sections = sectionsOf(biographies, persons);
+  const sections = biographySections(biographies, persons);
   const covers = listCovers();
 
+  const entryOf = (biography: Biography): BiographyEntry => {
+    const person: PublicPerson | null = owners.get(biography.slug) ?? null;
+    const place = person
+      ? person.city || placeLabel(person.deathCity, person.deathCountry) || placeLabel(person.birthCity, person.birthCountry)
+      : "";
+    return {
+      slug: biography.slug,
+      name: biography.name,
+      summary: biography.summary,
+      period: person ? periodOf(person.birthDate, person.deathDate) : "",
+      place,
+      badges: [
+        session?.isAdmin && biography.draft ? t.biographies.draftLabel : "",
+        session?.local && biography.localOnly ? t.biographies.localOnlyBadge : "",
+      ].filter(Boolean),
+      person,
+      haystack: normalize(
+        [biography.name, ...(person?.nicknames ?? []), place, person?.zawiya ?? "", biography.summary].join(" "),
+      ),
+    };
+  };
+
+  // Le Cheikh (et le Prophète ﷺ s'il a sa page) ouvrent la bibliothèque en grand.
+  const origins = sections.find((section) => section.id === "origines");
+  const featured = origins?.biographies ?? [];
+
   return (
-    <>
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="bio-library">
+      <header className="bio-library-head">
         <div>
+          <p className="eyebrow">{t.biographies.eyebrow}</p>
           <h1>{t.biographies.title}</h1>
-          <p className="mt-2 text-muted">{t.biographies.intro}</p>
+          <p className="bio-library-intro">{t.biographies.intro}</p>
+          {biographies.length > 0 && (
+            <p className="bio-library-count">{t.biographies.count(biographies.length, sections.length)}</p>
+          )}
         </div>
         {session?.isAdmin && (
           <Link href="/biographies/nouvelle" className="button">
+            <Icon name="plus" size={16} />
             {t.biographies.add}
           </Link>
         )}
-      </div>
+      </header>
 
       {biographies.length === 0 && <p className="mt-8 text-muted">{t.biographies.empty}</p>}
 
-      {sections.length > 1 && (
-        <nav className="generation-nav" aria-label={t.biographies.sectionsLabel}>
-          {sections.map((section) => (
-            <a key={section.id} href={`#${section.id}`}>
-              {section.title}
-            </a>
-          ))}
-        </nav>
-      )}
+      {featured.map((biography) => {
+        const entry = entryOf(biography);
+        return (
+          <Link key={biography.slug} href={`/biographies/${biography.slug}`} className="bio-feature">
+            <span className="bio-feature-image" style={coverStyle(biography, covers)} aria-hidden />
+            <span className="bio-feature-text">
+              <span className="eyebrow">{t.biographies.origins}</span>
+              <span className="bio-feature-who">
+                {entry.person && <Avatar person={entry.person} size={72} />}
+                <span className="bio-feature-name">{biography.name}</span>
+              </span>
+              {(entry.period || entry.place) && (
+                <span className="bio-feature-meta">{[entry.period, entry.place].filter(Boolean).join(" · ")}</span>
+              )}
+              {biography.summary && <span className="bio-feature-summary">{biography.summary}</span>}
+              <span className="bio-feature-cta">
+                {t.biographies.read}
+                <Icon name="arrowR" size={16} />
+              </span>
+            </span>
+          </Link>
+        );
+      })}
 
-      {sections.map((section) => (
-        <section key={section.id} id={section.id} className="generation-section">
-          <h2>
-            {section.title} <span className="text-base font-normal text-muted">{section.biographies.length}</span>
-          </h2>
-          <ul className="bio-grid mt-5">
-            {section.biographies.map((biography) => {
-              const owner = owners.get(biography.slug);
-              return (
-                <li key={biography.slug}>
-                  <Link href={`/biographies/${biography.slug}`} className="bio-tile">
-                    <span className="bio-tile-image" style={coverStyle(biography, covers)} aria-hidden />
-                    <span className="bio-tile-text">
-                      {owner && <Avatar person={owner} size={48} />}
-                      <span className="bio-tile-label">
-                        {[
-                          periods.get(biography.slug),
-                          session?.isAdmin && biography.draft && t.biographies.draftLabel,
-                          session?.local && biography.localOnly && t.biographies.localOnlyBadge,
-                        ]
-                          .filter(Boolean)
-                          .join(" · ") || t.home.biographiesLabel}
-                      </span>
-                      <span className="bio-tile-name">{biography.name}</span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ))}
-    </>
+      {biographies.length > 0 && (
+        <BiographyIndex
+          sections={sections.map((section) => ({
+            id: section.id,
+            title: section.title,
+            entries: section.biographies.map(entryOf),
+          }))}
+          hidden={featured.length ? ["origines"] : []}
+        />
+      )}
+    </div>
   );
 }

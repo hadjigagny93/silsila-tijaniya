@@ -387,29 +387,6 @@ h3 {
   }
 }
 
-.generation-nav {
-  position: sticky;
-  z-index: 10;
-  top: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  margin-top: 1.5rem;
-  border-bottom: 1px solid var(--line);
-  background: var(--background);
-  padding-block: 0.6rem;
-  font-size: 13px;
-}
-
-.generation-nav a:hover {
-  color: var(--accent);
-}
-
-.generation-section {
-  margin-top: 2.5rem;
-  scroll-margin-top: 5rem;
-}
-
 .cover-preview {
   position: relative;
   height: 11.5rem;
@@ -1794,77 +1771,6 @@ h3 {
   .card-grid > *:nth-child(2n) {
     border-inline-start: 1px solid var(--line);
   }
-}
-
-/* Biographies : l'image remplit la tuile, la photo et le nom flottent au milieu. */
-.bio-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
-  gap: 3px;
-}
-
-.bio-tile {
-  position: relative;
-  display: block;
-  aspect-ratio: 5 / 7;
-  overflow: hidden;
-  background: #2b2620;
-  color: #fff;
-}
-
-.bio-tile-image {
-  position: absolute;
-  inset: 0;
-  background: url("/motif.svg") center / 120px;
-  transition: transform 0.6s ease;
-}
-
-.bio-tile::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgb(0 0 0 / 0.28);
-  transition: background 0.3s ease;
-}
-
-.bio-tile:hover .bio-tile-image {
-  transform: scale(1.04);
-}
-
-.bio-tile:hover::after {
-  background: rgb(0 0 0 / 0.42);
-}
-
-.bio-tile-text {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  text-align: center;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.55);
-}
-
-.bio-tile-text .avatar {
-  border: 2px solid rgb(255 255 255 / 0.85);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 0.35);
-}
-
-.bio-tile-label {
-  font-size: 0.85rem;
-  letter-spacing: 0.03em;
-  opacity: 0.92;
-}
-
-.bio-tile-name {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 1.9vw, 1.9rem);
-  font-weight: 600;
-  line-height: 1.15;
 }
 
 .card-image {
@@ -7496,4 +7402,828 @@ a.suluk-next-station {
 
 .inbox-item:has(.inbox-again) {
   opacity: 0.92;
+}
+
+/* ——— Biographies ——— */
+
+/* La bibliothèque et les pages débordent un peu de la colonne centrale pour respirer. */
+.bio-library,
+.bio-article {
+  --bio-width: min(72rem, calc(100vw - var(--sidebar-width) - 2rem));
+  width: var(--bio-width);
+  margin-inline: calc((100% - var(--bio-width)) / 2);
+}
+
+.bio-library-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding-bottom: 1.75rem;
+}
+
+.bio-library-head h1 {
+  margin-top: 0.4rem;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  line-height: 1.05;
+}
+
+.bio-library-intro {
+  max-width: 36rem;
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+}
+
+.bio-library-count {
+  margin-top: 0.9rem;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Le Cheikh en grand : l'image d'un côté, le texte de l'autre. */
+.bio-feature {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 18px 40px -28px rgb(30 26 21 / 0.45);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.bio-feature + .bio-feature {
+  margin-top: 1rem;
+}
+
+.bio-feature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 26px 50px -28px rgb(30 26 21 / 0.55);
+}
+
+.bio-feature-image {
+  min-height: 13rem;
+  background-color: #2b2620;
+  transition: transform 0.8s ease;
+}
+
+.bio-feature:hover .bio-feature-image {
+  transform: scale(1.03);
+}
+
+.bio-feature-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.75rem;
+  background: var(--surface);
+}
+
+.bio-feature-who {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bio-feature-who .avatar {
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.bio-feature-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.bio-feature-meta,
+.bio-card-meta {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.bio-feature-summary {
+  color: var(--muted);
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.bio-feature-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@media (min-width: 48rem) {
+  .bio-feature {
+    grid-template-columns: 5fr 6fr;
+  }
+
+  .bio-feature-image {
+    min-height: 20rem;
+  }
+
+  .bio-feature-text {
+    justify-content: center;
+    padding: 2.5rem;
+  }
+}
+
+/* Barre de recherche et parties : elle reste en haut pendant qu'on parcourt. */
+.bio-toolbar {
+  position: sticky;
+  z-index: 10;
+  top: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-top: 2.5rem;
+  margin-inline: -0.5rem;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 0.5rem;
+}
+
+.bio-search {
+  display: flex;
+  flex: 1 1 18rem;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 0 0.5rem 0 1rem;
+  color: var(--muted);
+  transition: border-color 0.2s ease;
+}
+
+.bio-search:focus-within {
+  border-color: var(--accent);
+}
+
+.bio-search input {
+  flex: 1;
+  min-width: 0;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 1rem;
+  outline: none;
+}
+
+.bio-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.bio-search button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.bio-search button:hover {
+  background: var(--line);
+  color: var(--foreground);
+}
+
+.bio-chips {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.bio-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.bio-chips a {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  font-size: 14px;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.bio-chips a span {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bio-chips a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.bio-chips a[aria-current="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.bio-chips a[aria-current="true"] span {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.bio-results {
+  margin-top: 1.25rem;
+  color: var(--muted);
+}
+
+.bio-section {
+  margin-top: 2.5rem;
+  scroll-margin-top: 6rem;
+}
+
+/* Titre de partie : un filet doré qui file jusqu'au bord. */
+.bio-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 1.6rem;
+}
+
+.bio-section-title::after {
+  content: "";
+  flex: 1;
+  align-self: center;
+  height: 1px;
+  background: linear-gradient(to right, color-mix(in srgb, var(--gold) 55%, transparent), transparent);
+}
+
+.bio-section-title small {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.bio-cards {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 40rem) {
+  .bio-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 72rem) {
+  .bio-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.bio-card {
+  display: flex;
+  height: 100%;
+  align-items: flex-start;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 1rem 1.1rem;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.bio-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--gold) 60%, var(--line));
+  box-shadow: 0 14px 30px -22px rgb(30 26 21 / 0.5);
+}
+
+.bio-card .avatar {
+  box-shadow: 0 0 0 1px var(--line), 0 0 0 4px var(--surface), 0 0 0 5px color-mix(in srgb, var(--gold) 35%, transparent);
+}
+
+.bio-card-text {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bio-card-name {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.bio-card-summary {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.bio-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.bio-card-badges span {
+  border-radius: 999px;
+  background: var(--danger-soft);
+  padding: 0.1rem 0.5rem;
+  color: var(--danger);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bio-card > .icon {
+  flex: none;
+  align-self: center;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.bio-card:hover > .icon {
+  color: var(--accent);
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 40rem) {
+  .bio-card {
+    padding: 0.85rem;
+  }
+
+  .bio-card .avatar {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .bio-card-name {
+    font-size: 1.15rem;
+  }
+}
+
+/* ——— Page d'une biographie ——— */
+
+.bio-hero {
+  position: relative;
+  display: flex;
+  min-height: 22rem;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #2b2620;
+  color: #fff;
+}
+
+.bio-hero-image {
+  position: absolute;
+  inset: 0;
+  background-color: #2b2620;
+}
+
+.bio-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgb(14 11 8 / 0.92) 0%, rgb(14 11 8 / 0.55) 45%, rgb(14 11 8 / 0.15) 100%),
+    linear-gradient(to right, rgb(14 11 8 / 0.35), transparent 60%);
+}
+
+.bio-hero-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 1.75rem;
+}
+
+.bio-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bio-crumbs a {
+  opacity: 0.8;
+}
+
+.bio-crumbs a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.bio-crumbs span {
+  opacity: 0.5;
+}
+
+.bio-hero-who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.bio-hero-avatar .avatar {
+  border: 3px solid rgb(255 255 255 / 0.9);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+}
+
+.bio-hero h1 {
+  max-width: 42rem;
+  color: #fff;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  line-height: 1.05;
+  text-shadow: 0 2px 20px rgb(0 0 0 / 0.4);
+}
+
+.bio-hero-meta {
+  margin-top: 0.6rem;
+  color: #f0d9a8;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* En bas du bandeau : le haut à droite appartient au bouton de thème. Le choix d'image s'ouvre vers le haut. */
+.bio-hero .cover-changer {
+  top: auto;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+}
+
+.bio-hero .cover-changer form {
+  top: auto;
+  bottom: calc(100% + 0.25rem);
+}
+
+@media (min-width: 48rem) {
+  .bio-hero {
+    min-height: 26rem;
+  }
+
+  .bio-hero-content {
+    padding: 2.5rem 3rem;
+  }
+}
+
+.bio-layout {
+  display: grid;
+  gap: 2.5rem;
+  margin-top: 2.5rem;
+}
+
+@media (min-width: 62rem) {
+  .bio-layout {
+    grid-template-columns: minmax(0, 1fr) 19rem;
+    gap: 4rem;
+    padding-inline: 1rem;
+  }
+}
+
+.bio-main {
+  min-width: 0;
+  max-width: 42rem;
+}
+
+.bio-lead {
+  border-left: 3px solid var(--gold);
+  padding-left: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.bio-body {
+  margin-top: 2rem;
+  font-family: var(--font-serif);
+  font-size: 1.09rem;
+  line-height: 1.8;
+}
+
+.bio-body .markdown > * + * {
+  margin-top: 1.1rem;
+}
+
+.bio-body .markdown h2,
+.bio-body .markdown h3 {
+  margin-top: 2.5rem;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1.2;
+}
+
+.bio-body .markdown h3 {
+  font-size: 1.3rem;
+}
+
+.bio-body .markdown > p:first-child::first-letter {
+  margin: 0.35rem 0.6rem 0 0;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 4.2rem;
+  font-weight: 600;
+  line-height: 0.8;
+}
+
+.bio-body .markdown blockquote {
+  border-inline-start-color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.bio-note,
+.bio-empty {
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  color: var(--muted);
+}
+
+.bio-empty {
+  padding: 2rem;
+  text-align: center;
+}
+
+.bio-sources {
+  margin-top: 3rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+.bio-sources h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+}
+
+.bio-sources h2 small {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.bio-sources ol {
+  margin-top: 0.9rem;
+  padding-inline-start: 1.4rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  list-style: decimal;
+}
+
+.bio-sources li + li {
+  margin-top: 0.4rem;
+}
+
+.bio-sources li::marker {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* Fiche à côté du texte : elle suit la lecture sur grand écran. */
+.bio-aside-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 1.4rem;
+}
+
+@media (min-width: 62rem) {
+  .bio-aside-card {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+.bio-facts {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1rem;
+}
+
+.bio-fact dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bio-fact dd {
+  margin-top: 0.3rem;
+}
+
+.bio-person {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: 10px;
+  margin-inline: -0.4rem;
+  padding: 0.3rem 0.4rem;
+  line-height: 1.25;
+  transition: background 0.2s ease;
+}
+
+.bio-person:hover {
+  background: var(--background);
+  color: var(--accent);
+}
+
+.bio-disciples {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.bio-more {
+  display: inline-block;
+  margin-top: 0.4rem;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.bio-more:hover {
+  text-decoration: underline;
+}
+
+.bio-aside-links {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.25rem;
+}
+
+.bio-aside-links a {
+  justify-content: center;
+}
+
+/* Précédente / suivante : deux cartes pour continuer la lecture. */
+.bio-pager {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 3.5rem;
+}
+
+@media (min-width: 40rem) {
+  .bio-pager {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.bio-pager-link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 1rem 1.25rem;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.bio-pager-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.bio-pager-link.is-next {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.bio-pager-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bio-pager-who {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.bio-pager-link.is-next .bio-pager-who {
+  flex-direction: row-reverse;
+}
+
+.bio-back {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.bio-back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.bio-back a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 40rem) {
+  .bio-hero {
+    min-height: 20rem;
+    border-radius: 16px;
+  }
+
+  .bio-hero-content {
+    padding: 1.25rem;
+  }
+
+  .bio-hero-avatar .avatar {
+    width: 76px !important;
+    height: 76px !important;
+  }
+
+  .bio-lead {
+    font-size: 1.25rem;
+  }
+
+  .bio-body {
+    font-size: 1.05rem;
+  }
+}
+
+/* Sur le site, la barre de recherche s'arrête sous le menu du haut, lui aussi collé en haut. */
+[data-topbar] .bio-toolbar {
+  top: calc(3.9rem + 1px);
+}
+
+[data-topbar] .bio-section {
+  scroll-margin-top: 11rem;
+}
+
+@media (min-width: 62rem) {
+  [data-topbar] .bio-aside-card {
+    top: calc(3.9rem + 1.5rem);
+  }
 }
