@@ -716,6 +716,10 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run("update biographies set cover = ? where slug = ?", [cover, slug]);
     },
 
+    async setBiographyLocalOnly(slug, localOnly) {
+      await run("update biographies set local_only = ? where slug = ?", [localOnly ? 1 : 0, slug]);
+    },
+
     async deleteBiography(slug) {
       await releaseBiography(slug);
       await run("update biographies set deleted = 1 where slug = ?", [slug]);

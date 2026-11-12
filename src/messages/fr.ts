@@ -327,6 +327,11 @@ export const t = {
       `${generation ? `Placée en ${generation}${generation === 1 ? "re" : "e"} génération — ` : ""}${links} maillon${links > 1 ? "s" : ""} jusqu'au Prophète ﷺ.`,
     biographyChange: "Lier une autre biographie",
     biographyMeta: (draft: boolean) => (draft ? "Brouillon" : "Publiée"),
+    biographyStatus: (draft: boolean, published: boolean) =>
+      [published ? "Sur le site" : "Gardée sur le Mac", draft && "Brouillon"].filter(Boolean).join(" · "),
+    biographyPublish: "Publier sur le site",
+    biographyPublishHelp: "Décochée, la biographie reste sur le Mac. Le site change au prochain « Publier sur le site ».",
+    biographyPublishEmpty: "Sans texte, elle n'est jamais envoyée sur le site.",
     removePerson: "Supprimer cette fiche",
     removePersonQuestion: "Supprimer définitivement cette fiche ?",
     nicknames: "Sobriquets",

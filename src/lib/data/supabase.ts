@@ -357,6 +357,11 @@ export const supabaseStore: Store = {
     check((await supabase.from("biographies").update({ cover }).eq("slug", slug)).error);
   },
 
+  // Le site ne reçoit que les biographies publiées depuis le Mac : rien à régler ici.
+  async setBiographyLocalOnly() {
+    throw new Error("Non disponible en ligne.");
+  },
+
   async deleteBiography(slug) {
     const supabase = await createClient();
     check((await supabase.from("persons").update({ biography_slug: null }).eq("biography_slug", slug)).error);
