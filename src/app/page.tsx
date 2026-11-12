@@ -46,14 +46,6 @@ export default async function Home() {
   const generations = generationsOf(persons);
   const chain = chainOfTheDay(persons);
   const places = new Set(persons.map((person) => placeOf(person)?.name).filter(Boolean));
-  const bySlug = new Set(biographies.map((biography) => biography.slug));
-  const cheikhs = persons
-    .filter(
-      (person) =>
-        person.kind === "cheikh" && person.hasImage && person.biographySlug && bySlug.has(person.biographySlug),
-    )
-    .sort((a, b) => (generations.get(a.id) ?? 99) - (generations.get(b.id) ?? 99))
-    .slice(0, 8);
 
   const stats = [
     [persons.length, t.home.stats.persons],
@@ -118,29 +110,6 @@ export default async function Home() {
           <p className="label text-center">{t.home.facesLabel}</p>
           <h2 className="mt-2 text-center text-[32px]">{t.home.facesTitle}</h2>
           <FacesBand persons={faces} label={t.home.facesLabel} />
-        </section>
-      )}
-
-      {cheikhs.length > 0 && (
-        <section className="home-cheikhs">
-          <p className="label text-center">{t.home.cheikhsLabel}</p>
-          <h2 className="mt-2 text-center text-[32px]">{t.home.cheikhsTitle}</h2>
-          <ul>
-            {cheikhs.map((person) => (
-              <li key={person.id}>
-                <Link href={`/biographies/${person.biographySlug}`}>
-                  <Avatar person={person} size={96} />
-                  <span>{person.displayName}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className="text-center">
-            <Link href="/biographies" className="home-more">
-              {t.home.allBiographies}
-              <Icon name="arrowR" size={16} />
-            </Link>
-          </p>
         </section>
       )}
 
