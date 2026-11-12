@@ -1,6 +1,15 @@
 import { buildForest, type ForestNode, hash, subtreeOf } from "@/lib/silsilaForest";
 import { personImageUrl } from "./Avatar";
-import { COLOR, discRadius, prefersCalm, type SceneApi, type SceneOptions, type TreeDisplay } from "./sceneTypes";
+import {
+  COLOR,
+  DEFAULT_LINEAGE,
+  discRadius,
+  prefersCalm,
+  type Lineage,
+  type SceneApi,
+  type SceneOptions,
+  type TreeDisplay,
+} from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 
 const ROW = 84;
@@ -163,6 +172,7 @@ export function createScene(options: SceneOptions): SceneApi {
   // « name » : tous les noms à la fois ; « photo » : seulement ceux qui n'ont pas de photo.
   let display: TreeDisplay = options.display ?? "photo";
   let generation = options.generation ?? null;
+  let lineage: Lineage = options.lineage ?? DEFAULT_LINEAGE;
 
   const stage = createSvgStage(
     options.container,
@@ -414,12 +424,22 @@ export function createScene(options: SceneOptions): SceneApi {
   }
 
   function restyle() {
-    // Une personne choisie : on ne garde que les chaînes qui viennent à elle et qui partent d'elle, le reste disparaît.
-    const up = selected ? spread(selected, (node) => [node.parent, ...(silverMasters.get(node) ?? [])]) : null;
-    const down = selected ? spread(selected, (node) => [...node.children, ...(silverDisciples.get(node) ?? [])]) : null;
+    // Une personne choisie : on ne garde que ses shouyoukhs (les chaînes qui viennent à elle), ses disciples
+    // (celles qui partent d'elle), ou les deux, selon les boutons de sa fiche. Le reste disparaît.
+    const up = selected
+      ? lineage.masters
+        ? spread(selected, (node) => [node.parent, ...(silverMasters.get(node) ?? [])])
+        : new Set([selected])
+      : null;
+    const down = selected
+      ? lineage.disciples
+        ? spread(selected, (node) => [...node.children, ...(silverDisciples.get(node) ?? [])])
+        : new Set([selected])
+      : null;
     const kept = (node: ForestNode) => !up || node.depth < 0 || up.has(node) || down!.has(node);
-    // Une chaîne reste si elle mène à la personne, ou si elle part d'elle ou de l'un de ses disciples.
-    const linked = (master: ForestNode, node: ForestNode) => !up || up.has(node) || down!.has(master);
+    // Une chaîne reste si elle mène à la personne (shouyoukhs), ou si elle part d'elle ou d'un disciple (disciples).
+    const linked = (master: ForestNode, node: ForestNode) =>
+      !up || (lineage.masters && up.has(node)) || (lineage.disciples && down!.has(master));
     const show = (element: SVGElement, on: boolean) => (element.style.display = on ? "" : "none");
     const opacity = (node: ForestNode) =>
       generation !== null && !selected ? (node.depth === generation && !node.stray ? 1 : 0.2) : 1;
@@ -679,6 +699,10 @@ export function createScene(options: SceneOptions): SceneApi {
     },
     setGeneration(next) {
       generation = next;
+      restyle();
+    },
+    setLineage(next) {
+      lineage = next;
       restyle();
     },
     setExploring: stage.setExploring,

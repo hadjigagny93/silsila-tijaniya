@@ -72,6 +72,9 @@ export const t = {
     biographiesText: "Découvrez la vie et l'œuvre des cheikhs et des mouqaddams de la voie.",
   },
   silsila: {
+    lineage: "Chaînes à montrer",
+    masters: "Shouyoukhs",
+    disciples: "Disciples",
     title: "La silsila",
     intro: "Chaque nom se rattache à celui qui lui a transmis le wird.",
     eyebrow: "La chaîne de transmission",

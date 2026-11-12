@@ -6,7 +6,7 @@ import { generationsOf } from "@/lib/chain";
 import type { PublicPerson } from "@/lib/data/types";
 import { type Place, placeOf } from "@/lib/places";
 import { personImageUrl } from "./Avatar";
-import { COLOR, discRadius, type SceneApi, type SceneOptions } from "./sceneTypes";
+import { COLOR, DEFAULT_LINEAGE, discRadius, type Lineage, type SceneApi, type SceneOptions } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 
 const WIDTH = 2000;
@@ -76,6 +76,7 @@ export function createScene(options: SceneOptions): SceneApi {
   let ready = false;
   let selected: string | null = null;
   let generation = options.generation ?? null;
+  let lineage: Lineage = options.lineage ?? DEFAULT_LINEAGE;
   let scale = 0;
 
   const stage = createSvgStage(
@@ -202,29 +203,38 @@ export function createScene(options: SceneOptions): SceneApi {
     }
   }
 
-  // Une personne choisie : ses maîtres et ses disciples restent nets, le reste s'efface sans disparaître,
-  // pour garder la géographie.
+  // Une personne choisie : ses shouyoukhs, ses disciples, ou les deux (boutons de sa fiche) restent nets ;
+  // le reste s'efface sans disparaître, pour garder la géographie.
   function restyle() {
-    const linked = new Set<string>();
+    const up = new Set<string>();
+    const down = new Set<string>();
     if (selected) {
+      up.add(selected);
+      down.add(selected);
+    }
+    if (selected && lineage.masters) {
       const climb = [selected];
+      up.clear();
       while (climb.length) {
         const person = personById.get(climb.pop()!);
-        if (!person || linked.has(person.id)) continue;
-        linked.add(person.id);
+        if (!person || up.has(person.id)) continue;
+        up.add(person.id);
         climb.push(...[person.mouqaddamId, ...person.alsoFrom].filter((value): value is string => Boolean(value)));
       }
-      linked.delete(selected);
+    }
+    if (selected && lineage.disciples) {
       const descend = [selected];
+      down.clear();
       while (descend.length) {
         const current = descend.pop()!;
-        if (linked.has(current)) continue;
-        linked.add(current);
+        if (down.has(current)) continue;
+        down.add(current);
         descend.push(
           ...[...(children.get(current) ?? []), ...(silverDisciples.get(current) ?? [])].map((person) => person.id),
         );
       }
     }
+    const linked = new Set([...up, ...down]);
     const shown = (personId: string) =>
       selected ? linked.has(personId) : generation === null || generations.get(personId) === generation;
     for (const pin of pins.values()) {
@@ -233,7 +243,10 @@ export function createScene(options: SceneOptions): SceneApi {
     }
     for (const { from, to, path } of arcs) {
       // Les chaînes n'apparaissent que pour la personne choisie : celles qui mènent à elle et qui partent d'elle.
-      const on = Boolean(selected) && linked.has(from.person.id) && linked.has(to.person.id);
+      const on =
+        Boolean(selected) &&
+        ((lineage.masters && up.has(from.person.id) && up.has(to.person.id)) ||
+          (lineage.disciples && down.has(from.person.id) && down.has(to.person.id)));
       path.style.display = on ? "" : "none";
     }
   }
@@ -258,6 +271,10 @@ export function createScene(options: SceneOptions): SceneApi {
     },
     setGeneration(next) {
       generation = next;
+      restyle();
+    },
+    setLineage(next) {
+      lineage = next;
       restyle();
     },
     setExploring: stage.setExploring,

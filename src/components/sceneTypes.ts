@@ -2,11 +2,16 @@ import type { PublicPerson } from "@/lib/data/types";
 
 export type TreeDisplay = "photo" | "name";
 
+// Pour la personne choisie : ses shouyoukhs (de qui elle a pris), ses disciples (qui ont pris d'elle), ou les deux.
+export type Lineage = { masters: boolean; disciples: boolean };
+export const DEFAULT_LINEAGE: Lineage = { masters: true, disciples: false };
+
 export type SceneApi = {
   select(id: string | null): void;
   setDisplay?(display: TreeDisplay): void;
   setIsolated?(isolated: boolean): void;
   setGeneration?(generation: number | null): void;
+  setLineage?(lineage: Lineage): void;
   // Propre à l'arbre vivant : la molette déplace le dessin, et la ramure se réorganise.
   setExploring?(exploring: boolean): void;
   rearrange?(): void;
@@ -24,6 +29,7 @@ export type SceneOptions = {
   display?: TreeDisplay;
   dark?: boolean;
   generation?: number | null;
+  lineage?: Lineage;
   onSelect(id: string | null): void;
 };
 
