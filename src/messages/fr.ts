@@ -838,9 +838,11 @@ export const t = {
   inbox: {
     title: "Contributions",
     lead: "Ce que les visiteurs du site proposent. Rien n'apparaît en ligne avant votre accord et la prochaine publication.",
-    tabs: { new: "À traiter", done: "Traitées" },
+    tabs: { new: "À traiter", done: "Traitées", rejected: "Refusées" },
     empty: "Aucune contribution à traiter.",
     emptyDone: "Aucune contribution traitée pour le moment.",
+    emptyRejected: "Aucune contribution refusée.",
+    acceptAnyway: "Changer d'avis :",
     missingKey: "Clé de publication absente (publication.json) : impossible de lire les contributions.",
     unavailable: "Les contributions se relisent dans l'app Mac.",
     error: "Impossible de lire les contributions. Vérifiez la connexion.",

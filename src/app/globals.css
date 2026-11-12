@@ -7487,3 +7487,13 @@ a.suluk-next-station {
     grid-column: auto;
   }
 }
+
+.inbox-again {
+  align-self: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.inbox-item:has(.inbox-again) {
+  opacity: 0.92;
+}
