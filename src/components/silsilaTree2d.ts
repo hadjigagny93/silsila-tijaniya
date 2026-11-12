@@ -379,7 +379,7 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const size = (node.depth === 0 ? 19 : node.person.kind === "member" ? 12.5 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
-      const offset = 18 * textScale;
+      const offset = Math.max(18 * textScale, discRadius(node.person) + 6);
       // Chaînes à compléter : le nom sous le rond, centré, pour que les groupes voisins ne se gênent pas.
       const below = Boolean(node.stray);
       const x = below ? node.x : node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
@@ -484,15 +484,15 @@ export function createScene(options: SceneOptions): SceneApi {
     if (generation !== null && !selected) {
       for (const node of nodes) {
         if (node.depth === generation && !node.stray)
-          halos.set(node, svg("circle", { r: 16, fill: `url(#${id}a)` }, haloLayer));
+          halos.set(node, svg("circle", { r: discRadius(node.person) * 2, fill: `url(#${id}a)` }, haloLayer));
       }
     }
     markLayer.replaceChildren();
     rings =
       selected && selected.depth >= 0
         ? [
-            svg("circle", { r: 20, class: "t-ring" }, markLayer),
-            svg("circle", { r: 28, class: "t-ring t-ring-soft" }, markLayer),
+            svg("circle", { r: discRadius(selected.person) + 9, class: "t-ring" }, markLayer),
+            svg("circle", { r: discRadius(selected.person) + 17, class: "t-ring t-ring-soft" }, markLayer),
           ]
         : [];
     draw(performance.now());

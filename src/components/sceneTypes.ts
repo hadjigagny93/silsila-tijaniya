@@ -47,5 +47,7 @@ export const COLOR = {
 
 // Taille du disque (et de la photo), selon le rang seulement : le Qutb reste une donnée de l'admin, sans effet visible.
 export function discRadius(person: PublicPerson) {
-  return person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
+  const base = person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
+  // Les photos sont deux fois plus grandes, pour qu'on reconnaisse les visages ; les ronds sans photo restent discrets.
+  return person.hasImage ? base * 2 : base;
 }

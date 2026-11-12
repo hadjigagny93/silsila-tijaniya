@@ -6699,3 +6699,8 @@ a.suluk-next-station {
     padding: 0 0.55rem;
   }
 }
+
+/* Site web : la barre du haut est là, la scène s'arrête au bas de l'écran (sinon la barre de vues est coupée). */
+:root[data-topbar] .silsila-stage {
+  height: calc(100dvh - 3.9rem);
+}
