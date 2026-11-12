@@ -310,6 +310,8 @@ export const t = {
     kindCheikh: "Cheikh",
     qutb: "Pôle spirituel (Qutb)",
     qutbHelp: "Information gardée en interne : rien ne s'affiche dans la Silsila.",
+    prophetFamily: "Famille du Prophète ﷺ",
+    prophetFamilyHelp: "Un halo bleu entoure sa photo dans la Silsila.",
     blockLife: "Vie",
     blockTransmission: "Transmission",
     blockBiography: "Biographie liée",

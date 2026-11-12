@@ -48,6 +48,7 @@ function defs(root: SVGSVGElement, id: string) {
   for (const [suffix, color, strength] of [
     ["g", "var(--gold)", 0.55],
     ["a", "var(--accent)", 0.45],
+    ["q", "#2f8cff", 0.95],
   ] as const) {
     const gradient = svg("radialGradient", { id: id + suffix }, definitions);
     svg("stop", { offset: "0%", style: `stop-color:${color};stop-opacity:${strength}` }, gradient);
@@ -321,14 +322,18 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const kind = node.person.kind;
       const group = svg("g", { "data-id": node.person.id, class: "t-hit" }, nodeLayer);
-      // Pôle spirituel (Qutb) : photo agrandie.
+      // Famille du Prophète ﷺ : un halo bleu vif qui respire autour de la photo.
       const radius = discRadius(node.person);
       svg("circle", { r: Math.max(12, radius), class: "t-target" }, group);
+      if (node.person.prophetFamily && node.depth > 0) {
+        svg("circle", { r: Math.max(radius, 8) * 2.4, fill: `url(#${id}q)`, class: "t-family" }, group);
+      }
       if (node.depth === 0) {
         svg("circle", { r: 46, fill: `url(#${id}g)` }, group);
         star(group, 11, "var(--gold)");
       } else {
-        svg("circle", { r: radius, class: `t-disc t-disc-${kind}`, style: `stroke:${COLOR[kind]}` }, group);
+        const family = node.person.prophetFamily ? " t-disc-family" : "";
+        svg("circle", { r: radius, class: `t-disc t-disc-${kind}${family}`, style: `stroke:${COLOR[kind]}` }, group);
         if (node.person.hasImage && radius > 6) {
           const image = svg(
             "image",

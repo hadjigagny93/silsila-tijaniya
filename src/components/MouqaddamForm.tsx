@@ -138,6 +138,13 @@ export function MouqaddamForm({
                 <span className="block text-sm text-muted">{t.admin.qutbHelp}</span>
               </span>
             </label>
+            <label className="check-row">
+              <input type="checkbox" name="prophetFamily" defaultChecked={person?.prophetFamily ?? false} />
+              <span>
+                <span className="block font-semibold">{t.admin.prophetFamily}</span>
+                <span className="block text-sm text-muted">{t.admin.prophetFamilyHelp}</span>
+              </span>
+            </label>
             <div>
               <span className="field-label">{t.admin.nicknames}</span>
               <NicknamesField defaultValue={person?.nicknames} />
