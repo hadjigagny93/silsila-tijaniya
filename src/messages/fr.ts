@@ -99,6 +99,7 @@ export const t = {
     resizeCard: "Tirer pour rétrécir ou agrandir la carte",
     namesLabel: "Noms dans l'arbre",
     namesToggle: "Tous les noms",
+    namesShort: "Noms",
     viewLabel: "Vue",
     viewTree: "Arbre",
     viewMap: "Carte",

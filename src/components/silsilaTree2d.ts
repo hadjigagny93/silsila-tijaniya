@@ -182,6 +182,7 @@ export function createScene(options: SceneOptions): SceneApi {
       options.onSelect(tapped && forest?.byId.has(tapped) ? tapped : null);
     },
     (personId, x, y) => grab(personId, x, y),
+    { stretch: 1.6 },
   );
   stage.root.setAttribute("aria-label", "Arbre de la silsila");
   defs(stage.root, id);

@@ -33,7 +33,8 @@ export function createSvgStage(
   onTap: (id: string | null) => void,
   grab?: (id: string, x: number, y: number) => Grab | null,
   // La carte du monde zoome bien plus loin que l'arbre, et redessine ses repères à chaque changement d'échelle.
-  options: { maxScale?: number; onView?: (scale: number) => void } = {},
+  // stretch : sur téléphone, de combien la vue d'ensemble peut déborder en largeur (l'arbre, très large, en profite).
+  options: { maxScale?: number; stretch?: number; onView?: (scale: number) => void } = {},
 ) {
   const maxScale = options.maxScale ?? MAX_SCALE;
   const calm = prefersCalm();
@@ -56,23 +57,44 @@ export function createSvgStage(
     options.onView?.(view.scale);
   }
 
-  function frame(box: Box, glide: boolean, limit = 1.6) {
-    const width = container.clientWidth - insets.left - insets.right;
-    const height = container.clientHeight - insets.top - insets.bottom;
-    view.scale = Math.min(width / box.width, height / box.height, limit);
-    view.x = insets.left + (width - box.width * view.scale) / 2 - box.x * view.scale;
-    view.y = insets.top + (height - box.height * view.scale) / 2 - box.y * view.scale;
+  // Sur téléphone, le titre, la recherche et la barre de vues prennent une bonne part de l'écran : on mesure
+  // la place qu'ils laissent vraiment, plutôt que des marges fixes.
+  let exploring = false;
+  const narrowStretch = () => (container.clientWidth < 768 ? (options.stretch ?? 1) : 1);
+  function margins() {
+    if (container.clientWidth >= 768) return insets;
+    const host = container.parentElement;
+    const area = container.getBoundingClientRect();
+    const head = exploring ? null : host?.querySelector("[data-tree-top]")?.getBoundingClientRect();
+    const bar = host?.querySelector(".silsila-bar")?.getBoundingClientRect();
+    return {
+      top: head ? Math.max(insets.top, head.bottom - area.top + 12) : insets.top,
+      right: 12,
+      bottom: bar ? Math.max(24, area.bottom - bar.top + 12) : insets.bottom,
+      left: 12,
+    };
+  }
+
+  function frame(box: Box, glide: boolean, limit = 1.6, stretch = 1) {
+    const edges = margins();
+    const width = container.clientWidth - edges.left - edges.right;
+    const height = container.clientHeight - edges.top - edges.bottom;
+    // Vue d'ensemble sur téléphone : l'arbre, bien plus large que haut, deviendrait minuscule ; il peut déborder un peu sur
+    // les côtés (il suffit de le faire glisser) pour garder des noms lisibles.
+    view.scale = Math.min((width / box.width) * stretch, height / box.height, limit);
+    view.x = edges.left + (width - box.width * view.scale) / 2 - box.x * view.scale;
+    view.y = edges.top + (height - box.height * view.scale) / 2 - box.y * view.scale;
     apply(glide);
   }
 
   function fit(glide: boolean) {
-    frame(box(), glide);
+    frame(box(), glide, 1.6, narrowStretch());
     fitted = view.scale;
     moved = false;
   }
 
   function zoomAt(scale: number, x: number, y: number, glide: boolean) {
-    const next = Math.min(Math.max(scale, fitted * 0.6), maxScale);
+    const next = Math.min(Math.max(scale, (fitted * 0.6) / narrowStretch()), maxScale);
     view.x = x - ((x - view.x) / view.scale) * next;
     view.y = y - ((y - view.y) / view.scale) * next;
     view.scale = next;
@@ -84,19 +106,20 @@ export function createSvgStage(
   // Sur grand écran la carte de la personne est à droite ; sur téléphone, c'est un bandeau en bas.
   function reveal(x: number, y: number) {
     const narrow = container.clientWidth < 768;
+    const edges = margins();
     const right = narrow ? 40 : 380;
-    const bottom = narrow ? insets.bottom + 190 : insets.bottom + 20;
+    const bottom = narrow ? edges.bottom + 190 : insets.bottom + 20;
     const screenX = view.x + x * view.scale;
     const screenY = view.y + y * view.scale;
     const inside =
-      screenX > insets.left + 40 &&
+      screenX > edges.left + 40 &&
       screenX < container.clientWidth - right &&
-      screenY > insets.top + 40 &&
+      screenY > edges.top + 40 &&
       screenY < container.clientHeight - bottom;
     if (inside) return;
     view.x = (narrow ? container.clientWidth / 2 : (container.clientWidth - 360) / 2) - x * view.scale;
     view.y =
-      (narrow ? (container.clientHeight - bottom + insets.top) / 2 : (container.clientHeight - insets.bottom) / 2) -
+      (narrow ? (container.clientHeight - bottom + edges.top) / 2 : (container.clientHeight - insets.bottom) / 2) -
       y * view.scale;
     moved = true;
     apply(true);
@@ -130,7 +153,7 @@ export function createSvgStage(
   const pinch = attachPinch(
     root,
     view,
-    (scale) => Math.min(Math.max(scale, fitted * 0.6), maxScale),
+    (scale) => Math.min(Math.max(scale, (fitted * 0.6) / narrowStretch()), maxScale),
     () => {
       moved = true;
       press = null;
@@ -242,6 +265,7 @@ export function createSvgStage(
     fitted: () => fitted,
     setExploring(next: boolean) {
       wheelPans = next;
+      exploring = next;
       insets.top = next ? 24 : 40;
     },
     zoom(factor: number) {
