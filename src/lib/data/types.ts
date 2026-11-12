@@ -86,6 +86,8 @@ export type Biography = {
   sources: string[];
   // Tant que ce champ est vrai, la page annonce que le texte est en relecture.
   draft: boolean;
+  // Biographie inachevée : elle reste sur le Mac et l'iPhone, « Publier sur le site » ne l'envoie pas.
+  localOnly: boolean;
   // Nom d'un fichier de images-cover ; vide, l'image est attribuée automatiquement.
   cover: string | null;
 };
@@ -97,6 +99,7 @@ export type BiographyInput = {
   body: string;
   sources: string;
   draft: boolean;
+  localOnly: boolean;
   cover: string | null;
   personId: string | null;
 };

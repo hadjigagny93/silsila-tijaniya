@@ -27,6 +27,9 @@ type PersonRow = {
   prophet_family: string | null;
 };
 
+// Une biographie part sur le site si elle a un texte et n'est pas gardée sur le Mac.
+const PUBLISHABLE = "deleted = 0 and coalesce(local_only, 0) = 0 and length(trim(body)) > 0";
+
 type BiographyRow = {
   slug: string;
   name: string;
@@ -46,7 +49,7 @@ export type PublishResult = PublishCounts & {
 
 // Lit la base locale et prépare les lignes telles que Supabase les attend.
 export async function collect(rows: Rows) {
-  const biographies = (await rows<BiographyRow>("select * from biographies where deleted = 0")).map((row) => ({
+  const biographies = (await rows<BiographyRow>(`select * from biographies where ${PUBLISHABLE}`)).map((row) => ({
     slug: row.slug,
     name: row.name,
     period: row.period,
