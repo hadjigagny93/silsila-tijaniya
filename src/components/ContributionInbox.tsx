@@ -13,6 +13,10 @@ const b = t.inbox;
 const dateLabel = (value: string) =>
   new Date(value).toLocaleDateString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
 
+type Tab = "new" | "done" | "rejected";
+const TABS: Tab[] = ["new", "done", "rejected"];
+const QUERY: Record<Tab, string> = { new: "", done: "?statut=traitees", rejected: "?statut=refusees" };
+
 type State =
   | { phase: "loading" }
   | { phase: "error"; message: string }
@@ -31,14 +35,14 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 // aussi les acceptations à la base du Mac. Sur l'iPhone, la route n'existe pas : la page le dit.
 export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"new" | "done">("new");
+  const [tab, setTab] = useState<Tab>("new");
   const [state, setState] = useState<State>({ phase: "loading" });
   const [busy, setBusy] = useState<string | null>(null);
   const byId = new Map(persons.map((person) => [person.id, person]));
 
-  const load = useCallback(async (which: "new" | "done") => {
+  const load = useCallback(async (which: Tab) => {
     try {
-      const response = await fetch(`/api/contributions-recues${which === "done" ? "?statut=traitees" : ""}`, { cache: "no-store" });
+      const response = await fetch(`/api/contributions-recues${QUERY[which]}`, { cache: "no-store" });
       if (response.status === 404) return setState({ phase: "error", message: b.unavailable });
       const body = await response.json();
       if (body.error === "missing-key") return setState({ phase: "error", message: b.missingKey });
@@ -77,7 +81,7 @@ export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
   return (
     <section className="mt-8">
       <div className="inbox-tabs" role="tablist">
-        {(["new", "done"] as const).map((which) => (
+        {TABS.map((which) => (
           <button
             key={which}
             role="tab"
@@ -98,7 +102,7 @@ export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
       {state.phase === "loading" && <p className="mt-6 text-muted">…</p>}
       {state.phase === "error" && <p className="mt-6 text-muted">{state.message}</p>}
       {state.phase === "ready" && state.items.length === 0 && (
-        <p className="inbox-empty">{tab === "new" ? b.empty : b.emptyDone}</p>
+        <p className="inbox-empty">{tab === "new" ? b.empty : tab === "done" ? b.emptyDone : b.emptyRejected}</p>
       )}
 
       {state.phase === "ready" && (
@@ -164,8 +168,9 @@ export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
                   </div>
                 </div>
 
-                {item.status === "new" && (
+                {(item.status === "new" || item.status === "rejected") && (
                   <footer className="inbox-actions">
+                    {item.status === "rejected" && <span className="inbox-again">{b.acceptAnyway}</span>}
                     {item.kind === "correction" ? (
                       <>
                         {person && (
@@ -188,9 +193,11 @@ export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
                         {working("accept") ? b.busy : item.kind === "mouqaddam" ? b.acceptMouqaddam : b.acceptBiography}
                       </button>
                     )}
-                    <button className="button-quiet inbox-reject" disabled={Boolean(busy)} onClick={() => act(item, "reject")}>
-                      {working("reject") ? b.busy : b.reject}
-                    </button>
+                    {item.status === "new" && (
+                      <button className="button-quiet inbox-reject" disabled={Boolean(busy)} onClick={() => act(item, "reject")}>
+                        {working("reject") ? b.busy : b.reject}
+                      </button>
+                    )}
                   </footer>
                 )}
               </li>

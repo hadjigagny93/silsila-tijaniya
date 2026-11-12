@@ -51,9 +51,15 @@ export async function GET(request: Request) {
   if (!process.env.SQLITE_PATH) return new Response(null, { status: 404 });
   const client = await supabase();
   if (!client) return Response.json({ error: "missing-key" }, { status: 400 });
-  const done = new URL(request.url).searchParams.get("statut") === "traitees";
-  const query = client.from("contributions").select("*").order("created_at", { ascending: false }).limit(100);
-  const { data, error } = done ? await query.neq("status", "new") : await query.eq("status", "new");
+  // À traiter, traitées (acceptées ou marquées traitées) ou refusées.
+  const tab = new URL(request.url).searchParams.get("statut");
+  const query = client.from("contributions").select("*").order("created_at", { ascending: false }).limit(200);
+  const { data, error } =
+    tab === "traitees"
+      ? await query.in("status", ["accepted", "done"])
+      : tab === "refusees"
+        ? await query.eq("status", "rejected")
+        : await query.eq("status", "new");
   if (error) return Response.json({ error: error.message }, { status: 500 });
   const { count } = await client.from("contributions").select("id", { count: "exact", head: true }).eq("status", "new");
   return Response.json({ items: (data as Row[]).map(toContribution), pending: count ?? 0 });
@@ -173,7 +179,8 @@ export async function POST(request: Request) {
     let result: { resultId: string | null; href: string | null } = { resultId: null, href: null };
     let status: Contribution["status"] = action === "reject" ? "rejected" : "done";
     if (action === "accept") {
-      if (item.status !== "new") return Response.json({ error: "already" }, { status: 409 });
+      // Une contribution refusée peut encore être acceptée ; une acceptée ne l'est pas deux fois.
+      if (item.status !== "new" && item.status !== "rejected") return Response.json({ error: "already" }, { status: 409 });
       result = item.kind === "mouqaddam" ? await acceptMouqaddam(item) : await acceptBiography(item);
       status = "accepted";
     }
