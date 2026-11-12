@@ -520,9 +520,10 @@ export function SilsilaTree({
           aria-pressed={exploring}
           onClick={() => changeExploring(!exploring)}
           title={exploring ? t.silsila.exploreLeave : t.silsila.exploreHint}
+          aria-label={exploring ? t.silsila.exploreLeave : t.silsila.explore}
         >
           <Icon name={exploring ? "close" : "compass"} size={17} />
-          {exploring ? t.silsila.exploreLeave : t.silsila.explore}
+          <span className="bar-text">{exploring ? t.silsila.exploreLeave : t.silsila.explore}</span>
         </button>
         <div className="bar-group" role="group" aria-label={t.silsila.viewLabel}>
           <button aria-pressed={!map.shown} onClick={() => map.shown && map.toggle()}>
@@ -533,7 +534,7 @@ export function SilsilaTree({
           </button>
         </div>
         {ranks.length > 0 && (
-          <div className="bar-group" role="group" aria-label={t.silsila.generationLabel}>
+          <div className="bar-group bar-generations" role="group" aria-label={t.silsila.generationLabel}>
             <span className="bar-label">{t.silsila.generationBar}</span>
             <button aria-pressed={generation === null} onClick={() => changeGeneration(null)}>
               {t.silsila.generationAll}
@@ -551,8 +552,9 @@ export function SilsilaTree({
           </div>
         )}
         <div className="bar-group" role="group" aria-label={t.silsila.namesLabel}>
-          <button aria-pressed={names.shown} onClick={names.toggle}>
-            {t.silsila.namesToggle}
+          <button aria-pressed={names.shown} onClick={names.toggle} aria-label={t.silsila.namesToggle}>
+            <span className="bar-long">{t.silsila.namesToggle}</span>
+            <span className="bar-short">{t.silsila.namesShort}</span>
           </button>
         </div>
         {hasSilver && (
