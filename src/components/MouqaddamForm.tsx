@@ -58,6 +58,7 @@ export function MouqaddamForm({
   biographies,
   details,
   placements,
+  wirdCandidates,
   covers,
   disciples = 0,
   isRoot = false,
@@ -70,6 +71,7 @@ export function MouqaddamForm({
   biographies: Biography[];
   details: Record<string, string>;
   placements: Record<string, Placement>;
+  wirdCandidates: PublicPerson[];
   covers: string[];
   disciples?: number;
   isRoot?: boolean;
@@ -166,6 +168,8 @@ export function MouqaddamForm({
             parents={parents}
             defaultGolden={person?.mouqaddamId ?? ""}
             defaultSilver={person?.alsoFrom ?? []}
+            wirdCandidates={wirdCandidates.filter((candidate) => candidate.id !== person?.id)}
+            defaultWirdFrom={person?.wirdFromId ?? ""}
             details={details}
             placements={placements}
             personId={person?.id}

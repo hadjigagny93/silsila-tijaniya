@@ -58,6 +58,7 @@ export default async function MouqaddamProfilePage({ params }: Props) {
   const biography = biographies.find((entry) => entry.slug === person.biographySlug && entry.body.trim());
   const covers = listCovers();
   const master = person.mouqaddamId ? byId.get(person.mouqaddamId) : undefined;
+  const wirdFrom = person.wirdFromId ? byId.get(person.wirdFromId) : undefined;
   const silver = person.alsoFrom.map((masterId) => byId.get(masterId)).filter(Boolean) as PublicPerson[];
   const disciples = persons
     .filter((candidate) => candidate.mouqaddamId === person.id && isChoosableMouqaddam(candidate))
@@ -94,7 +95,7 @@ export default async function MouqaddamProfilePage({ params }: Props) {
             <div>
               <h1>{person.displayName}</h1>
               <p className="bio-hero-meta">
-                {[t.kinds[person.kind], period, place].filter(Boolean).join(" · ")}
+                {[period, place].filter(Boolean).join(" · ")}
               </p>
             </div>
           </div>
@@ -169,12 +170,16 @@ export default async function MouqaddamProfilePage({ params }: Props) {
           <div className="bio-aside-card">
             <h2 className="eyebrow">{m.facts}</h2>
             <dl className="bio-facts">
-              <Fact label={m.kind}>{t.kinds[person.kind]}</Fact>
               {person.prophetFamily && <Fact label={m.prophetFamily}>✓</Fact>}
               {person.nicknames.length > 0 && <Fact label={t.biographies.nicknames}>{person.nicknames.join(", ")}</Fact>}
               {birth && <Fact label={t.biographies.birth}>{birth}</Fact>}
               {death && <Fact label={t.biographies.death}>{death}</Fact>}
               {person.zawiya && <Fact label={t.biographies.zawiya}>{person.zawiya}</Fact>}
+              {wirdFrom && (
+                <Fact label={m.wirdFrom}>
+                  <PersonLink someone={wirdFrom} />
+                </Fact>
+              )}
               {master && (
                 <Fact label={m.master}>
                   <PersonLink someone={master} />

@@ -29,7 +29,7 @@ export default async function MouqaddamsPage() {
       slug: person.id,
       href: `/mouqaddams/${person.id}`,
       name: person.displayName,
-      summary: [t.kinds[person.kind], person.zawiya].filter(Boolean).join(" · "),
+      summary: person.zawiya ?? "",
       period: periodOf(person.birthDate, person.deathDate),
       place,
       badges: [],

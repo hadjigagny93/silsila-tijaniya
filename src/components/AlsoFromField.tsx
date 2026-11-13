@@ -9,8 +9,8 @@ import { Icon } from "./Icon";
 import { PersonPicker } from "./PersonPicker";
 import { type Placement, TransmissionField } from "./TransmissionField";
 
-// « Reçu de » (la chaîne dorée) et « A aussi reçu de » (les chaînes argentées). Un maître argenté peut devenir
-// le maître doré : les deux échangent leur place.
+// « A reçu le wird de » (celui qui a donné le wird, s'il diffère), la chaîne dorée et « A aussi reçu de »
+// (les chaînes argentées). Un maître argenté peut devenir le maître doré : les deux échangent leur place.
 export function MastersField({
   parents,
   defaultGolden,
@@ -18,8 +18,13 @@ export function MastersField({
   details,
   placements,
   personId,
+  wirdCandidates,
+  defaultWirdFrom,
 }: {
   parents: PublicPerson[];
+  // Tous ceux qui peuvent transmettre, sans la personne elle-même : le wird ne crée pas de boucle dans l'arbre.
+  wirdCandidates: PublicPerson[];
+  defaultWirdFrom: string;
   defaultGolden: string;
   defaultSilver: string[];
   details: Record<string, string>;
@@ -43,6 +48,19 @@ export function MastersField({
 
   return (
     <div className="space-y-5">
+      <div>
+        <span className="field-label">{t.admin.wirdFrom}</span>
+        <p className="field-help mb-2">{t.admin.wirdFromHelp}</p>
+        <PersonPicker
+          name="wirdFromId"
+          persons={wirdCandidates}
+          defaultValue={defaultWirdFrom}
+          label={t.admin.wirdFrom}
+          emptyLabel={t.admin.wirdFromNone}
+          details={details}
+        />
+      </div>
+
       <TransmissionField
         key={round}
         parents={parents}

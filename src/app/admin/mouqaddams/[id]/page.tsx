@@ -46,6 +46,7 @@ export default async function EditMouqaddamPage({ params, searchParams }: Props)
       biographies={biographies}
       details={personDetails(persons)}
       placements={placementsFor(persons, parents)}
+      wirdCandidates={(prophet ? [prophet] : []).concat(known)}
       covers={listCovers()}
       disciples={childrenOf(persons).get(id)?.length ?? 0}
       isRoot={Boolean(prophet) && person.mouqaddamId === prophet?.id}

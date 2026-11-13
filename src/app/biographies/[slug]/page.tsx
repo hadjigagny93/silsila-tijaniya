@@ -70,6 +70,7 @@ export default async function BiographyPage({ params }: Props) {
   const bySlug = new Map(biographies.map((entry) => [entry.slug, entry]));
   const biographyOf = (someone: PublicPerson) => (someone.biographySlug ? bySlug.get(someone.biographySlug) : undefined);
   const master = person?.mouqaddamId ? persons.find((candidate) => candidate.id === person.mouqaddamId) : undefined;
+  const wirdFrom = person?.wirdFromId ? persons.find((candidate) => candidate.id === person.wirdFromId) : undefined;
   const disciples = person
     ? persons
         .filter((candidate) => candidate.mouqaddamId === person.id && biographyOf(candidate))
@@ -177,6 +178,11 @@ export default async function BiographyPage({ params }: Props) {
               {death && <Fact label={b.death}>{death}</Fact>}
               {person?.zawiya && <Fact label={b.zawiya}>{person.zawiya}</Fact>}
               {person && person.nicknames.length > 0 && <Fact label={b.nicknames}>{person.nicknames.join(", ")}</Fact>}
+              {wirdFrom && (
+                <Fact label={t.mouqaddams.wirdFrom}>
+                  <PersonLink person={wirdFrom} biography={biographyOf(wirdFrom)} />
+                </Fact>
+              )}
               {master && (
                 <Fact label={b.master}>
                   <PersonLink person={master} biography={biographyOf(master)} />
