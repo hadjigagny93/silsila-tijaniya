@@ -26,7 +26,7 @@ export const t = {
     adminModeration: "Modération",
     adminMouqaddams: "Mouqaddam",
     contribute: "Contribuer",
-    mouqaddams: "Mouqaddams",
+    mouqaddams: "Gens de la Voie",
     inbox: "Contributions",
     adminSilsila: "Ajouter une silsila",
     suluk: "Suluk",
