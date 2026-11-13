@@ -36,6 +36,7 @@ export default async function BiographiesPage() {
       : "";
     return {
       slug: biography.slug,
+      href: `/biographies/${biography.slug}`,
       name: biography.name,
       summary: biography.summary,
       period: person ? periodOf(person.birthDate, person.deathDate) : "",

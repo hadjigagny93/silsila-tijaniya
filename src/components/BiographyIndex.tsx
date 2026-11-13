@@ -9,6 +9,8 @@ import { Icon } from "./Icon";
 
 export type BiographyEntry = {
   slug: string;
+  // Page ouverte par la carte : la biographie, ou le profil d'un mouqaddam.
+  href: string;
   name: string;
   summary: string;
   period: string;
@@ -30,7 +32,17 @@ const normalize = (value: string) =>
 
 // Liste des biographies : une recherche instantanée, des parties à rejoindre d'un geste, et des cartes qui
 // donnent envie d'ouvrir (photo, années, lieu, première phrase).
-export function BiographyIndex({ sections, hidden = [] }: { sections: BiographyIndexSection[]; hidden?: string[] }) {
+export function BiographyIndex({
+  sections,
+  hidden = [],
+  placeholder = b.searchPlaceholder,
+  searchLabel = b.searchLabel,
+}: {
+  sections: BiographyIndexSection[];
+  hidden?: string[];
+  placeholder?: string;
+  searchLabel?: string;
+}) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string | null>(null);
   const term = normalize(query.trim());
@@ -69,12 +81,12 @@ export function BiographyIndex({ sections, hidden = [] }: { sections: BiographyI
       <div className="bio-toolbar">
         <label className="bio-search">
           <Icon name="search" size={18} />
-          <span className="sr-only">{b.searchLabel}</span>
+          <span className="sr-only">{searchLabel}</span>
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={b.searchPlaceholder}
+            placeholder={placeholder}
             autoComplete="off"
           />
           {query && (
@@ -110,7 +122,7 @@ export function BiographyIndex({ sections, hidden = [] }: { sections: BiographyI
           <ul className="bio-cards">
             {section.entries.map((entry) => (
               <li key={entry.slug}>
-                <Link href={`/biographies/${entry.slug}`} className="bio-card">
+                <Link href={entry.href} className="bio-card">
                   {entry.person ? (
                     <Avatar person={entry.person} size={64} />
                   ) : (

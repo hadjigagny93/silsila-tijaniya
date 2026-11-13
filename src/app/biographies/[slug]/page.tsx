@@ -5,6 +5,7 @@ import { Avatar } from "@/components/Avatar";
 import { CoverChanger } from "@/components/CoverChanger";
 import { Icon } from "@/components/Icon";
 import { MarkdownText } from "@/components/MarkdownText";
+import { isChoosableMouqaddam } from "@/lib/chain";
 import { biographySections, placeLabel, readingMinutes } from "@/lib/biographySections";
 import { coverStyle, listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
@@ -57,7 +58,13 @@ export default async function BiographyPage({ params }: Props) {
   const hasText = Boolean(biography.body.trim());
   const period = person ? periodOf(person.birthDate, person.deathDate) : "";
   // Le profil complet se trouve dans l'administration ; le public voit la fiche de la silsila.
-  const profile = person && (session?.isAdmin ? `/admin/mouqaddams/${person.id}` : `/silsila/${person.id}`);
+  const profile =
+    person &&
+    (session?.isAdmin
+      ? `/admin/mouqaddams/${person.id}`
+      : isChoosableMouqaddam(person)
+        ? `/mouqaddams/${person.id}`
+        : `/silsila/${person.id}`);
 
   // Les liens ne mènent qu'aux biographies visibles ici (sur le site : publiées).
   const bySlug = new Map(biographies.map((entry) => [entry.slug, entry]));
