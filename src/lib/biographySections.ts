@@ -51,3 +51,17 @@ export function readingMinutes(body: string) {
   const words = body.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
+
+// Le lieu d'une personne : sa ville, sinon celui de son décès, sinon celui de sa naissance.
+export function placeOfPerson(person: PublicPerson) {
+  return (
+    person.city ||
+    placeLabel(person.deathCity, person.deathCountry) ||
+    placeLabel(person.birthCity, person.birthCountry)
+  );
+}
+
+// Ce que voit un visiteur : jamais le rang de pôle spirituel, gardé pour l'admin.
+export function publicPerson(person: PublicPerson): PublicPerson {
+  return { ...person, qutb: false };
+}

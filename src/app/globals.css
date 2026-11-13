@@ -7210,18 +7210,27 @@ a.suluk-next-station {
   color: var(--accent);
 }
 
-/* Barre du site sur téléphone : trois liens, on garde les mots et on retire les icônes. */
+/* Barre du site sur téléphone : quatre mots ; le logo garde son étoile, son nom laisse la place aux liens. */
 @media (max-width: 39.99rem) {
-  .site-topbar .nav-link svg {
+  .site-topbar-nav {
+    gap: 0;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-topbar-nav::-webkit-scrollbar {
     display: none;
   }
 
-  .site-topbar-nav {
-    gap: 0;
+  .site-topbar .site-name > span {
+    display: none;
   }
 
-  .site-topbar .site-name strong {
-    font-size: 20px;
+  .site-topbar .nav-link {
+    padding: 0.45rem 0.3rem;
+    font-size: 13.5px;
+    white-space: nowrap;
   }
 }
 
@@ -8225,5 +8234,111 @@ a.suluk-next-station {
 @media (min-width: 62rem) {
   [data-topbar] .bio-aside-card {
     top: calc(3.9rem + 1.5rem);
+  }
+}
+
+/* ——— Profil public d'un mouqaddam ——— */
+
+.bio-hero-short {
+  min-height: 18rem;
+}
+
+@media (min-width: 48rem) {
+  .bio-hero-short {
+    min-height: 20rem;
+  }
+}
+
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.profile-section {
+  margin-top: 2.5rem;
+}
+
+.profile-section h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 1.5rem;
+}
+
+.profile-section h2 small {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+/* La chaîne : un fil doré relie les maîtres, la personne en bas. */
+.profile-chain {
+  position: relative;
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1rem;
+  padding-left: 1.4rem;
+}
+
+.profile-chain::before {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  bottom: 1.1rem;
+  left: 0.35rem;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--gold), color-mix(in srgb, var(--gold) 35%, transparent));
+}
+
+.profile-chain li {
+  position: relative;
+}
+
+.profile-chain li::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -1.3rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--gold);
+  translate: 0 -50%;
+}
+
+.profile-chain li[aria-current] .bio-person {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--gold);
+  font-weight: 600;
+}
+
+.profile-chain .bio-person,
+.profile-disciples .bio-person {
+  margin-inline: 0;
+}
+
+.profile-disciples {
+  display: grid;
+  gap: 0.25rem 1rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 40rem) {
+  .profile-disciples {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Sans carte mise en avant, la recherche suit de près le titre. */
+.bio-library-head + .bio-index > .bio-toolbar {
+  margin-top: 0.25rem;
+}
+
+/* Sur téléphone, un profil commence par ses repères. */
+@media (max-width: 61.99rem) {
+  .bio-layout-profile .bio-aside {
+    order: -1;
   }
 }

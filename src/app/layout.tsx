@@ -65,15 +65,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 </span>
               </Link>
               <nav className="site-topbar-nav">
-                <NavLink href="/silsila" icon="tree">
-                  {t.nav.silsila}
-                </NavLink>
-                <NavLink href="/biographies" icon="book">
-                  {t.nav.biographies}
-                </NavLink>
-                <NavLink href="/contribuer" icon="edit">
-                  {t.nav.contribute}
-                </NavLink>
+                <NavLink href="/silsila">{t.nav.silsila}</NavLink>
+                <NavLink href="/biographies">{t.nav.biographies}</NavLink>
+                <NavLink href="/mouqaddams">{t.nav.mouqaddams}</NavLink>
+                <NavLink href="/contribuer">{t.nav.contribute}</NavLink>
               </nav>
             </div>
           </header>
