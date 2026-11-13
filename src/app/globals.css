@@ -7234,6 +7234,19 @@ a.suluk-next-station {
   }
 }
 
+/* Petits téléphones : « Gens de la Voie » est long, les liens se resserrent pour tenir sur une ligne. */
+@media (max-width: 24.5rem) {
+  .site-topbar .nav-link {
+    padding-inline: 0.2rem;
+    font-size: 12.5px;
+  }
+
+  .site-topbar-inner {
+    gap: 0.35rem;
+    padding-inline-start: 0.6rem;
+  }
+}
+
 /* ===== Contributions reçues (app Mac). */
 .inbox-tabs {
   display: inline-flex;
