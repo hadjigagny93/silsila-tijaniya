@@ -65,3 +65,24 @@ export function placeOfPerson(person: PublicPerson) {
 export function publicPerson(person: PublicPerson): PublicPerson {
   return { ...person, qutb: false };
 }
+
+export type Authorized = { person: PublicPerson; note: string };
+
+// Ceux qu'un maître a autorisés dans la voie : ses disciples de chaîne dorée, ceux qui l'ont en chaîne
+// argentée et ceux qui ont reçu le wird de lui. La mention dit le lien quand ce n'est pas la chaîne dorée.
+export function authorizedBy(persons: PublicPerson[], masterId: string): Authorized[] {
+  const found: Authorized[] = [];
+  for (const person of persons) {
+    if (person.id === masterId) continue;
+    if (person.mouqaddamId === masterId) {
+      found.push({ person, note: "" });
+      continue;
+    }
+    const notes = [
+      person.alsoFrom.includes(masterId) && t.mouqaddams.viaSilver,
+      person.wirdFromId === masterId && t.mouqaddams.viaWird,
+    ].filter(Boolean);
+    if (notes.length) found.push({ person, note: notes.join(" · ") });
+  }
+  return found.sort((a, b) => a.person.displayName.localeCompare(b.person.displayName, "fr"));
+}

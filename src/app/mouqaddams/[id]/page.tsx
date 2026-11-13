@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
-import { placeLabel, placeOfPerson, publicPerson } from "@/lib/biographySections";
+import { authorizedBy, placeLabel, placeOfPerson, publicPerson } from "@/lib/biographySections";
 import { chainOf, generationsOf, isChoosableMouqaddam } from "@/lib/chain";
 import { coverStyle, listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
@@ -31,12 +31,15 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 }
 
 // Le Prophète ﷺ n'a pas de profil ici : son lien mène à l'arbre.
-function PersonLink({ someone }: { someone: PublicPerson }) {
+function PersonLink({ someone, note }: { someone: PublicPerson; note?: string }) {
   const href = isChoosableMouqaddam(someone) ? `/mouqaddams/${someone.id}` : `/silsila/${someone.id}`;
   return (
     <Link href={href} className="bio-person">
       <Avatar person={publicPerson(someone)} size={36} />
-      <span>{someone.displayName}</span>
+      <span>
+        {someone.displayName}
+        {note && <small className="bio-person-note">{note}</small>}
+      </span>
     </Link>
   );
 }
@@ -60,9 +63,7 @@ export default async function MouqaddamProfilePage({ params }: Props) {
   const master = person.mouqaddamId ? byId.get(person.mouqaddamId) : undefined;
   const wirdFrom = person.wirdFromId ? byId.get(person.wirdFromId) : undefined;
   const silver = person.alsoFrom.map((masterId) => byId.get(masterId)).filter(Boolean) as PublicPerson[];
-  const disciples = persons
-    .filter((candidate) => candidate.mouqaddamId === person.id && isChoosableMouqaddam(candidate))
-    .sort((a, b) => a.displayName.localeCompare(b.displayName, "fr"));
+  const disciples = authorizedBy(persons, person.id).filter((entry) => isChoosableMouqaddam(entry.person));
   const { chain, complete } = chainOf(persons, person.id);
   const rank = generationsOf(persons).get(person.id);
   const period = periodOf(person.birthDate, person.deathDate);
@@ -145,8 +146,8 @@ export default async function MouqaddamProfilePage({ params }: Props) {
             ) : (
               <ul className="profile-disciples">
                 {disciples.map((disciple) => (
-                  <li key={disciple.id}>
-                    <PersonLink someone={disciple} />
+                  <li key={disciple.person.id}>
+                    <PersonLink someone={disciple.person} note={disciple.note} />
                   </li>
                 ))}
               </ul>
