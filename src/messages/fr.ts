@@ -279,6 +279,8 @@ export const t = {
     alsoFrom: "A aussi reçu de",
     disciples: "A autorisé dans la voie",
     noDisciples: "Personne pour le moment.",
+    viaSilver: "chaîne argentée",
+    viaWird: "a reçu le wird",
     chain: "Sa chaîne jusqu'au Prophète ﷺ",
     chainIncomplete: "Cette chaîne n'est pas encore complète jusqu'au Prophète ﷺ.",
     biography: "Lire sa biographie",

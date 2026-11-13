@@ -8342,3 +8342,11 @@ a.suluk-next-station {
     order: -1;
   }
 }
+
+/* Lien autre que la chaîne dorée : une mention discrète sous le nom. */
+.bio-person-note {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}

@@ -6,7 +6,7 @@ import { CoverChanger } from "@/components/CoverChanger";
 import { Icon } from "@/components/Icon";
 import { MarkdownText } from "@/components/MarkdownText";
 import { isChoosableMouqaddam } from "@/lib/chain";
-import { biographySections, placeLabel, readingMinutes } from "@/lib/biographySections";
+import { authorizedBy, biographySections, placeLabel, readingMinutes } from "@/lib/biographySections";
 import { coverStyle, listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import type { Biography, PublicPerson } from "@/lib/data/types";
@@ -33,11 +33,14 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function PersonLink({ person, biography }: { person: PublicPerson; biography?: Biography }) {
+function PersonLink({ person, biography, note }: { person: PublicPerson; biography?: Biography; note?: string }) {
   return (
     <Link href={biography ? `/biographies/${biography.slug}` : `/silsila/${person.id}`} className="bio-person">
       <Avatar person={person} size={36} />
-      <span>{person.displayName}</span>
+      <span>
+        {person.displayName}
+        {note && <small className="bio-person-note">{note}</small>}
+      </span>
     </Link>
   );
 }
@@ -71,11 +74,7 @@ export default async function BiographyPage({ params }: Props) {
   const biographyOf = (someone: PublicPerson) => (someone.biographySlug ? bySlug.get(someone.biographySlug) : undefined);
   const master = person?.mouqaddamId ? persons.find((candidate) => candidate.id === person.mouqaddamId) : undefined;
   const wirdFrom = person?.wirdFromId ? persons.find((candidate) => candidate.id === person.wirdFromId) : undefined;
-  const disciples = person
-    ? persons
-        .filter((candidate) => candidate.mouqaddamId === person.id && biographyOf(candidate))
-        .sort((x, y) => x.displayName.localeCompare(y.displayName, "fr"))
-    : [];
+  const disciples = person ? authorizedBy(persons, person.id).filter((entry) => biographyOf(entry.person)) : [];
 
   // Précédente et suivante, dans l'ordre de la liste des biographies.
   const sections = biographySections(biographies, persons);
@@ -192,8 +191,8 @@ export default async function BiographyPage({ params }: Props) {
                 <Fact label={`${b.disciples} (${disciples.length})`}>
                   <ul className="bio-disciples">
                     {disciples.slice(0, DISCIPLES_SHOWN).map((disciple) => (
-                      <li key={disciple.id}>
-                        <PersonLink person={disciple} biography={biographyOf(disciple)} />
+                      <li key={disciple.person.id}>
+                        <PersonLink person={disciple.person} biography={biographyOf(disciple.person)} note={disciple.note} />
                       </li>
                     ))}
                   </ul>
