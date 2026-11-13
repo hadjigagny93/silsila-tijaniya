@@ -32,6 +32,7 @@ export default async function NewMouqaddamPage({ searchParams }: { searchParams:
       biographies={biographies}
       details={personDetails(persons)}
       placements={placementsFor(persons, parents)}
+      wirdCandidates={parents}
       covers={listCovers()}
     >
       {erreur && <Notice tone="error">{t.errors.invalid}</Notice>}

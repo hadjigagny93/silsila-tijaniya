@@ -25,6 +25,7 @@ type PersonRow = {
   nicknames: string | null;
   qutb: string | null;
   prophet_family: string | null;
+  wird_from_id?: string | null;
 };
 
 // Une biographie part sur le site si elle a un texte et n'est pas gardée sur le Mac.
@@ -97,6 +98,7 @@ export async function collect(rows: Rows) {
       nicknames: row.nicknames,
       qutb: row.qutb === "1",
       prophet_family: row.prophet_family === "1",
+      wird_from_id: row.wird_from_id && ids.has(row.wird_from_id) ? row.wird_from_id : null,
       // Pas de user_id : les comptes du Mac ne sont pas ceux du site.
     }));
 
@@ -166,7 +168,18 @@ export async function publish(rows: Rows, supabase: SupabaseClient): Promise<Pub
     await supabase.from("persons").update({ biography_slug: null }).not("biography_slug", "is", null),
     "Biographies des personnes",
   );
-  for (const part of chunks(persons, 100)) check(await supabase.from("persons").upsert(part), "Personnes");
+  // Migration 0018 pas encore passée en ligne : on publie sans « a reçu le wird de » plutôt que d'échouer.
+  let withWird = true;
+  const withoutWird = (part: typeof persons) =>
+    part.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== "wird_from_id")));
+  for (const part of chunks(persons, 100)) {
+    let result = await supabase.from("persons").upsert(withWird ? part : withoutWird(part));
+    if (withWird && result.error?.message.includes("wird_from_id")) {
+      withWird = false;
+      result = await supabase.from("persons").upsert(withoutWird(part));
+    }
+    check(result, "Personnes");
+  }
 
   // Retirées sur le Mac : effacées en ligne. Les fiches des membres inscrits sur le site restent.
   const extra = (await online<{ id: string; user_id: string | null }>("persons", "id, user_id")).filter(

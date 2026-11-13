@@ -110,6 +110,7 @@ async function acceptMouqaddam(item: Contribution) {
     nicknames: [...new Set((data.nicknames ?? "").split(",").map((nickname) => nickname.trim()).filter(Boolean))],
     qutb: false,
     prophetFamily: false,
+    wirdFromId: null,
     biographySlug: null,
   });
   const alsoFrom = canTransmit(data.alsoFromId);

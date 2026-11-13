@@ -160,7 +160,16 @@ async function alsoFromField(form: FormData, personId: string | null, goldenId: 
   return [...new Set(ids)].filter((id) => allowed.has(id) && id !== personId && id !== goldenId);
 }
 
-async function mouqaddamFields(form: FormData) {
+// « A reçu le wird de » : une personne qui peut transmettre, autre que la personne elle-même.
+async function wirdFromField(form: FormData, personId: string | null) {
+  const id = optional(form, "wirdFromId", 36);
+  if (!id || id === personId) return null;
+  const persons = await getStore().listPersons();
+  const found = persons.find((person) => person.id === id);
+  return found && (found.kind === "prophet" || isChoosableMouqaddam(found)) ? id : null;
+}
+
+async function mouqaddamFields(form: FormData, personId: string | null = null) {
   const slug = optional(form, "biographySlug", 120);
   return {
     name: text(form, "name", 120),
@@ -176,6 +185,7 @@ async function mouqaddamFields(form: FormData) {
     nicknames: nicknamesField(form),
     qutb: form.get("qutb") === "on",
     prophetFamily: form.get("prophetFamily") === "on",
+    wirdFromId: await wirdFromField(form, personId),
     biographySlug: slug && (await getStore().getBiography(slug)) ? slug : null,
   };
 }
@@ -265,7 +275,7 @@ export async function updateMouqaddam(form: FormData) {
   await requireAdmin();
   const personId = text(form, "personId", 36);
   const page = `/admin/mouqaddams/${encodeURIComponent(personId)}`;
-  const fields = await mouqaddamFields(form);
+  const fields = await mouqaddamFields(form, personId);
   if (!personId || fields.name.length < 2 || !datesInOrder(fields.birthDate, fields.deathDate)) {
     redirect(`${page}?erreur=1`);
   }

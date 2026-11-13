@@ -195,6 +195,7 @@ const PERSON_COLUMNS = [
   "death_country",
   "qutb",
   "prophet_family",
+  "wird_from_id",
 ];
 
 async function columnsOf(driver: SqlDriver, table: string) {
@@ -304,6 +305,7 @@ type PersonRow = {
   nicknames: string | null;
   qutb: string | null;
   prophet_family: string | null;
+  wird_from_id?: string | null;
   hidden: number;
   image_version?: string | null;
 };
@@ -372,6 +374,7 @@ function detailValues(input: NewMouqaddam): SqlValue[] {
     input.nicknames.join("\n") || null,
     input.qutb ? "1" : null,
     input.prophetFamily ? "1" : null,
+    input.wirdFromId,
     input.biographySlug,
   ];
 }
@@ -508,6 +511,8 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         nicknames: row.display_mode === "short" ? [] : (row.nicknames?.split("\n") ?? []),
         qutb: row.qutb === "1",
         prophetFamily: row.prophet_family === "1",
+        wirdFromId:
+          row.display_mode !== "short" && row.wird_from_id && visible.has(row.wird_from_id) ? row.wird_from_id : null,
         hasImage: row.display_mode !== "short" && Boolean(row.image_version),
         imageVersion: row.image_version,
       }));
@@ -577,8 +582,8 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run(
         `insert into persons
            (id, kind, full_name, mouqaddam_id, birth_date, death_date, birth_city, birth_country,
-            death_city, death_country, zawiya, nicknames, qutb, prophet_family, biography_slug)
-         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            death_city, death_country, zawiya, nicknames, qutb, prophet_family, wird_from_id, biography_slug)
+         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [id, input.kind, input.name, ...detailValues(input)],
       );
       return id;
@@ -591,7 +596,7 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         `update persons set
            kind = ?, full_name = ?, mouqaddam_id = ?, birth_date = ?, death_date = ?, birth_city = ?,
            birth_country = ?, death_city = ?, death_country = ?, zawiya = ?, nicknames = ?, qutb = ?,
-           prophet_family = ?, biography_slug = ?
+           prophet_family = ?, wird_from_id = ?, biography_slug = ?
          where id = ?`,
         [input.kind, input.name, ...detailValues(input), personId],
       );
@@ -603,6 +608,7 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         await db()
       ).transaction(async () => {
         await run("update persons set mouqaddam_id = null where mouqaddam_id = ?", [personId]);
+        await run("update persons set wird_from_id = null where wird_from_id = ?", [personId]);
         await run("update person_images set deleted = 1 where person_id = ?", [personId]);
         await run("update persons set deleted = 1, biography_slug = null, user_id = null where id = ?", [personId]);
         await run("update person_links set deleted = 1 where (person_id = ? or master_id = ?) and deleted = 0", [
