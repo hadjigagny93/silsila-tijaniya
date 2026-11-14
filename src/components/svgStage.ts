@@ -21,6 +21,12 @@ const INSETS = { top: 40, right: 24, bottom: 112, left: 24 };
 const MAX_SCALE = 4;
 // Ralentissement du glissé une fois le doigt levé, comme sur un tableau blanc.
 const FRICTION = 0.92;
+// Élan maximal d'un glissé lancé (pixels par image) : un geste vif ne projette pas le dessin hors de l'écran.
+const MAX_SPEED = 38;
+// Au doigt, il faut appuyer un moment sur une personne pour la déplacer ; sinon on fait glisser tout le dessin.
+const HOLD_TO_GRAB = 450;
+// Part du dessin qui reste toujours à l'écran, quoi qu'on fasse.
+const KEEP_VISIBLE = 90;
 
 // Saisie d'un élément du dessin : reçoit la position du pointeur dans le repère du dessin.
 export type Grab = { move(x: number, y: number): void; end(): void };
@@ -49,6 +55,32 @@ export function createSvgStage(
   const view = { x: 0, y: 0, scale: 1 };
   let fitted = 1;
   let moved = false;
+
+  // Le dessin ne quitte jamais tout à fait l'écran : un bord reste visible, on le retrouve toujours.
+  function keepInside() {
+    const area = box();
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    if (!width || !height || !Number.isFinite(view.scale) || view.scale <= 0) return;
+    const left = view.x + area.x * view.scale;
+    const top = view.y + area.y * view.scale;
+    const right = left + area.width * view.scale;
+    const bottom = top + area.height * view.scale;
+    const keepX = Math.min(KEEP_VISIBLE, (right - left) / 2);
+    const keepY = Math.min(KEEP_VISIBLE, (bottom - top) / 2);
+    if (right < keepX) view.x += keepX - right;
+    else if (left > width - keepX) view.x -= left - (width - keepX);
+    if (bottom < keepY) view.y += keepY - bottom;
+    else if (top > height - keepY) view.y -= top - (height - keepY);
+  }
+
+  // Pendant qu'on manipule le dessin, ses lumières animées se figent : le téléphone n'a plus qu'à le déplacer.
+  let settle = 0;
+  function setMoving(next: boolean) {
+    window.clearTimeout(settle);
+    if (next) root.dataset.moving = "";
+    else settle = window.setTimeout(() => delete root.dataset.moving, 180);
+  }
 
   function apply(glide: boolean) {
     world.classList.toggle("is-gliding", glide && !calm);
@@ -99,6 +131,7 @@ export function createSvgStage(
     view.y = y - ((y - view.y) / view.scale) * next;
     view.scale = next;
     moved = true;
+    keepInside();
     apply(glide);
   }
 
@@ -133,7 +166,15 @@ export function createSvgStage(
     };
   }
 
-  let press: { x: number; y: number; viewX: number; viewY: number; id: string | null } | null = null;
+  let press: {
+    x: number;
+    y: number;
+    viewX: number;
+    viewY: number;
+    id: string | null;
+    touch: boolean;
+    time: number;
+  } | null = null;
   let dragging = false;
   let held: Grab | null = null;
   let velocity = { x: 0, y: 0, time: 0 };
@@ -142,9 +183,10 @@ export function createSvgStage(
   function coast() {
     velocity.x *= FRICTION;
     velocity.y *= FRICTION;
-    if (Math.hypot(velocity.x, velocity.y) < 0.3) return;
+    if (Math.hypot(velocity.x, velocity.y) < 0.3) return setMoving(false);
     view.x += velocity.x;
     view.y += velocity.y;
+    keepInside();
     apply(false);
     coasting = requestAnimationFrame(coast);
   }
@@ -159,6 +201,8 @@ export function createSvgStage(
       press = null;
       held?.end();
       held = null;
+      setMoving(true);
+      keepInside();
       apply(false);
     },
   );
@@ -170,7 +214,15 @@ export function createSvgStage(
       return;
     }
     const target = (event.target as Element).closest<SVGElement>("[data-id]");
-    press = { x: event.clientX, y: event.clientY, viewX: view.x, viewY: view.y, id: target?.dataset.id ?? null };
+    press = {
+      x: event.clientX,
+      y: event.clientY,
+      viewX: view.x,
+      viewY: view.y,
+      id: target?.dataset.id ?? null,
+      touch: event.pointerType !== "mouse",
+      time: performance.now(),
+    };
     dragging = false;
     held = null;
     velocity = { x: 0, y: 0, time: performance.now() };
@@ -184,8 +236,11 @@ export function createSvgStage(
     if (!dragging) {
       root.setPointerCapture(event.pointerId);
       dragging = true;
-      // Saisir une personne la déplace ; saisir le fond déplace tout le dessin.
-      if (press.id && grab) {
+      setMoving(true);
+      // Saisir une personne la déplace ; saisir le fond déplace tout le dessin. Au doigt, un glissé rapide
+      // déplace toujours le dessin : on ne bouscule pas une branche en voulant simplement se promener.
+      const grabbing = !press.touch || performance.now() - press.time >= HOLD_TO_GRAB;
+      if (press.id && grab && grabbing) {
         const point = toWorld(event);
         held = grab(press.id, point.x, point.y);
       }
@@ -198,11 +253,19 @@ export function createSvgStage(
     const now = performance.now();
     const nextX = press.viewX + dx;
     const nextY = press.viewY + dy;
-    const elapsed = Math.max(now - velocity.time, 1);
-    velocity = { x: ((nextX - view.x) / elapsed) * 16, y: ((nextY - view.y) / elapsed) * 16, time: now };
+    // Élan lissé et plafonné : des événements très rapprochés ne donnent pas une vitesse démesurée.
+    const elapsed = Math.max(now - velocity.time, 8);
+    const speedX = ((nextX - view.x) / elapsed) * 16;
+    const speedY = ((nextY - view.y) / elapsed) * 16;
+    const smoothX = velocity.x * 0.4 + speedX * 0.6;
+    const smoothY = velocity.y * 0.4 + speedY * 0.6;
+    const speed = Math.hypot(smoothX, smoothY);
+    const cap = speed > MAX_SPEED ? MAX_SPEED / speed : 1;
+    velocity = { x: smoothX * cap, y: smoothY * cap, time: now };
     view.x = nextX;
     view.y = nextY;
     moved = true;
+    keepInside();
     apply(false);
   }
 
@@ -211,11 +274,16 @@ export function createSvgStage(
       onTap(press.id);
     } else if (held) {
       held.end();
-    } else if (dragging && !calm) {
+      setMoving(false);
+    } else if (dragging && !calm && performance.now() - velocity.time < 80) {
+      // Lancé : le dessin continue sur son élan. Doigt resté immobile avant de se lever : il s'arrête net.
       coasting = requestAnimationFrame(coast);
+    } else {
+      setMoving(false);
     }
     press = null;
     held = null;
+    dragging = false;
     void event;
   }
 
@@ -236,6 +304,7 @@ export function createSvgStage(
     view.x -= event.deltaX;
     view.y -= event.deltaY;
     moved = true;
+    keepInside();
     apply(false);
   }
 
@@ -246,6 +315,8 @@ export function createSvgStage(
     held?.end();
     press = null;
     held = null;
+    dragging = false;
+    setMoving(false);
   });
   root.addEventListener("wheel", onWheel, { passive: false });
 
@@ -271,7 +342,10 @@ export function createSvgStage(
     zoom(factor: number) {
       zoomAt(view.scale / factor, container.clientWidth / 2, container.clientHeight / 2, true);
     },
+    // Le dessin bouge sous le doigt (glissé, pincement, élan) : la scène peut s'épargner du travail.
+    busy: () => "moving" in root.dataset,
     dispose() {
+      window.clearTimeout(settle);
       cancelAnimationFrame(coasting);
       pinch.dispose();
       resizeObserver.disconnect();

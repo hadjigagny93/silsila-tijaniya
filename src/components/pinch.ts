@@ -24,6 +24,12 @@ export function attachPinch(
   const down = (event: Event) => {
     const pointer = event as PointerEvent;
     if (pointer.pointerType !== "touch") return;
+    // Premier doigt d'un nouveau geste : on oublie un doigt dont la levée se serait perdue (sinon le zoom
+    // croirait à un pincement permanent et bloquerait le glissé).
+    if (pointer.isPrimary) {
+      fingers.clear();
+      start = null;
+    }
     fingers.set(pointer.pointerId, local(pointer));
     if (fingers.size === 2) start = { ...measure(), view: { ...view } };
   };
