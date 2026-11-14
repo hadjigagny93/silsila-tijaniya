@@ -11,6 +11,7 @@ import {
   type TreeDisplay,
 } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
+import { attachLoupe } from "./treeLoupe";
 
 const ROW = 100;
 // Forces de l'arbre vivant : chaque branche est un ressort vers son maître, les personnes se
@@ -188,6 +189,7 @@ export function createScene(options: SceneOptions): SceneApi {
     { stretch: 1.6 },
   );
   stage.root.setAttribute("aria-label", "Arbre de la silsila");
+  const detachLoupe = attachLoupe(options.container, stage.root, (personId) => forest?.byId.get(personId)?.person);
   defs(stage.root, id);
   const layer = (name: string) => svg("g", { class: name }, stage.world);
   const rootsLayer = layer("t-roots");
@@ -724,6 +726,7 @@ export function createScene(options: SceneOptions): SceneApi {
     },
     dispose() {
       cancelAnimationFrame(frame);
+      detachLoupe();
       stage.dispose();
     },
   };
