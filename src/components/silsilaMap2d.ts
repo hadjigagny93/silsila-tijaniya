@@ -6,7 +6,16 @@ import { generationsOf } from "@/lib/chain";
 import type { PublicPerson } from "@/lib/data/types";
 import { type Place, placeOf } from "@/lib/places";
 import { personImageUrl } from "./Avatar";
-import { COLOR, DEFAULT_LINEAGE, discRadius, type Lineage, type SceneApi, type SceneOptions } from "./sceneTypes";
+import {
+  COLOR,
+  DEFAULT_LINEAGE,
+  discRadius,
+  fallbackPattern,
+  type Lineage,
+  needsFallbackImage,
+  type SceneApi,
+  type SceneOptions,
+} from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
 import { attachLoupe } from "./treeLoupe";
 
@@ -95,6 +104,7 @@ export function createScene(options: SceneOptions): SceneApi {
   const definitions = svg("defs", {}, stage.root);
   const clip = svg("clipPath", { id: id + "c", clipPathUnits: "objectBoundingBox" }, definitions);
   svg("circle", { cx: 0.5, cy: 0.5, r: 0.5 }, clip);
+  fallbackPattern(definitions, id + "r");
   const glow = svg("radialGradient", { id: id + "q" }, definitions);
   svg("stop", { offset: "0%", style: "stop-color:#2f8cff;stop-opacity:0.95" }, glow);
   svg("stop", { offset: "100%", style: "stop-color:#2f8cff;stop-opacity:0" }, glow);
@@ -123,7 +133,7 @@ export function createScene(options: SceneOptions): SceneApi {
       {
         r: radius,
         class: `t-disc t-disc-${person.kind}${person.prophetFamily ? " t-disc-family" : ""}`,
-        style: `stroke:${COLOR[person.kind]}`,
+        style: `stroke:${COLOR[person.kind]}${needsFallbackImage(person) ? `;fill:url(#${id}r)` : ""}`,
       },
       group,
     );

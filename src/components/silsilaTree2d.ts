@@ -4,6 +4,8 @@ import {
   COLOR,
   DEFAULT_LINEAGE,
   discRadius,
+  fallbackPattern,
+  needsFallbackImage,
   prefersCalm,
   type Lineage,
   type SceneApi,
@@ -60,6 +62,7 @@ function defs(root: SVGSVGElement, id: string) {
   }
   const clip = svg("clipPath", { id: id + "c", clipPathUnits: "objectBoundingBox" }, definitions);
   svg("circle", { cx: 0.5, cy: 0.5, r: 0.5 }, clip);
+  fallbackPattern(definitions, id + "r");
 }
 
 // L'arbre de la maquette : le Prophète ﷺ en médaillon à la racine, le Cheikh au sommet du
@@ -339,7 +342,8 @@ export function createScene(options: SceneOptions): SceneApi {
         star(group, 11, "var(--gold)");
       } else {
         const family = node.person.prophetFamily ? " t-disc-family" : "";
-        svg("circle", { r: radius, class: `t-disc t-disc-${kind}${family}`, style: `stroke:${COLOR[kind]}` }, group);
+        const fill = needsFallbackImage(node.person) ? `;fill:url(#${id}r)` : "";
+        svg("circle", { r: radius, class: `t-disc t-disc-${kind}${family}`, style: `stroke:${COLOR[kind]}${fill}` }, group);
         if (node.person.hasImage && radius > 6) {
           const image = svg(
             "image",

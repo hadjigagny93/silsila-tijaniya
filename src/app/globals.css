@@ -8528,3 +8528,8 @@ a.suluk-next-station {
     visibility: hidden;
   }
 }
+
+/* Calligraphie à la place d'une photo manquante : fond blanc, comme l'image. */
+.avatar-radiya {
+  background: #fdfdfd;
+}
