@@ -8450,3 +8450,29 @@ a.suluk-next-station {
     transition: none;
   }
 }
+
+/* Pendant qu'on fait glisser ou qu'on pince le dessin, ses lumières animées se figent. */
+.svg-stage[data-moving] .t-gold-flow,
+.svg-stage[data-moving] .t-silver-flow,
+.svg-stage[data-moving] .t-family {
+  animation-play-state: paused;
+}
+
+/* Écrans tactiles : pas d'ombres floues sur des centaines de traits (trop lourd pour un téléphone, le dessin
+   pouvait s'effacer en le manipulant). Les lumières gardent leur couleur, sans flou. */
+@media (pointer: coarse) {
+  .svg-stage .t-silver-flow,
+  .silsila-stage[data-chosen] .svg-stage .t-gold-flow,
+  .svg-stage .t-disc-family {
+    filter: none;
+  }
+
+  .svg-stage .t-disc-family {
+    stroke-width: 3px;
+  }
+
+  .svg-stage[data-moving] .t-gold-flow,
+  .svg-stage[data-moving] .t-silver-flow {
+    visibility: hidden;
+  }
+}
