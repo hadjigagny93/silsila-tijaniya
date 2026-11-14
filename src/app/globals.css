@@ -6204,20 +6204,21 @@ a.suluk-next-station {
   margin-top: 4.5rem;
 }
 
-/* Vidéo de l'arbre sous les portraits : un cadre arrondi, cliquable vers la page Silsila. */
+/* Vidéo de l'arbre sous les portraits : toute la largeur de l'écran, comme les rangées de portraits,
+   cliquable vers la page Silsila. */
 .home-video {
-  margin-top: 2.5rem;
+  margin: 2.5rem calc(50% - (100vw - var(--sidebar-width)) / 2) 0;
 }
 
 .home-video-frame {
   position: relative;
   display: block;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-block: 1px solid var(--line);
   background: #ece3d3;
-  box-shadow: 0 24px 60px rgb(40 30 15 / 0.14);
   aspect-ratio: 1600 / 778;
+  max-height: 100svh;
+  width: 100%;
 }
 
 .home-video-frame video {
@@ -6234,8 +6235,8 @@ a.suluk-next-station {
 
 .home-video-cta {
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
+  right: clamp(1rem, 3vw, 2.5rem);
+  bottom: clamp(1rem, 3vw, 2.5rem);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
