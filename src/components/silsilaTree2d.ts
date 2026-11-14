@@ -501,6 +501,20 @@ export function createScene(options: SceneOptions): SceneApi {
   let rings: SVGElement[] = [];
 
   // Met le dessin à la position courante de chacun ; les feuilles frémissent doucement.
+  // Les feuilles se balancent doucement, arbre posé. Pas sur un écran tactile, ni pendant qu'on manipule le dessin :
+  // redessiner des centaines de feuilles à chaque image suffit à faire hoqueter un téléphone.
+  function drawLeaves(now: number) {
+    leafMarks.forEach((items, node) => {
+      const sway = calm || lowPower ? 0 : Math.sin(now / 900 + hash(node.person.id) * 6) * 7;
+      const angle = hash(node.person.id + "f") * 360 + sway;
+      items.forEach((item, index) => {
+        item.setAttribute("cx", String(node.x));
+        item.setAttribute("cy", String(node.y - 7));
+        item.setAttribute("transform", `rotate(${angle + index * 120} ${node.x} ${node.y})`);
+      });
+    });
+  }
+
   function draw(now: number) {
     marks.forEach((group, node) => group.setAttribute("transform", `translate(${node.x} ${node.y})`));
     branches.forEach((path, node) => {
@@ -513,15 +527,7 @@ export function createScene(options: SceneOptions): SceneApi {
       path.setAttribute("d", d);
       flow.setAttribute("d", d);
     }
-    leafMarks.forEach((items, node) => {
-      const sway = calm ? 0 : Math.sin(now / 900 + hash(node.person.id) * 6) * 7;
-      const angle = hash(node.person.id + "f") * 360 + sway;
-      items.forEach((item, index) => {
-        item.setAttribute("cx", String(node.x));
-        item.setAttribute("cy", String(node.y - 7));
-        item.setAttribute("transform", `rotate(${angle + index * 120} ${node.x} ${node.y})`);
-      });
-    });
+    drawLeaves(now);
     labels.forEach((label, node) => {
       label.setAttribute("x", String(node.x + Number(label.dataset.offset)));
       label.setAttribute("y", String(node.y + Number(label.dataset.rise)));
@@ -601,19 +607,26 @@ export function createScene(options: SceneOptions): SceneApi {
   let alpha = 1;
   let frame = 0;
   let wasMoving = false;
+  // Tant que l'arbre bouge, tout est redessiné à chaque image ; une fois posé, plus rien, sauf le balancement des
+  // feuilles (sur ordinateur, quand on ne fait pas glisser le dessin).
+  let swayed = 0;
   function tick(now: number) {
     frame = requestAnimationFrame(tick);
     if (alpha > REST) {
       step(alpha);
       alpha *= COOLING;
       wasMoving = true;
+      draw(now);
     } else if (wasMoving) {
       // L'arbre s'est posé : les noms se redistribuent sans se chevaucher.
       wasMoving = false;
+      draw(now);
       drawLabels();
       restyle();
+    } else if (!calm && !lowPower && !stage.busy() && now - swayed > 40) {
+      swayed = now;
+      drawLeaves(now);
     }
-    draw(now);
   }
 
   function heat(level: number) {
@@ -676,6 +689,7 @@ export function createScene(options: SceneOptions): SceneApi {
 
   // Les noms gardent une taille lisible quand l'arbre entier tient à l'écran.
   const calm = prefersCalm();
+  const lowPower = window.matchMedia("(pointer: coarse)").matches;
   const textScale = Math.min(Math.max(0.8 / stage.fitted(), 1), 2.2);
   hover.style.fontSize = `${15.5 * textScale}px`;
   // Sans animation demandée, l'arbre se pose d'un coup.
