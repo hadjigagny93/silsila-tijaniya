@@ -8,6 +8,7 @@ import { type Place, placeOf } from "@/lib/places";
 import { personImageUrl } from "./Avatar";
 import { COLOR, DEFAULT_LINEAGE, discRadius, type Lineage, type SceneApi, type SceneOptions } from "./sceneTypes";
 import { type Box, createSvgStage, svg } from "./svgStage";
+import { attachLoupe } from "./treeLoupe";
 
 const WIDTH = 2000;
 // Écarts à l'écran, en pixels, quel que soit le zoom : entre deux personnes d'une même ville,
@@ -88,6 +89,7 @@ export function createScene(options: SceneOptions): SceneApi {
     { maxScale: 120, onView: (next) => ready && next !== scale && layout(next) },
   );
   stage.root.setAttribute("aria-label", "Carte du monde de la silsila");
+  const detachLoupe = attachLoupe(options.container, stage.root, (personId) => personById.get(personId));
   stage.root.classList.add("map-stage");
 
   const definitions = svg("defs", {}, stage.root);
@@ -288,6 +290,7 @@ export function createScene(options: SceneOptions): SceneApi {
     },
     dispose() {
       note.remove();
+      detachLoupe();
       stage.dispose();
     },
   };
