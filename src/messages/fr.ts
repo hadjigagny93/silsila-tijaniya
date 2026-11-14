@@ -67,6 +67,8 @@ export const t = {
     },
     facesLabel: "Les visages de la silsila",
     facesTitle: "Ceux qui ont reçu et transmis le wird",
+    videoLabel: "L'arbre de la silsila en mouvement",
+    videoCta: "Explorer l'arbre",
     silsilaLabel: "Transmission",
     biographiesLabel: "Les cheikhs",
     silsilaTitle: "La silsila",

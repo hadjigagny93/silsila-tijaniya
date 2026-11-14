@@ -118,6 +118,26 @@ export default async function Home() {
         </section>
       )}
 
+      {/* L'arbre vivant, en vidéo : un aperçu de ce qui attend sur la page Silsila. */}
+      <section className="home-video" aria-label={t.home.videoLabel}>
+        <Link href="/silsila" className="home-video-frame">
+          <video
+            src="/videos/arbre-silsila.mp4"
+            poster="/videos/arbre-silsila.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={t.home.videoLabel}
+          />
+          <span className="home-video-cta">
+            {t.home.videoCta}
+            <Icon name="arrowR" size={16} />
+          </span>
+        </Link>
+      </section>
+
       <div className="pattern-band home-band" aria-hidden />
 
       {!session?.local && (
