@@ -7019,9 +7019,59 @@ a.suluk-next-station {
   font-family: var(--font-serif);
 }
 
+/* « Restons en contact » : un encadré qui se remarque, pour inviter à laisser un moyen de joindre la personne. */
 .contrib-you {
-  border-top: 1px solid var(--line);
-  padding-top: 1.1rem;
+  display: grid;
+  gap: 1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  padding: 1.1rem 1.2rem;
+}
+
+.contrib-you-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.contrib-you-icon {
+  display: grid;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.contrib-you-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.contrib-you-title small {
+  margin-left: 0.3rem;
+  color: var(--muted);
+  font-family: var(--font-sans, inherit);
+  font-size: 12px;
+}
+
+.contrib-you-text {
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.contrib-you-private {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .contrib-trap {

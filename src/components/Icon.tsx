@@ -1,5 +1,6 @@
 // Icônes au trait du design : un tracé par chaîne, « c:x,y,r » pour un cercle.
 const PATHS = {
+  chat: ["M4 5h16v11H10l-4 4v-4H4z", "M8 9.5h8M8 12.5h5"],
   search: ["c:11,11,7", "M16.5 16.5 21 21"],
   plus: ["M12 5v14M5 12h14"],
   minus: ["M5 12h14"],

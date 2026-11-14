@@ -534,14 +534,32 @@ export function ContributionWizard({
               <input className="field" value={source} onChange={(event) => setSource(event.target.value)} placeholder={c.sourcePlaceholder} />
             </label>
             <fieldset className="contrib-you">
-              <legend className="field-label">
-                {c.you} <small>{c.optional}</small>
-              </legend>
-              <div className="contrib-pair">
-                <input className="field" value={you} onChange={(event) => setYou(event.target.value)} placeholder={c.youName} aria-label={c.youName} autoComplete="given-name" />
-                <input className="field" value={contact} onChange={(event) => setContact(event.target.value)} placeholder={c.youContact} aria-label={c.youContact} />
+              <legend className="sr-only">{c.you}</legend>
+              <div className="contrib-you-head">
+                <span className="contrib-you-icon" aria-hidden>
+                  <Icon name="chat" size={20} />
+                </span>
+                <div>
+                  <p className="contrib-you-title">
+                    {c.youTitle} <small>{c.optional}</small>
+                  </p>
+                  <p className="contrib-you-text">{c.youText}</p>
+                </div>
               </div>
-              <span className="field-help block">{c.youHelp}</span>
+              <div className="contrib-pair">
+                <label className="block">
+                  <span className="field-label">{c.youName}</span>
+                  <input className="field" value={you} onChange={(event) => setYou(event.target.value)} placeholder={c.youNamePlaceholder} autoComplete="given-name" />
+                </label>
+                <label className="block">
+                  <span className="field-label">{c.youContact}</span>
+                  <input className="field" value={contact} onChange={(event) => setContact(event.target.value)} placeholder={c.youContactPlaceholder} autoComplete="email" />
+                </label>
+              </div>
+              <span className="contrib-you-private">
+                <Icon name="shield" size={14} />
+                {c.youHelp}
+              </span>
             </fieldset>
           </div>
         )}
