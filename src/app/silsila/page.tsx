@@ -34,7 +34,11 @@ export default async function SilsilaPage({
 }) {
   const { personne } = await searchParams;
   const store = getStore();
-  const [persons, session] = await Promise.all([store.listPersons(), store.getSession()]);
+  const [persons, session, biographies] = await Promise.all([
+    store.listPersons(),
+    store.getSession(),
+    store.listBiographies(),
+  ]);
   const tree = childrenOf(persons);
   const known = new Set(persons.map((person) => person.id));
 
@@ -50,6 +54,7 @@ export default async function SilsilaPage({
         initialId={persons.some((person) => person.id === personne) ? personne : undefined}
         canLink={Boolean(session?.isAdmin)}
         canContribute={!session?.local}
+        biographies={biographies.filter((biography) => biography.body.trim()).map((biography) => biography.slug)}
       />
 
       {/* Légende des chaînes argentées, dès qu'il y en a une. */}

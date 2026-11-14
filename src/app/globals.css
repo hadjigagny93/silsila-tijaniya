@@ -7210,6 +7210,57 @@ a.suluk-next-station {
   color: var(--accent);
 }
 
+/* « Lire la biographie » quand elle n'est pas encore publiée : visible, mais éteint. */
+.profile-link.is-unpublished {
+  display: flex;
+  margin-inline: auto;
+  color: var(--muted);
+  text-decoration-style: dotted;
+  cursor: help;
+}
+
+/* Petite fenêtre posée sur la carte : la biographie arrive bientôt. */
+.card-notice {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  backdrop-filter: blur(3px);
+  padding: 1.25rem;
+  cursor: default;
+}
+
+.card-notice-box {
+  display: flex;
+  width: min(100%, 19rem);
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-overlay);
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--accent);
+}
+
+.card-notice-title {
+  color: var(--foreground);
+  font-family: var(--font-serif, serif);
+  font-size: 1.2rem;
+}
+
+.card-notice-text {
+  margin-bottom: 0.4rem;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 /* Barre du site sur téléphone : quatre mots ; le logo garde son étoile, son nom laisse la place aux liens. */
 @media (max-width: 39.99rem) {
   .site-topbar-nav {

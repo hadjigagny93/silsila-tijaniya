@@ -56,8 +56,11 @@ export function SilsilaTree({
   initialId,
   canLink = false,
   canContribute = false,
+  biographies = [],
 }: {
   persons: PublicPerson[];
+  // Les biographies publiées (avec un texte) : les autres s'annoncent « pas encore publiée ».
+  biographies?: string[];
   initialId?: string;
   // Admin : un bouton mène à « Ajouter une silsila » (relier une personne à son maître).
   canLink?: boolean;
@@ -78,6 +81,9 @@ export function SilsilaTree({
   const map = useStoredToggle("silsila:carte", false);
   const namesNow = useRef(false);
   const hasSilver = persons.some((person) => person.alsoFrom.length > 0);
+  const published = useMemo(() => new Set(biographies), [biographies]);
+  // La fenêtre « pas encore publiée » appartient à une personne : elle disparaît quand on en choisit une autre.
+  const [bioNoticeFor, setBioNoticeFor] = useState<string | null>(null);
   // Lu à la création de la scène, sans la recréer quand l'affichage change.
   const dark = useDarkTheme();
   const [generation, setGeneration] = useState<number | null>(null);
@@ -372,12 +378,23 @@ export function SilsilaTree({
             <Link href={`/silsila/${person.id}`} className="button w-full">
               {t.silsila.openChain}
             </Link>
-            {person.biographySlug && (
-              <Link href={`/biographies/${person.biographySlug}`} className="profile-link mx-auto flex w-fit">
-                {t.silsila.biography}
-                <Icon name="arrowR" size={16} />
-              </Link>
-            )}
+            {person.kind !== "prophet" &&
+              (person.biographySlug && published.has(person.biographySlug) ? (
+                <Link href={`/biographies/${person.biographySlug}`} className="profile-link mx-auto flex w-fit">
+                  {t.silsila.biography}
+                  <Icon name="arrowR" size={16} />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="profile-link is-unpublished mx-auto flex w-fit"
+                  aria-haspopup="dialog"
+                  onClick={() => setBioNoticeFor(person.id)}
+                >
+                  {t.silsila.biography}
+                  <Icon name="book" size={16} />
+                </button>
+              ))}
             {canContribute && person.kind !== "prophet" && (
               <Link href={`/contribuer?personne=${person.id}`} className="card-contribute">
                 <Icon name="edit" size={14} />
@@ -385,6 +402,18 @@ export function SilsilaTree({
               </Link>
             )}
           </div>
+          {bioNoticeFor === person.id && (
+            <div className="card-notice" role="alertdialog" aria-modal="false" aria-label={t.silsila.bioUnpublished}>
+              <div className="card-notice-box">
+                <Icon name="book" size={22} />
+                <p className="card-notice-title">{t.silsila.bioUnpublished}</p>
+                <p className="card-notice-text">{t.silsila.bioUnpublishedText}</p>
+                <button type="button" className="button w-full" onClick={() => setBioNoticeFor(null)} autoFocus>
+                  {t.silsila.bioUnpublishedOk}
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
       ) : (
         // Chaînes et lieux à compléter : du travail d'admin, pas pour les visiteurs du site.
