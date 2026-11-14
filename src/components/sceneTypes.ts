@@ -45,6 +45,31 @@ export const COLOR = {
   member: "var(--muted)",
 };
 
+// Sans photo, la calligraphie « رضي الله عنه » remplit le rond (dans l'arbre, sur la carte, dans les listes).
+export const FALLBACK_IMAGE = "/images/radiya.jpg";
+
+export function needsFallbackImage(person: PublicPerson) {
+  return !person.hasImage && person.kind !== "prophet";
+}
+
+// Motif SVG unique pour tous les ronds sans photo : une seule image, quel que soit le nombre de personnes.
+export function fallbackPattern(definitions: SVGElement, id: string) {
+  const ns = "http://www.w3.org/2000/svg";
+  const pattern = document.createElementNS(ns, "pattern");
+  pattern.setAttribute("id", id);
+  pattern.setAttribute("patternContentUnits", "objectBoundingBox");
+  pattern.setAttribute("width", "1");
+  pattern.setAttribute("height", "1");
+  const image = document.createElementNS(ns, "image");
+  image.setAttribute("href", FALLBACK_IMAGE);
+  image.setAttribute("width", "1");
+  image.setAttribute("height", "1");
+  image.setAttribute("preserveAspectRatio", "xMidYMid slice");
+  pattern.appendChild(image);
+  definitions.appendChild(pattern);
+  return `url(#${id})`;
+}
+
 // Taille du disque (et de la photo), selon le rang seulement : le Qutb reste une donnée de l'admin, sans effet visible.
 export function discRadius(person: PublicPerson) {
   const base = person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
