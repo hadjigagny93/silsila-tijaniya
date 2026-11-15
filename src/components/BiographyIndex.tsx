@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { PublicPerson } from "@/lib/data/types";
@@ -19,6 +20,9 @@ export type BiographyEntry = {
   person: PublicPerson | null;
   // Texte où chercher : nom, surnoms, lieux, résumé.
   haystack: string;
+  // Vue en images : l'image du lieu de la personne, sinon une image de couverture, et sa légende.
+  backdrop?: string | null;
+  caption?: string | null;
 };
 
 export type BiographyIndexSection = { id: string; title: string; entries: BiographyEntry[] };
@@ -37,11 +41,14 @@ export function BiographyIndex({
   hidden = [],
   placeholder = b.searchPlaceholder,
   searchLabel = b.searchLabel,
+  layout = "cards",
 }: {
   sections: BiographyIndexSection[];
   hidden?: string[];
   placeholder?: string;
   searchLabel?: string;
+  // « scenes » : une image 16:9 par ligne, sur toute la largeur (les Gens de la Voie).
+  layout?: "cards" | "scenes";
 }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState<string | null>(null);
@@ -119,34 +126,68 @@ export function BiographyIndex({
             <span>{section.title}</span>
             <small>{section.entries.length}</small>
           </h2>
-          <ul className="bio-cards">
-            {section.entries.map((entry) => (
-              <li key={entry.slug}>
-                <Link href={entry.href} className="bio-card">
-                  {entry.person ? (
-                    <Avatar person={entry.person} size={64} />
-                  ) : (
-                    <span className="avatar" style={{ width: 64, height: 64 }} aria-hidden />
-                  )}
-                  <span className="bio-card-text">
-                    <span className="bio-card-name">{entry.name}</span>
-                    {(entry.period || entry.place) && (
-                      <span className="bio-card-meta">{[entry.period, entry.place].filter(Boolean).join(" · ")}</span>
+          {layout === "scenes" ? (
+            <ul className="people-scenes">
+              {section.entries.map((entry) => (
+                <li key={entry.slug}>
+                  <Link href={entry.href} className="people-scene">
+                    {entry.backdrop && (
+                      <Image
+                        className="people-scene-image"
+                        src={entry.backdrop}
+                        alt=""
+                        fill
+                        sizes="100vw"
+                        loading="lazy"
+                        unoptimized
+                      />
                     )}
-                    {entry.summary && <span className="bio-card-summary">{entry.summary}</span>}
-                    {entry.badges.length > 0 && (
-                      <span className="bio-card-badges">
-                        {entry.badges.map((badge) => (
-                          <span key={badge}>{badge}</span>
-                        ))}
+                    <span className="people-scene-head">
+                      <span className="people-scene-who">
+                        <span className="people-scene-name">{entry.name}</span>
+                        {entry.period && <span className="people-scene-period">{entry.period}</span>}
                       </span>
+                      {entry.person && (
+                        <span className="people-scene-avatar">
+                          <Avatar person={entry.person} size={96} />
+                        </span>
+                      )}
+                    </span>
+                    {entry.caption && <span className="people-scene-caption">{entry.caption}</span>}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul className="bio-cards">
+              {section.entries.map((entry) => (
+                <li key={entry.slug}>
+                  <Link href={entry.href} className="bio-card">
+                    {entry.person ? (
+                      <Avatar person={entry.person} size={64} />
+                    ) : (
+                      <span className="avatar" style={{ width: 64, height: 64 }} aria-hidden />
                     )}
-                  </span>
-                  <Icon name="arrowR" size={18} />
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    <span className="bio-card-text">
+                      <span className="bio-card-name">{entry.name}</span>
+                      {(entry.period || entry.place) && (
+                        <span className="bio-card-meta">{[entry.period, entry.place].filter(Boolean).join(" · ")}</span>
+                      )}
+                      {entry.summary && <span className="bio-card-summary">{entry.summary}</span>}
+                      {entry.badges.length > 0 && (
+                        <span className="bio-card-badges">
+                          {entry.badges.map((badge) => (
+                            <span key={badge}>{badge}</span>
+                          ))}
+                        </span>
+                      )}
+                    </span>
+                    <Icon name="arrowR" size={18} />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       ))}
     </div>

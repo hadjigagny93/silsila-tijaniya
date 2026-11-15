@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { type BiographyEntry, BiographyIndex, type BiographyIndexSection } from "@/components/BiographyIndex";
+import { placeImageUrl } from "@/components/Avatar";
 import { placeOfPerson, publicPerson } from "@/lib/biographySections";
+import { coverUrl, listCovers, shownCover } from "@/lib/covers";
 import { generationsOf, isChoosableMouqaddam } from "@/lib/chain";
 import { getStore } from "@/lib/data";
 import type { PublicPerson } from "@/lib/data/types";
@@ -18,7 +20,17 @@ const normalize = (value: string) =>
 
 // Annuaire public des cheikhs et mouqaddams, en lecture seule, rangé par génération comme les biographies.
 export default async function MouqaddamsPage() {
-  const persons = await getStore().listPersons();
+  const store = getStore();
+  const [persons, biographies] = await Promise.all([store.listPersons(), store.listBiographies()]);
+  const covers = listCovers();
+  const published = new Map(biographies.filter((entry) => entry.body.trim()).map((entry) => [entry.slug, entry]));
+  // Sans image du lieu : la couverture que montre son profil.
+  const backdropOf = (person: PublicPerson) => {
+    if (person.placeImageVersion) return placeImageUrl(person);
+    const biography = person.biographySlug ? published.get(person.biographySlug) : undefined;
+    const cover = shownCover(biography ?? { slug: person.id, cover: null }, covers);
+    return cover ? coverUrl(cover) : null;
+  };
   const generations = generationsOf(persons);
   const prophet = persons.find((person) => person.kind === "prophet");
   const known = persons.filter(isChoosableMouqaddam);
@@ -34,6 +46,8 @@ export default async function MouqaddamsPage() {
       place,
       badges: [],
       person: publicPerson(person),
+      backdrop: backdropOf(person),
+      caption: person.placeImageVersion ? person.placeCaption : null,
       haystack: normalize([person.displayName, ...person.nicknames, place, person.zawiya ?? ""].join(" ")),
     };
   };
@@ -67,7 +81,7 @@ export default async function MouqaddamsPage() {
           <p className="bio-library-count">{m.count(known.length)}</p>
         </div>
       </header>
-      <BiographyIndex sections={sections} placeholder={m.searchPlaceholder} searchLabel={m.searchLabel} />
+      <BiographyIndex layout="scenes" sections={sections} placeholder={m.searchPlaceholder} searchLabel={m.searchLabel} />
     </div>
   );
 }
