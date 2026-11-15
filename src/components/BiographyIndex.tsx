@@ -140,7 +140,7 @@ export function BiographyIndex({
                       src={entry.backdrop}
                       alt=""
                       fill
-                      sizes="100vw"
+                      sizes="(max-width: 768px) 100vw, 72rem"
                       loading="lazy"
                       unoptimized
                     />
