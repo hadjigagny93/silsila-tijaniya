@@ -11,7 +11,7 @@ export default async function NewBiographyPage({ searchParams }: { searchParams:
   const { erreur } = await searchParams;
   const store = getStore();
   const session = await store.getSession();
-  if (!session?.isAdmin) redirect("/biographies");
+  if (!session?.isAdmin) redirect("/mouqaddams");
 
   return <BiographyForm persons={await store.listPersons()} covers={listCovers()} failed={Boolean(erreur)} />;
 }

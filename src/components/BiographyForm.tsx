@@ -25,7 +25,7 @@ export function BiographyForm({
   personId?: string;
   failed: boolean;
 }) {
-  const back = biography ? `/biographies/${biography.slug}` : "/biographies";
+  const back = biography ? `/biographies/${biography.slug}` : "/mouqaddams";
   const automatic = automaticCover(biography?.slug ?? "nouvelle", covers);
 
   return (

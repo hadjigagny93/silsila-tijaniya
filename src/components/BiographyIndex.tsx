@@ -23,6 +23,8 @@ export type BiographyEntry = {
   // Vue en images : l'image du lieu de la personne, sinon une image de couverture, et sa légende.
   backdrop?: string | null;
   caption?: string | null;
+  // Sa biographie, quand elle est écrite.
+  biographyHref?: string | null;
 };
 
 export type BiographyIndexSection = { id: string; title: string; entries: BiographyEntry[] };
@@ -129,32 +131,38 @@ export function BiographyIndex({
           {layout === "scenes" ? (
             <ul className="people-scenes">
               {section.entries.map((entry) => (
-                <li key={entry.slug}>
-                  <Link href={entry.href} className="people-scene">
-                    {entry.backdrop && (
-                      <Image
-                        className="people-scene-image"
-                        src={entry.backdrop}
-                        alt=""
-                        fill
-                        sizes="100vw"
-                        loading="lazy"
-                        unoptimized
-                      />
-                    )}
-                    <span className="people-scene-head">
-                      <span className="people-scene-who">
-                        <span className="people-scene-name">{entry.name}</span>
-                        {entry.period && <span className="people-scene-period">{entry.period}</span>}
-                      </span>
-                      {entry.person && (
-                        <span className="people-scene-avatar">
-                          <Avatar person={entry.person} size={96} />
-                        </span>
-                      )}
+                <li key={entry.slug} className="people-scene">
+                  {/* Toute l'image ouvre le profil ; le lien de la biographie passe au-dessus. */}
+                  <Link href={entry.href} className="people-scene-link" aria-label={entry.name} />
+                  {entry.backdrop && (
+                    <Image
+                      className="people-scene-image"
+                      src={entry.backdrop}
+                      alt=""
+                      fill
+                      sizes="100vw"
+                      loading="lazy"
+                      unoptimized
+                    />
+                  )}
+                  <span className="people-scene-head">
+                    <span className="people-scene-who">
+                      <span className="people-scene-name">{entry.name}</span>
+                      {entry.period && <span className="people-scene-period">{entry.period}</span>}
                     </span>
-                    {entry.caption && <span className="people-scene-caption">{entry.caption}</span>}
-                  </Link>
+                    {entry.person && (
+                      <span className="people-scene-avatar">
+                        <Avatar person={entry.person} size={96} />
+                      </span>
+                    )}
+                  </span>
+                  {entry.caption && <span className="people-scene-caption">{entry.caption}</span>}
+                  {entry.biographyHref && (
+                    <Link href={entry.biographyHref} className="people-scene-bio">
+                      <Icon name="book" size={16} />
+                      {b.read}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

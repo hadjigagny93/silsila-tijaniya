@@ -423,7 +423,7 @@ export async function deleteBiography(form: FormData) {
   const slug = text(form, "slug", 120);
   // Depuis la fiche d'une personne, on y revient après la suppression.
   const from = text(form, "retour", 200);
-  const back = from.startsWith("/admin/mouqaddams/") ? from : "/biographies";
+  const back = from.startsWith("/admin/mouqaddams/") ? from : "/mouqaddams";
   const failure = from.startsWith("/admin/mouqaddams/") ? `${from}?erreur=1` : `/biographies/${slug}/modifier?erreur=1`;
   await attempt(() => getStore().deleteBiography(slug), back, failure);
 }

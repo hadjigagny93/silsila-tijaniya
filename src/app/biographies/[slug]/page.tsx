@@ -95,11 +95,11 @@ export default async function BiographyPage({ params }: Props) {
         {session?.isAdmin && covers.length > 0 && <CoverChanger biography={biography} covers={covers} />}
         <div className="bio-hero-content">
           <nav className="bio-crumbs" aria-label={b.title}>
-            <Link href="/biographies">{b.title}</Link>
+            <Link href="/mouqaddams">{t.mouqaddams.title}</Link>
             {section && (
               <>
                 <span aria-hidden>›</span>
-                <Link href={`/biographies#${section.id}`}>{section.title}</Link>
+                <Link href={`/mouqaddams#${section.id}`}>{section.title}</Link>
               </>
             )}
           </nav>
@@ -197,7 +197,7 @@ export default async function BiographyPage({ params }: Props) {
                     ))}
                   </ul>
                   {disciples.length > DISCIPLES_SHOWN && (
-                    <Link href="/biographies#generation-1" className="bio-more">
+                    <Link href="/mouqaddams#generation-1" className="bio-more">
                       {b.moreDisciples(disciples.length - DISCIPLES_SHOWN)} →
                     </Link>
                   )}
@@ -254,7 +254,7 @@ export default async function BiographyPage({ params }: Props) {
       )}
 
       <p className="bio-back">
-        <Link href="/biographies">
+        <Link href="/mouqaddams">
           <Icon name="arrowL" size={14} />
           {b.back}
         </Link>
