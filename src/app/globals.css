@@ -7900,11 +7900,11 @@ a.suluk-next-station {
 }
 
 /* Titre de partie : un filet doré qui file jusqu'au bord. */
-/* Les Gens de la Voie : une image 16:9 par ligne, de bord à bord, que l'on fait défiler. */
+/* Les Gens de la Voie : une image 16:9 par ligne, de la largeur du champ de recherche, que l'on fait défiler. */
 .people-scenes {
   display: grid;
-  gap: 0.375rem;
-  margin: 1.25rem calc(50% - (100vw - var(--sidebar-width)) / 2) 0;
+  gap: 1rem;
+  margin-top: 1.25rem;
 }
 
 .people-scene {
@@ -7914,6 +7914,7 @@ a.suluk-next-station {
   max-height: 100svh;
   aspect-ratio: 16 / 9;
   overflow: hidden;
+  border-radius: 16px;
   background: linear-gradient(135deg, #2b2a26, #4a4335);
   color: #fff;
   isolation: isolate;
