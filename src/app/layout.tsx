@@ -66,7 +66,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </Link>
               <nav className="site-topbar-nav">
                 <NavLink href="/silsila">{t.nav.silsila}</NavLink>
-                <NavLink href="/biographies">{t.nav.biographies}</NavLink>
                 <NavLink href="/mouqaddams">{t.nav.mouqaddams}</NavLink>
                 <NavLink href="/contribuer">{t.nav.contribute}</NavLink>
               </nav>
@@ -89,8 +88,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <NavLink href="/silsila" icon="tree" also="/admin/silsila">
                 {t.nav.silsila}
               </NavLink>
-              <NavLink href="/biographies" icon="book">
-                {t.nav.biographies}
+              {/* Les biographies s'ouvrent depuis chaque mouqaddam des Gens de la Voie. */}
+              <NavLink href="/mouqaddams" icon="book" also="/biographies">
+                {t.nav.mouqaddams}
               </NavLink>
               {/* Le Suluk est personnel : il reste sur le Mac et l'iPhone, pas sur le site. */}
               {session?.local && (

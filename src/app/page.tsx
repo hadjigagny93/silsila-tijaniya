@@ -72,8 +72,8 @@ export default async function Home() {
                 <Icon name="tree" size={18} />
                 {t.home.explore}
               </Link>
-              <Link href="/biographies" className="button home-secondary">
-                <Icon name="book" size={18} />
+              <Link href="/mouqaddams" className="button home-secondary">
+                <Icon name="users" size={18} />
                 {t.home.read}
               </Link>
             </div>
@@ -159,7 +159,7 @@ export default async function Home() {
           <h2 className="mt-2 group-hover:text-accent">{t.home.silsilaTitle}</h2>
           <p className="mt-2 text-muted">{t.home.silsilaText}</p>
         </Link>
-        <Link href="/biographies" className="group block">
+        <Link href="/mouqaddams" className="group block">
           <p className="label">{t.home.biographiesLabel}</p>
           <h2 className="mt-2 group-hover:text-accent">{t.home.biographiesTitle}</h2>
           <p className="mt-2 text-muted">{t.home.biographiesText}</p>

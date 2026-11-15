@@ -55,7 +55,7 @@ export const t = {
     intro:
       "Les chaînes de transmission de la Tijaniya, réunies en un seul arbre : chaque nom se rattache à celui qui lui a transmis le wird, maillon par maillon, jusqu'à Cheikh Ahmad Tijani et au Prophète ﷺ.",
     explore: "Explorer la silsila",
-    read: "Lire les biographies",
+    read: "Les Gens de la Voie",
     chainLabel: "Une chaîne, maillon par maillon",
     chainFoot: (count: number) => `${count} maillons jusqu'au Prophète ﷺ`,
     chainOpen: "Voir dans l'arbre",
@@ -73,8 +73,8 @@ export const t = {
     biographiesLabel: "Les cheikhs",
     silsilaTitle: "La silsila",
     silsilaText: "Parcourez l'arbre ou la carte du monde, retrouvez un nom et remontez sa chaîne.",
-    biographiesTitle: "Les biographies",
-    biographiesText: "Découvrez la vie et l'œuvre des cheikhs et des mouqaddams de la voie.",
+    biographiesTitle: "Les Gens de la Voie",
+    biographiesText: "Les cheikhs et mouqaddams de la voie, avec leur biographie quand elle est écrite.",
   },
   silsila: {
     lineage: "Chaînes à montrer",
@@ -189,7 +189,7 @@ export const t = {
     sourcesCount: (count: number) => `${count} source${count > 1 ? "s" : ""}`,
     draft: "Ce texte est un premier jet en cours de relecture.",
     chain: "Voir sa place dans la silsila",
-    back: "Toutes les biographies",
+    back: "Retour aux Gens de la Voie",
     profile: "Voir le profil",
     add: "Nouvelle biographie",
     edit: "Modifier",

@@ -15,8 +15,8 @@ import { SyncBadge } from "./Pairing";
 // la date hégirienne et grégorienne, puis les sections en onglets. Un glissement du doigt vers la gauche ou la droite
 // passe à la section voisine.
 const TABS = [
-  { href: "/biographies", label: t.nav.biographies, matches: ["/biographies"] },
   { href: "/silsila", label: t.nav.silsila, matches: ["/silsila", "/admin/silsila"] },
+  { href: "/mouqaddams", label: t.nav.mouqaddams, matches: ["/mouqaddams", "/biographies"] },
   { href: "/admin/mouqaddams", label: t.nav.adminMouqaddams, matches: ["/admin/mouqaddams"] },
   { href: "/suluk", label: t.nav.suluk, matches: ["/suluk", "/echiquier"] },
 ];

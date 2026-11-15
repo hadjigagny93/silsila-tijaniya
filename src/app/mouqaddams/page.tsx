@@ -48,6 +48,8 @@ export default async function MouqaddamsPage() {
       person: publicPerson(person),
       backdrop: backdropOf(person),
       caption: person.placeImageVersion ? person.placeCaption : null,
+      biographyHref:
+        person.biographySlug && published.has(person.biographySlug) ? `/biographies/${person.biographySlug}` : null,
       haystack: normalize([person.displayName, ...person.nicknames, place, person.zawiya ?? ""].join(" ")),
     };
   };
