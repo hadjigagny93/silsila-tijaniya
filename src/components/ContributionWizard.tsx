@@ -9,6 +9,7 @@ import type { PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { ShareButtons } from "./ShareButtons";
 import { PersonPicker } from "./PersonPicker";
 
 const c = t.contribute;
@@ -290,6 +291,7 @@ export function ContributionWizard({
             {c.thanksTree}
           </Link>
         </div>
+        <ShareButtons path="/" text={t.share.projectText} label={t.share.projectLabel} />
       </section>
     );
   }

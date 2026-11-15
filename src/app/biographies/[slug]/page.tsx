@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Avatar } from "@/components/Avatar";
+import { Avatar, placeImageUrl } from "@/components/Avatar";
 import { CoverChanger } from "@/components/CoverChanger";
 import { Icon } from "@/components/Icon";
+import { ShareButtons } from "@/components/ShareButtons";
 import { MarkdownText } from "@/components/MarkdownText";
 import { isChoosableMouqaddam } from "@/lib/chain";
 import { authorizedBy, biographySections, placeLabel, readingMinutes } from "@/lib/biographySections";
-import { coverStyle, listCovers } from "@/lib/covers";
+import { coverStyle, coverUrl, listCovers, shownCover } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import type { Biography, PublicPerson } from "@/lib/data/types";
 import { periodOf } from "@/lib/dates";
+import { shareMetadata } from "@/lib/social";
 import { t } from "@/messages/fr";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -20,8 +22,19 @@ const DISCIPLES_SHOWN = 8;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const biography = await getStore().getBiography(slug);
-  return { title: biography?.name, description: biography?.summary };
+  const store = getStore();
+  const [biography, persons] = await Promise.all([store.getBiography(slug), store.listPersons()]);
+  if (!biography) return {};
+  // L'aperçu partagé montre le lieu de la personne, sinon la couverture de la biographie.
+  const person = persons.find((candidate) => candidate.biographySlug === slug);
+  const cover = shownCover(biography, listCovers());
+  const image = person?.placeImageVersion ? placeImageUrl(person) : cover ? coverUrl(cover) : null;
+  return shareMetadata({
+    title: biography.name,
+    description: biography.summary || t.share.biographyText(biography.name),
+    path: `/biographies/${slug}`,
+    image,
+  });
 }
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
@@ -141,6 +154,14 @@ export default async function BiographyPage({ params }: Props) {
             <div className="bio-body">
               <MarkdownText>{biography.body}</MarkdownText>
             </div>
+          )}
+
+          {hasText && (
+            <ShareButtons
+              path={`/biographies/${slug}`}
+              text={t.share.biographyText(biography.name)}
+              label={t.share.biographyLabel}
+            />
           )}
 
           {biography.sources.length > 0 && (
