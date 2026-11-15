@@ -7929,20 +7929,27 @@ a.suluk-next-station {
   transform: scale(1.025);
 }
 
-/* Le haut s'assombrit pour que le nom reste lisible sur n'importe quelle image. */
+/* Le haut s'assombrit pour que le nom reste lisible sur n'importe quelle image : au-dessus de l'image, sous le texte. */
 .people-scene::before {
   content: "";
   position: absolute;
   inset: 0 0 auto;
-  z-index: -1;
-  height: 55%;
-  background: linear-gradient(to bottom, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0));
+  z-index: 0;
+  height: 65%;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0.72) 0%,
+    rgb(0 0 0 / 0.5) 30%,
+    rgb(0 0 0 / 0.18) 65%,
+    rgb(0 0 0 / 0) 100%
+  );
   pointer-events: none;
 }
 
 .people-scene-head {
   position: absolute;
   inset: 0 0 auto;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -7954,7 +7961,7 @@ a.suluk-next-station {
   display: grid;
   gap: 0.35rem;
   min-width: 0;
-  text-shadow: 0 1px 12px rgb(0 0 0 / 0.45);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.6), 0 2px 18px rgb(0 0 0 / 0.5);
 }
 
 .people-scene-name {
@@ -7969,7 +7976,7 @@ a.suluk-next-station {
 }
 
 .people-scene-period {
-  color: rgb(255 255 255 / 0.85);
+  color: #fff;
   font-size: clamp(0.85rem, 1.4vw, 1.05rem);
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -7990,6 +7997,7 @@ a.suluk-next-station {
 
 .people-scene-caption {
   position: absolute;
+  z-index: 1;
   bottom: clamp(0.7rem, 2vw, 1.5rem);
   left: clamp(1rem, 3.5vw, 2.75rem);
   max-width: 70%;
