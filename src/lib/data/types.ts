@@ -27,6 +27,9 @@ export type PublicPerson = {
   hasImage: boolean;
   // Change avec l'image : force le navigateur à recharger la nouvelle.
   imageVersion?: string | null;
+  // Image d'un lieu qui le caractérise (sa zawiya, une ville où il a vécu…) : sa version, null sans image.
+  placeImageVersion?: string | null;
+  placeCaption?: string | null;
 };
 
 export type Profile = {
@@ -223,6 +226,9 @@ export type Store = {
   // Image en JPEG, encodée en base64.
   setPersonImage(personId: string, base64: string | null): Promise<void>;
   getPersonImage(personId: string): Promise<Uint8Array | null>;
+  // Image du lieu, en JPEG base64 : null la retire, undefined la garde et ne change que la légende.
+  setPlaceImage(personId: string, base64: string | null | undefined, caption: string | null): Promise<void>;
+  getPlaceImage(personId: string): Promise<Uint8Array | null>;
   // Personnes publiques avec une image propre : une image partagée par plusieurs (calligraphie par défaut) est écartée.
   listPortraits(): Promise<string[]>;
   linkMouqaddam(personId: string, mouqaddamId: string): Promise<void>;

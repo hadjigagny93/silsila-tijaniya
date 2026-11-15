@@ -7,6 +7,11 @@ export function personImageUrl(person: PublicPerson) {
   return `/api/personnes/${person.id}/image${person.imageVersion ? `?v=${encodeURIComponent(person.imageVersion)}` : ""}`;
 }
 
+// Image du lieu qui caractérise la personne (sa zawiya, une ville où elle a vécu…).
+export function placeImageUrl(person: PublicPerson) {
+  return `/api/personnes/${person.id}/lieu${person.placeImageVersion ? `?v=${encodeURIComponent(person.placeImageVersion)}` : ""}`;
+}
+
 // Sans image, les initiales gardent la même forme : les listes restent alignées.
 export function Avatar({ person, size = 28 }: { person: PublicPerson; size?: number }) {
   const style = { width: size, height: size, fontSize: size * 0.38 };

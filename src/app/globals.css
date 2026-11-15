@@ -1227,6 +1227,65 @@ h3 {
   font-weight: 600;
 }
 
+.place-field {
+  max-width: 30rem;
+}
+
+.place-stage {
+  position: relative;
+  display: flex;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: repeating-linear-gradient(135deg, var(--line) 0 6px, transparent 6px 14px), var(--surface);
+  cursor: pointer;
+}
+
+.place-stage img {
+  object-fit: cover;
+}
+
+.place-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px dashed var(--field-line);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Profil public : le lieu qui caractérise la personne, en tête de ses repères. */
+.profile-place {
+  margin: -1.4rem -1.4rem 1.25rem;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+}
+
+.profile-place-image {
+  position: relative;
+  aspect-ratio: 4 / 3;
+}
+
+.profile-place-image img {
+  object-fit: cover;
+}
+
+.profile-place figcaption {
+  padding: 0.65rem 1.4rem 0.8rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
 .chips-field {
   display: flex;
   min-height: 52px;

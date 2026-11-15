@@ -109,9 +109,18 @@ export const supabaseStore: Store = {
       if (!visible.has(link.master_id)) continue;
       alsoFrom.set(link.person_id, [...(alsoFrom.get(link.person_id) ?? []), link.master_id]);
     }
+    // Images de lieu : migration 0019 pas encore passée, on s'en passe.
+    const placesResult = await supabase.from("place_images").select("person_id, caption, updated_at");
+    const places = new Map(
+      ((placesResult.error ? [] : placesResult.data) as { person_id: string; caption: string | null; updated_at: string }[]).map(
+        (place) => [place.person_id, place],
+      ),
+    );
     return rows.map((row) => ({
       id: row.id,
       kind: row.kind,
+      placeImageVersion: row.short ? null : (places.get(row.id)?.updated_at ?? null),
+      placeCaption: row.short ? null : (places.get(row.id)?.caption ?? null),
       displayName: row.display_name,
       city: row.city,
       mouqaddamId: row.mouqaddam_id,
@@ -281,6 +290,32 @@ export const supabaseStore: Store = {
       .eq("person_id", personId)
       .maybeSingle();
     check(error);
+    return data ? Buffer.from(data.data as string, "base64") : null;
+  },
+
+  async setPlaceImage(personId, base64, caption) {
+    const supabase = await createClient();
+    if (base64 === null) {
+      check((await supabase.from("place_images").delete().eq("person_id", personId)).error);
+      return;
+    }
+    if (base64 === undefined) {
+      check((await supabase.from("place_images").update({ caption }).eq("person_id", personId)).error);
+      return;
+    }
+    check(
+      (
+        await supabase
+          .from("place_images")
+          .upsert({ person_id: personId, data: base64, caption, updated_at: new Date().toISOString() }, { onConflict: "person_id" })
+      ).error,
+    );
+  },
+
+  async getPlaceImage(personId) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("place_images").select("data").eq("person_id", personId).maybeSingle();
+    if (error) return null;
     return data ? Buffer.from(data.data as string, "base64") : null;
   },
 

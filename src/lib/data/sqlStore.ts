@@ -50,6 +50,13 @@ const SCHEMA = `
     updated_at text not null default (datetime('now'))
   );
 
+  create table if not exists place_images (
+    person_id text primary key references persons (id) on delete cascade,
+    data blob not null,
+    caption text,
+    updated_at text not null default (datetime('now'))
+  );
+
   create table if not exists biographies (
     slug text primary key,
     name text not null,
@@ -168,6 +175,7 @@ export const SYNC_TABLES: Record<string, string[]> = {
   persons: ["id"],
   person_links: ["id"],
   person_images: ["person_id"],
+  place_images: ["person_id"],
   biographies: ["slug"],
   wird_log: ["user_id", "day", "practice"],
   suluk_settings: ["user_id"],
@@ -308,6 +316,8 @@ type PersonRow = {
   wird_from_id?: string | null;
   hidden: number;
   image_version?: string | null;
+  place_version?: string | null;
+  place_caption?: string | null;
 };
 
 type BiographyRow = {
@@ -478,9 +488,11 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
 
     async listPersons() {
       const rows = await all<PersonRow>(
-        `select persons.*, person_images.updated_at as image_version
+        `select persons.*, person_images.updated_at as image_version,
+           place.updated_at as place_version, place.caption as place_caption
          from persons left join person_images
            on person_images.person_id = persons.id and person_images.deleted = 0
+         left join place_images as place on place.person_id = persons.id and place.deleted = 0
          where hidden = 0 and persons.deleted = 0`,
       );
       // Chaînes argentées : seulement vers des maîtres visibles, et pas pour une personne en affichage court.
@@ -515,6 +527,8 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
           row.display_mode !== "short" && row.wird_from_id && visible.has(row.wird_from_id) ? row.wird_from_id : null,
         hasImage: row.display_mode !== "short" && Boolean(row.image_version),
         imageVersion: row.image_version,
+        placeImageVersion: row.display_mode === "short" ? null : (row.place_version ?? null),
+        placeCaption: row.display_mode === "short" ? null : (row.place_caption ?? null),
       }));
     },
 
@@ -610,6 +624,7 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         await run("update persons set mouqaddam_id = null where mouqaddam_id = ?", [personId]);
         await run("update persons set wird_from_id = null where wird_from_id = ?", [personId]);
         await run("update person_images set deleted = 1 where person_id = ?", [personId]);
+        await run("update place_images set deleted = 1 where person_id = ?", [personId]);
         await run("update persons set deleted = 1, biography_slug = null, user_id = null where id = ?", [personId]);
         await run("update person_links set deleted = 1 where (person_id = ? or master_id = ?) and deleted = 0", [
           personId,
@@ -635,6 +650,38 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         `select data from person_images
          join persons on persons.id = person_images.person_id
          where person_id = ? and person_images.deleted = 0 and persons.deleted = 0
+           and hidden = 0 and display_mode <> 'short'`,
+        [personId],
+      );
+      return row ? new Uint8Array(row.data) : null;
+    },
+
+    async setPlaceImage(personId, base64, caption) {
+      if (base64 === null) {
+        await run("update place_images set deleted = 1 where person_id = ? and deleted = 0", [personId]);
+        return;
+      }
+      if (base64 === undefined) {
+        await run("update place_images set caption = ? where person_id = ? and deleted = 0 and coalesce(caption, '') <> coalesce(?, '')", [
+          caption,
+          personId,
+          caption,
+        ]);
+        return;
+      }
+      await run(
+        `insert into place_images (person_id, data, caption, updated_at) values (?, ?, ?, ?)
+         on conflict (person_id) do update
+           set data = excluded.data, caption = excluded.caption, updated_at = excluded.updated_at, deleted = 0`,
+        [personId, fromBase64(base64), caption, new Date().toISOString()],
+      );
+    },
+
+    async getPlaceImage(personId) {
+      const row = await get<{ data: Uint8Array }>(
+        `select data from place_images
+         join persons on persons.id = place_images.person_id
+         where person_id = ? and place_images.deleted = 0 and persons.deleted = 0
            and hidden = 0 and display_mode <> 'short'`,
         [personId],
       );
