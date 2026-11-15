@@ -7,9 +7,11 @@ import { Icon, Star } from "@/components/Icon";
 import { NavLink } from "@/components/NavLink";
 import { PublishButton } from "@/components/PublishButton";
 import { SidebarToggle } from "@/components/SidebarToggle";
+import { SiteFooter } from "@/components/SiteFooter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { generationsOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";
+import { DEFAULT_SHARE_IMAGE, SITE_URL, X_HANDLE } from "@/lib/social";
 import { t } from "@/messages/fr";
 // Polices intégrées à l'app : elle fonctionne aussi sans internet.
 import "@fontsource-variable/eb-garamond";
@@ -24,6 +26,17 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: { default: t.site.name, template: `%s · ${t.site.name}` },
   description: t.site.description,
+  // Aperçus des liens partagés (WhatsApp, X, Facebook…) : adresses absolues vers le site public.
+  metadataBase: new URL(SITE_URL),
+  openGraph: {
+    title: t.site.name,
+    description: t.site.description,
+    siteName: t.site.name,
+    locale: "fr_FR",
+    type: "website",
+    images: [DEFAULT_SHARE_IMAGE],
+  },
+  twitter: { card: "summary_large_image", site: `@${X_HANDLE}`, images: [DEFAULT_SHARE_IMAGE] },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -144,7 +157,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </nav>
           </aside>
         )}
-        <main className="mx-auto w-full max-w-4xl min-w-0 flex-1 px-4 py-10">{children}</main>
+        <main className="mx-auto w-full max-w-4xl min-w-0 flex-1 px-4 py-10">
+          {children}
+          <SiteFooter />
+        </main>
       </body>
     </html>
   );

@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Avatar, placeImageUrl } from "@/components/Avatar";
+import { Avatar, personImageUrl, placeImageUrl } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
+import { ShareButtons } from "@/components/ShareButtons";
 import { authorizedBy, placeLabel, placeOfPerson, publicPerson } from "@/lib/biographySections";
 import { chainOf, generationsOf, isChoosableMouqaddam } from "@/lib/chain";
 import { coverStyle, listCovers } from "@/lib/covers";
 import { getStore } from "@/lib/data";
 import type { PublicPerson } from "@/lib/data/types";
 import { periodOf } from "@/lib/dates";
+import { shareMetadata } from "@/lib/social";
 import { t } from "@/messages/fr";
 
 type Props = { params: Promise<{ id: string }> };
@@ -19,7 +21,17 @@ const m = t.mouqaddams;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const persons = await getStore().listPersons();
-  return { title: persons.find((person) => person.id === id)?.displayName ?? m.title };
+  const person = persons.find((candidate) => candidate.id === id);
+  if (!person) return { title: m.title };
+  // L'aperçu partagé montre son lieu, sinon sa photo.
+  const image = person.placeImageVersion ? placeImageUrl(person) : person.hasImage ? personImageUrl(person) : null;
+  const details = [periodOf(person.birthDate, person.deathDate), placeOfPerson(person)].filter(Boolean).join(" · ");
+  return shareMetadata({
+    title: person.displayName,
+    description: t.share.profileDescription(details),
+    path: `/mouqaddams/${person.id}`,
+    image,
+  });
 }
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
@@ -118,6 +130,11 @@ export default async function MouqaddamProfilePage({ params }: Props) {
               {m.tree}
             </Link>
           </div>
+          <ShareButtons
+            path={`/mouqaddams/${person.id}`}
+            text={t.share.profileText(person.displayName)}
+            label={t.share.profileLabel}
+          />
 
           <section className="profile-section">
             <h2>{m.chain}</h2>

@@ -6,6 +6,7 @@ import { reportPerson } from "@/app/actions";
 import { Avatar } from "@/components/Avatar";
 import { chainOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";
+import { shareMetadata } from "@/lib/social";
 import { t } from "@/messages/fr";
 
 type Props = {
@@ -16,7 +17,9 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const persons = await getStore().listPersons();
-  return { title: persons.find((person) => person.id === id)?.displayName };
+  const person = persons.find((candidate) => candidate.id === id);
+  if (!person) return {};
+  return shareMetadata({ title: person.displayName, description: t.share.treeText(person.displayName), path: `/silsila/${id}` });
 }
 
 export default async function PersonPage({ params, searchParams }: Props) {

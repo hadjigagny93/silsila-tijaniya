@@ -10,6 +10,7 @@ import { placeChoices, placeOf } from "@/lib/places";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { ShareButtons } from "./ShareButtons";
 import { PlaceQuickForm } from "./PlaceQuickForm";
 import { DEFAULT_LINEAGE, type Lineage, type SceneApi } from "./sceneTypes";
 import { useDarkTheme } from "./useDarkTheme";
@@ -395,6 +396,7 @@ export function SilsilaTree({
                   <Icon name="book" size={16} />
                 </button>
               ))}
+            <ShareButtons compact path={`/silsila?personne=${person.id}`} text={t.share.treeText(person.displayName)} />
             {canContribute && person.kind !== "prophet" && (
               <Link href={`/contribuer?personne=${person.id}`} className="card-contribute">
                 <Icon name="edit" size={14} />
