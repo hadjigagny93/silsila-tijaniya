@@ -2,16 +2,23 @@ import { mobileStore } from "./data";
 
 // Sur le Mac, les photos des personnes viennent de l'adresse /api/personnes/<id>/image.
 // Dans l'app, elles sont dans la base du téléphone : toute image qui vise cette adresse (balise img,
-// textures de la vue 3D) est servie depuis la base, sous forme d'URL blob.
-const PATTERN = /\/api\/personnes\/([^/?#]+)\/image/;
+// textures de la vue 3D) est servie depuis la base, sous forme d'URL blob. Pareil pour l'image du lieu (/lieu).
+const PATTERN = /\/api\/personnes\/([^/?#]+)\/(image|lieu)\b/;
 const cache = new Map<string, Promise<string | null>>();
 
-function blobUrl(id: string, version: string) {
-  const key = `${id}?${version}`;
+function bytesOf(url: string) {
+  const found = PATTERN.exec(url)!;
+  const id = decodeURIComponent(found[1]);
+  return found[2] === "lieu" ? mobileStore.getPlaceImage(id) : mobileStore.getPersonImage(id);
+}
+
+function blobUrl(url: string, version: string) {
+  const found = PATTERN.exec(url)!;
+  const key = `${found[2]}:${found[1]}?${version}`;
   if (!cache.has(key)) {
     cache.set(
       key,
-      mobileStore.getPersonImage(id).then((bytes) =>
+      bytesOf(url).then((bytes) =>
         bytes ? URL.createObjectURL(new Blob([bytes as BlobPart], { type: "image/jpeg" })) : null,
       ),
     );
@@ -31,7 +38,7 @@ export function servePersonImages() {
       const found = typeof value === "string" ? PATTERN.exec(value) : null;
       if (!found) return descriptor.set!.call(this, value);
       const version = new URL(value, window.location.href).searchParams.get("v") ?? "";
-      void blobUrl(decodeURIComponent(found[1]), version).then((url) => {
+      void blobUrl(value, version).then((url) => {
         if (url) descriptor.set!.call(this, url);
         else this.dispatchEvent(new Event("error"));
       });
@@ -45,9 +52,8 @@ export function servePersonImages() {
       return;
     }
     if (this instanceof SVGImageElement && (name === "href" || name === "xlink:href") && PATTERN.test(value)) {
-      const found = PATTERN.exec(value)!;
       const version = new URL(value, window.location.href).searchParams.get("v") ?? "";
-      void blobUrl(decodeURIComponent(found[1]), version).then((url) => url && setAttribute.call(this, name, url));
+      void blobUrl(value, version).then((url) => url && setAttribute.call(this, name, url));
       return;
     }
     setAttribute.call(this, name, value);
@@ -65,9 +71,8 @@ export function servePersonImages() {
   const originalFetch = window.fetch.bind(window);
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-    const found = PATTERN.exec(url);
-    if (!found) return originalFetch(input, init);
-    const bytes = await mobileStore.getPersonImage(decodeURIComponent(found[1]));
+    if (!PATTERN.test(url)) return originalFetch(input, init);
+    const bytes = await bytesOf(url);
     return bytes
       ? new Response(new Blob([bytes as BlobPart], { type: "image/jpeg" }), { headers: { "Content-Type": "image/jpeg" } })
       : new Response(null, { status: 404 });

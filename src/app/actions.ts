@@ -42,6 +42,21 @@ function imageData(form: FormData) {
   return match && match[1].length <= 700000 ? match[1] : null;
 }
 
+// Image du lieu, gardée dans son format d'origine (jusqu'à 1600 px) : une limite plus large que la photo.
+function placeImageData(form: FormData) {
+  const match = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(form.get("placeImage") ?? ""));
+  return match && match[1].length <= 1400000 ? match[1] : null;
+}
+
+// Nouvelle image, image retirée, ou seulement la légende quand une image existe déjà.
+async function savePlaceImage(form: FormData, personId: string, hadImage: boolean) {
+  const image = placeImageData(form);
+  const caption = optional(form, "placeCaption", 200);
+  if (image) await getStore().setPlaceImage(personId, image, caption);
+  else if (form.get("removePlaceImage") === "on") await getStore().setPlaceImage(personId, null, null);
+  else if (hadImage) await getStore().setPlaceImage(personId, undefined, caption);
+}
+
 async function requireSession() {
   const session = await getStore().getSession();
   if (!session) redirect("/connexion");
@@ -223,6 +238,7 @@ export async function addMouqaddam(form: FormData) {
     const id = await getStore().addMouqaddam(fields);
     await getStore().setAlsoFrom(id, await alsoFromField(form, id, fields.mouqaddamId));
     if (image) await getStore().setPersonImage(id, image);
+    await savePlaceImage(form, id, false);
     await createBiographyFor(id, fields);
     revalidatePath("/", "layout");
     target = `/admin/mouqaddams/${id}?cree=1`;
@@ -289,6 +305,7 @@ export async function updateMouqaddam(form: FormData) {
       await getStore().setAlsoFrom(personId, await alsoFromField(form, personId, fields.mouqaddamId));
       if (image) await getStore().setPersonImage(personId, image);
       else if (removeImage) await getStore().setPersonImage(personId, null);
+      await savePlaceImage(form, personId, Boolean(before?.placeImageVersion));
       if (before) await syncBiography(before, fields, personId);
       // Case « Publier sur le site » de la biographie montrée sur le profil.
       const published = optional(form, "biographyPublishSlug", 120);

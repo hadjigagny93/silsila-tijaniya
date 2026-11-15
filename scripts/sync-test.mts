@@ -14,7 +14,7 @@ const check = (label: string, ok: boolean) => {
   console.log(`${ok ? "OK " : "ÉCHEC"} ${label}`);
   if (!ok) process.exitCode = 1;
 };
-const tables = ["persons", "person_links", "person_images", "biographies", "litanies", "abdal", "wird_log", "stations", "station_history"];
+const tables = ["persons", "person_links", "person_images", "place_images", "biographies", "litanies", "abdal", "wird_log", "stations", "station_history"];
 async function snapshot(driver: typeof macDb) {
   const out: Record<string, string> = {};
   for (const table of tables) {

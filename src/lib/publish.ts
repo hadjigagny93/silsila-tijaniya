@@ -43,7 +43,7 @@ type BiographyRow = {
   updated_at: string;
 };
 
-export type PublishCounts = { persons: number; images: number; biographies: number; links: number };
+export type PublishCounts = { persons: number; images: number; places: number; biographies: number; links: number };
 export type PublishResult = PublishCounts & {
   removed: { persons: number; images: number; biographies: number };
 };
@@ -114,6 +114,19 @@ export async function collect(rows: Rows) {
       updated_at: row.updated_at,
     }));
 
+  const places = (
+    await rows<{ person_id: string; data: Uint8Array; caption: string | null; updated_at: string }>(
+      "select person_id, data, caption, updated_at from place_images where deleted = 0",
+    )
+  )
+    .filter((row) => ids.has(row.person_id))
+    .map((row) => ({
+      person_id: row.person_id,
+      data: Buffer.from(row.data).toString("base64"),
+      caption: row.caption,
+      updated_at: row.updated_at,
+    }));
+
   const pairs = new Set<string>();
   const links = (
     await rows<{ id: string; person_id: string; master_id: string; created_at: string }>(
@@ -129,12 +142,13 @@ export async function collect(rows: Rows) {
     })
     .map((row) => ({ id: row.id, person_id: row.person_id, master_id: row.master_id, created_at: row.created_at }));
 
-  return { biographies, slugs, persons, ids, images, links };
+  return { biographies, slugs, persons, ids, images, places, links };
 }
 
 export const countsOf = (data: Awaited<ReturnType<typeof collect>>): PublishCounts => ({
   persons: data.persons.length,
   images: data.images.length,
+  places: data.places.length,
   biographies: data.biographies.length,
   links: data.links.length,
 });
@@ -144,7 +158,7 @@ const chunks = <T>(list: T[], size: number) =>
 
 export async function publish(rows: Rows, supabase: SupabaseClient): Promise<PublishResult> {
   const data = await collect(rows);
-  const { biographies, slugs, persons, ids, images, links } = data;
+  const { biographies, slugs, persons, ids, images, places, links } = data;
   const check = ({ error }: { error: { message: string } | null }, step: string) => {
     if (error) throw new Error(`${step} : ${error.message}`);
   };
@@ -202,6 +216,22 @@ export async function publish(rows: Rows, supabase: SupabaseClient): Promise<Pub
     100,
   )) {
     check(await supabase.from("person_images").delete().in("person_id", part), "Photos retirées");
+  }
+
+  // Images de lieu : si la migration 0019 n'est pas encore passée en ligne, on publie le reste sans elles.
+  const placesReady = !(await supabase.from("place_images").select("person_id").limit(1)).error;
+  if (placesReady) {
+    for (const part of chunks(places, 5)) check(await supabase.from("place_images").upsert(part), "Images de lieu");
+    const withPlace = new Set(places.map((row) => row.person_id));
+    const stalePlaces = (await online<{ person_id: string }>("place_images", "person_id")).filter(
+      (row) => !withPlace.has(row.person_id),
+    );
+    for (const part of chunks(
+      stalePlaces.map((row) => row.person_id),
+      100,
+    )) {
+      check(await supabase.from("place_images").delete().in("person_id", part), "Images de lieu retirées");
+    }
   }
 
   check(await supabase.from("person_links").delete().not("id", "is", null), "Chaînes argentées");

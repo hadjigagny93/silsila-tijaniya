@@ -8,6 +8,7 @@ import { DangerConfirm } from "./DangerConfirm";
 import { EditHeader } from "./EditHeader";
 import { Icon } from "./Icon";
 import { ImageField } from "./ImageField";
+import { PlaceImageField } from "./PlaceImageField";
 import { NicknamesField } from "./NicknamesField";
 import { PlaceFields } from "./PlaceFields";
 import { Segmented } from "./Segmented";
@@ -161,6 +162,7 @@ export function MouqaddamForm({
               <span className="field-label">{t.admin.zawiya}</span>
               <input name="zawiya" maxLength={200} defaultValue={person?.zawiya ?? ""} className="field" />
             </label>
+            <PlaceImageField person={person} />
           </div>
 
           <Block number="03" title={t.admin.blockTransmission} />

@@ -26,7 +26,7 @@ if (!essai && (!url || !key)) {
 
 const db = new DatabaseSync(dbPath, { readOnly: true });
 const rows = async (sql) => db.prepare(sql).all();
-const describe = (c) => `${c.persons} personnes, ${c.images} photos, ${c.biographies} biographies, ${c.links} chaînes argentées`;
+const describe = (c) => `${c.persons} personnes, ${c.images} photos, ${c.places ?? 0} images de lieu, ${c.biographies} biographies, ${c.links} chaînes argentées`;
 
 console.log(`Base : ${dbPath}`);
 if (essai) {

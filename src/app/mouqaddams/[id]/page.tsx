@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Avatar } from "@/components/Avatar";
+import { Avatar, placeImageUrl } from "@/components/Avatar";
 import { Icon } from "@/components/Icon";
 import { authorizedBy, placeLabel, placeOfPerson, publicPerson } from "@/lib/biographySections";
 import { chainOf, generationsOf, isChoosableMouqaddam } from "@/lib/chain";
@@ -169,6 +170,20 @@ export default async function MouqaddamProfilePage({ params }: Props) {
 
         <section className="bio-aside" aria-label={m.facts}>
           <div className="bio-aside-card">
+            {person.placeImageVersion && (
+              <figure className="profile-place">
+                <div className="profile-place-image">
+                  <Image
+                    src={placeImageUrl(person)}
+                    alt={person.placeCaption ?? m.placeAlt(person.displayName)}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 22rem"
+                    unoptimized
+                  />
+                </div>
+                {person.placeCaption && <figcaption>{person.placeCaption}</figcaption>}
+              </figure>
+            )}
             <h2 className="eyebrow">{m.facts}</h2>
             <dl className="bio-facts">
               {person.prophetFamily && <Fact label={m.prophetFamily}>✓</Fact>}
