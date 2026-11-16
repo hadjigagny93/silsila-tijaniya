@@ -73,7 +73,7 @@ export const t = {
     arabic: "السلسلة التجانية",
     title: "De chaque disciple jusqu'au Prophète ﷺ",
     intro:
-      "Les chaînes de transmission de la Tijaniya, réunies en un seul arbre : chaque nom se rattache à celui qui lui a transmis le wird, maillon par maillon, jusqu'à Cheikh Ahmad Tijani et au Prophète ﷺ.",
+      "Les chaînes de transmission de la Tijaniya, réunies en un seul arbre : chaque nom se rattache à celui qui lui a transmis le wird, maillon par maillon, jusqu'au sceau de la sainteté muhammadienne et au Prophète ﷺ.",
     explore: "Explorer la silsila",
     read: "Les Gens de la Voie",
     chainLabel: "Une chaîne, maillon par maillon",
