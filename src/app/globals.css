@@ -2348,6 +2348,11 @@ h3 {
   cursor: pointer;
 }
 
+/* Réduire ou déplier la carte : seulement sur téléphone, où elle cache l'arbre. */
+.card-fold {
+  display: none;
+}
+
 .card-avatar {
   display: flex;
   width: 86px;
@@ -2611,7 +2616,7 @@ h3 {
 
   .person-card-float h2 {
     overflow: hidden;
-    padding-right: 1.5rem;
+    padding-right: 5.25rem;
     font-size: 1.1rem !important;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -2619,6 +2624,7 @@ h3 {
 
   .person-card-float h2 + p {
     margin-top: 0;
+    padding-right: 5.25rem;
     font-size: 0.8rem;
   }
 
@@ -2654,9 +2660,48 @@ h3 {
     font-size: 0.85rem;
   }
 
+  /* Des cibles assez grandes pour le doigt. */
+  .person-card-float .card-close,
+  .person-card-float .card-fold {
+    position: absolute;
+    top: 0.3rem;
+    display: flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
   .person-card-float .card-close {
-    top: 0.7rem;
-    right: 0.7rem;
+    right: 0.3rem;
+  }
+
+  .person-card-float .card-fold {
+    right: 3rem;
+  }
+
+  .person-card-float .card-fold svg {
+    transition: rotate 0.2s ease;
+  }
+
+  .person-card-float[data-folded] .card-fold svg {
+    rotate: 180deg;
+  }
+
+  .person-card-float .card-close:active,
+  .person-card-float .card-fold:active {
+    background: var(--line);
+  }
+
+  /* Réduite : une seule ligne (photo, nom, dates), l'arbre reste visible au-dessus. */
+  .person-card-float[data-folded] .card-links,
+  .person-card-float[data-folded] .lineage-toggle,
+  .person-card-float[data-folded] .card-actions,
+  .person-card-float[data-folded] .card-notice {
+    display: none;
   }
 
   .person-card-float .card-actions .profile-link {

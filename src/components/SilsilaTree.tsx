@@ -75,6 +75,8 @@ export function SilsilaTree({
   const scene = useRef<SceneApi | null>(null);
   const chosen = useRef<string | null>(initialId ?? null);
   const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
+  // Sur téléphone, la carte s'ouvre réduite à une ligne pour laisser voir l'arbre ; ce choix suit d'une personne à l'autre.
+  const [unfolded, setUnfolded] = useState(false);
   const silver = useStoredToggle("silsila:chaines-argentees", true);
   // Tous les noms à la fois ; par défaut, seulement ceux sans photo (les autres au survol).
   const names = useStoredToggle("silsila:tous-les-noms", false);
@@ -322,9 +324,24 @@ export function SilsilaTree({
       {failed && <p className="panel absolute inset-x-4 top-1/2 mx-auto max-w-md">{t.silsila.noWebgl}</p>}
 
       {person && selected ? (
-        <aside key="personne" className="person-card-float is-draggable" aria-label={person.displayName} {...drag.card}>
+        <aside
+          key="personne"
+          className="person-card-float is-draggable"
+          aria-label={person.displayName}
+          data-folded={unfolded ? undefined : ""}
+          {...drag.card}
+        >
           <span className="card-resize" aria-hidden title={t.silsila.resizeCard} {...drag.grip} />
-          <button onClick={() => scene.current?.reset()} aria-label={t.silsila.close} className="card-close">
+          <button
+            type="button"
+            onClick={() => setUnfolded(!unfolded)}
+            aria-expanded={unfolded}
+            aria-label={unfolded ? t.silsila.foldCard : t.silsila.unfoldCard}
+            className="card-fold"
+          >
+            <Icon name="chevron" />
+          </button>
+          <button type="button" onClick={() => scene.current?.reset()} aria-label={t.silsila.close} className="card-close">
             <Icon name="close" />
           </button>
           <div className="flex items-center gap-4">

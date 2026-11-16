@@ -122,6 +122,8 @@ export const t = {
     noResult: "Aucun nom ne correspond à cette recherche.",
     tree: "Voir toutes les chaînes en liste",
     resizeCard: "Tirer pour rétrécir ou agrandir la carte",
+    unfoldCard: "Afficher les détails",
+    foldCard: "Réduire la carte",
     namesLabel: "Noms dans l'arbre",
     namesToggle: "Tous les noms",
     namesShort: "Noms",
