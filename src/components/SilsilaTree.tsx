@@ -181,9 +181,13 @@ export function SilsilaTree({
     const term = normalize(query.trim());
     if (!term) return [];
     return persons
-      .filter((person) => normalize([person.displayName, ...person.nicknames].join(" ")).includes(term))
-      .slice(0, 6);
+      .filter((person) => normalize([person.displayName, ...person.nicknames].join(" ")).includes(term));
   }, [persons, query]);
+
+  // Tous les noms trouvés sont listés ; la liste défile, et le choix au clavier reste visible.
+  useEffect(() => {
+    document.querySelector('#tree-results [data-active="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [active, matches]);
 
   const selected = selectedId ? chainOf(persons, selectedId) : null;
   const person = selected?.chain.at(-1);

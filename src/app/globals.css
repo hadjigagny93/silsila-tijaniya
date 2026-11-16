@@ -2204,6 +2204,13 @@ h3 {
   text-underline-offset: 3px;
 }
 
+/* Beaucoup de résultats (un nom de famille courant) : la liste défile au lieu d'en cacher. */
+.search-results ul {
+  max-height: min(26rem, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .search-foot {
   padding: 0.5rem 0.5rem 0.2rem;
   color: var(--muted);
