@@ -78,24 +78,6 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-
-          {chain && (
-            <figure className="home-chain">
-              <figcaption className="label">{t.home.chainLabel}</figcaption>
-              <ol>
-                {chain.map((person, index) => (
-                  <li key={person.id} data-end={index === 0 || index === chain.length - 1 || undefined}>
-                    <span className="home-chain-dot" aria-hidden>
-                      {index === 0 ? <Star size={14} /> : null}
-                    </span>
-                    {index > 0 && <Avatar person={person} size={index === chain.length - 1 ? 34 : 24} />}
-                    <Link href={`/silsila?personne=${person.id}`}>{person.displayName}</Link>
-                  </li>
-                ))}
-              </ol>
-              <p className="home-chain-foot">{t.home.chainFoot(chain.length)}</p>
-            </figure>
-          )}
         </div>
       </section>
 
@@ -165,6 +147,27 @@ export default async function Home() {
           <p className="mt-2 text-muted">{t.home.biographiesText}</p>
         </Link>
       </div>
+
+      {/* Une vraie chaîne en bas de page, pour illustrer : le haut laisse voir l'image de fond. */}
+      {chain && (
+        <section className="home-chain-section">
+          <figure className="home-chain">
+            <figcaption className="label">{t.home.chainLabel}</figcaption>
+            <ol>
+              {chain.map((person, index) => (
+                <li key={person.id} data-end={index === 0 || index === chain.length - 1 || undefined}>
+                  <span className="home-chain-dot" aria-hidden>
+                    {index === 0 ? <Star size={14} /> : null}
+                  </span>
+                  {index > 0 && <Avatar person={person} size={index === chain.length - 1 ? 34 : 24} />}
+                  <Link href={`/silsila?personne=${person.id}`}>{person.displayName}</Link>
+                </li>
+              ))}
+            </ol>
+            <p className="home-chain-foot">{t.home.chainFoot(chain.length)}</p>
+          </figure>
+        </section>
+      )}
     </>
   );
 }

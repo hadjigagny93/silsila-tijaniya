@@ -6139,6 +6139,22 @@ a.suluk-next-station {
 }
 
 /* La chaîne : un fil d'or du Prophète ﷺ (en haut) jusqu'au dernier disciple. */
+/* Bas de l'accueil : la chaîne du jour sur la même ruelle, très assombrie, pour garder la carte vitrée. */
+.home-chain-section {
+  margin: 4rem calc(50% - (100vw - var(--sidebar-width)) / 2) 0;
+  background:
+    linear-gradient(180deg, rgb(10 14 24 / 0.86), rgb(10 14 24 / 0.78)),
+    url("/ruelle-bleue.jpg") center 70% / cover no-repeat,
+    #0d1320;
+  padding: clamp(2.5rem, 6vw, 4rem) 1rem;
+  color: #f1ece3;
+}
+
+.home-chain-section .home-chain {
+  max-width: 34rem;
+  margin: 0 auto;
+}
+
 .home-chain {
   border: 1px solid rgb(241 236 227 / 0.18);
   border-radius: var(--radius-lg);
