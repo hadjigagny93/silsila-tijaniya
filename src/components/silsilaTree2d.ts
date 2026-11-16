@@ -185,6 +185,13 @@ export function createScene(options: SceneOptions): SceneApi {
     options.container,
     content,
     (tapped) => {
+      // Une chaîne est déjà affichée : toucher quelqu'un d'autre montre seulement son nom, sans changer de chaîne.
+      // Pour voir sa propre chaîne, on revient à l'arbre entier (fond ou croix de la carte) et on le touche.
+      const other = tapped && selected && tapped !== selected.person.id ? forest?.byId.get(tapped) : undefined;
+      if (other) {
+        nameOf(other);
+        return;
+      }
       select(tapped);
       options.onSelect(tapped && forest?.byId.has(tapped) ? tapped : null);
     },
@@ -536,6 +543,7 @@ export function createScene(options: SceneOptions): SceneApi {
       label.setAttribute("x", String(node.x + Number(label.dataset.offset)));
       label.setAttribute("y", String(node.y + Number(label.dataset.rise)));
     });
+    placeName();
     halos.forEach((halo, node) => {
       halo.setAttribute("cx", String(node.x));
       halo.setAttribute("cy", String(node.y));
@@ -683,9 +691,27 @@ export function createScene(options: SceneOptions): SceneApi {
   });
   stage.root.addEventListener("pointerleave", () => (hover.textContent = ""));
 
+  // Nom affiché en touchant une personne de la chaîne choisie : il reste jusqu'au prochain toucher.
+  const tappedName = svg("text", { class: "t-label t-label-hover t-label-tapped" }, stage.world);
+  let named: ForestNode | null = null;
+  function placeName() {
+    if (!named) return;
+    const left = named.x < center;
+    tappedName.setAttribute("x", String(left ? named.x - 16 * textScale : named.x + 16 * textScale));
+    tappedName.setAttribute("y", String(named.y + 5));
+    tappedName.setAttribute("text-anchor", left ? "end" : "start");
+  }
+  function nameOf(node: ForestNode | null) {
+    hover.textContent = "";
+    // Un nom déjà écrit en permanence n'a pas besoin d'être répété.
+    named = node && node.depth >= 0 && !labels.has(node) ? node : null;
+    tappedName.textContent = named ? named.person.displayName : "";
+    placeName();
+  }
+
   function select(personId: string | null) {
     selected = personId ? (forest?.byId.get(personId) ?? null) : null;
-    hover.textContent = "";
+    nameOf(null);
     drawLabels();
     restyle();
     if (selected) stage.reveal(selected.x, selected.y);
@@ -696,6 +722,7 @@ export function createScene(options: SceneOptions): SceneApi {
   const lowPower = window.matchMedia("(pointer: coarse)").matches;
   const textScale = Math.min(Math.max(0.8 / stage.fitted(), 1), 2.2);
   hover.style.fontSize = `${15.5 * textScale}px`;
+  tappedName.style.fontSize = `${15.5 * textScale}px`;
   // Sans animation demandée, l'arbre se pose d'un coup.
   if (calm) {
     while (alpha > REST) {
