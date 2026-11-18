@@ -123,8 +123,13 @@ export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
 
                 <div className="inbox-body">
                   {item.photo && (
-                    // eslint-disable-next-line @next/next/no-img-element -- photo envoyée, pas encore dans la base
-                    <img className="inbox-photo" src={`data:image/jpeg;base64,${item.photo}`} alt="" />
+                    <figure className="inbox-photo-wrap">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- photo envoyée, pas encore dans la base */}
+                      <img className="inbox-photo" src={`data:image/jpeg;base64,${item.photo}`} alt="" />
+                      {(item.status === "new" || item.status === "rejected") && (
+                        <figcaption className="inbox-photo-note">{b.photoBecomesProfile}</figcaption>
+                      )}
+                    </figure>
                   )}
                   <div className="min-w-0 flex-1">
                     {item.kind === "mouqaddam" ? (
@@ -178,7 +183,17 @@ export function ContributionInbox({ persons }: { persons: PublicPerson[] }) {
                             {b.openPerson}
                           </Link>
                         )}
-                        <button className="button" disabled={Boolean(busy)} onClick={() => act(item, "done")}>
+                        {item.photo && person && (
+                          <button className="button" disabled={Boolean(busy)} onClick={() => act(item, "accept")}>
+                            <Icon name="check" size={16} />
+                            {working("accept") ? b.busy : b.acceptPhoto}
+                          </button>
+                        )}
+                        <button
+                          className={item.photo && person ? "button-quiet" : "button"}
+                          disabled={Boolean(busy)}
+                          onClick={() => act(item, "done")}
+                        >
                           <Icon name="check" size={16} />
                           {working("done") ? b.busy : b.markDone}
                         </button>

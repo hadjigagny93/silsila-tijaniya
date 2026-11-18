@@ -161,8 +161,18 @@ async function acceptBiography(item: Contribution) {
     cover: existing?.cover ?? null,
     personId: person.id,
   });
-  if (item.photo && !person.hasImage) await store.setPersonImage(person.id, item.photo);
+  // La photo envoyée devient la photo de profil, même s'il en avait déjà une.
+  if (item.photo) await store.setPersonImage(person.id, item.photo);
   return { resultId: slug, href: `/biographies/${slug}/modifier` };
+}
+
+// Correction : seule la photo s'applique d'elle-même ; le texte se reporte à la main depuis la fiche.
+async function acceptCorrectionPhoto(item: Contribution) {
+  const store = getStore();
+  const person = (await store.listPersons()).find((candidate) => candidate.id === item.personId);
+  if (!person || !item.photo) throw new Error("person");
+  await store.setPersonImage(person.id, item.photo);
+  return { resultId: person.id, href: `/admin/mouqaddams/${person.id}` };
 }
 
 export async function POST(request: Request) {
@@ -182,7 +192,12 @@ export async function POST(request: Request) {
     if (action === "accept") {
       // Une contribution refusée peut encore être acceptée ; une acceptée ne l'est pas deux fois.
       if (item.status !== "new" && item.status !== "rejected") return Response.json({ error: "already" }, { status: 409 });
-      result = item.kind === "mouqaddam" ? await acceptMouqaddam(item) : await acceptBiography(item);
+      result =
+        item.kind === "mouqaddam"
+          ? await acceptMouqaddam(item)
+          : item.kind === "correction"
+            ? await acceptCorrectionPhoto(item)
+            : await acceptBiography(item);
       status = "accepted";
     }
     const update = await client
