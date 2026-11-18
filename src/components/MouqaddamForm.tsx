@@ -148,6 +148,13 @@ export function MouqaddamForm({
                 <span className="block text-sm text-muted">{t.admin.prophetFamilyHelp}</span>
               </span>
             </label>
+            <label className="check-row">
+              <input type="checkbox" name="incognito" defaultChecked={person?.incognito ?? false} />
+              <span>
+                <span className="block font-semibold">{t.admin.incognito}</span>
+                <span className="block text-sm text-muted">{t.admin.incognitoHelp}</span>
+              </span>
+            </label>
             <div>
               <span className="field-label">{t.admin.nicknames}</span>
               <NicknamesField defaultValue={person?.nicknames} />

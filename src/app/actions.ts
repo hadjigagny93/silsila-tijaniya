@@ -200,6 +200,7 @@ async function mouqaddamFields(form: FormData, personId: string | null = null) {
     nicknames: nicknamesField(form),
     qutb: form.get("qutb") === "on",
     prophetFamily: form.get("prophetFamily") === "on",
+    incognito: form.get("incognito") === "on",
     wirdFromId: await wirdFromField(form, personId),
     biographySlug: slug && (await getStore().getBiography(slug)) ? slug : null,
   };

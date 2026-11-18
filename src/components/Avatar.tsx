@@ -16,6 +16,11 @@ export function placeImageUrl(person: PublicPerson) {
 export function Avatar({ person, size = 28 }: { person: PublicPerson; size?: number }) {
   const style = { width: size, height: size, fontSize: size * 0.38 };
 
+  // Incognito : un rond noir, sans photo ni calligraphie.
+  if (person.incognito && person.kind !== "prophet") {
+    return <span className="avatar avatar-incognito" style={style} aria-hidden />;
+  }
+
   // Sans photo : la calligraphie « رضي الله عنه » ; seul le Prophète ﷺ garde ses initiales s'il n'a pas d'image.
   if (!person.hasImage) {
     if (person.kind === "prophet") {
