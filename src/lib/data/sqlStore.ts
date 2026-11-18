@@ -205,6 +205,8 @@ const PERSON_COLUMNS = [
   "prophet_family",
   "wird_from_id",
   "incognito",
+  // Notes personnelles de l'admin : restent sur le Mac et l'iPhone, jamais publiées.
+  "notes",
 ];
 
 async function columnsOf(driver: SqlDriver, table: string) {
@@ -712,6 +714,16 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await findPerson(personId);
       const [cityColumn, countryColumn] = kind === "birth" ? ["birth_city", "birth_country"] : ["death_city", "death_country"];
       await run(`update persons set ${cityColumn} = ?, ${countryColumn} = ? where id = ?`, [city, country, personId]);
+    },
+
+    async getPersonNotes(personId) {
+      const row = await get<{ notes: string | null }>("select notes from persons where id = ? and deleted = 0", [personId]);
+      return row?.notes ?? "";
+    },
+
+    async setPersonNotes(personId, notes) {
+      await findPerson(personId);
+      await run("update persons set notes = ? where id = ? and coalesce(notes, '') <> ?", [notes || null, personId, notes]);
     },
 
     async setAlsoFrom(personId, masterIds) {

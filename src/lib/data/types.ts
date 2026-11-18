@@ -244,6 +244,9 @@ export type Store = {
   setHidden(personId: string, hidden: boolean): Promise<void>;
   // Remplace les maîtres « argentés » d'une personne (sans compter le maître doré, mouqaddamId).
   setAlsoFrom(personId: string, masterIds: string[]): Promise<void>;
+  // Notes personnelles sur une fiche : hors de PublicPerson pour ne jamais partir vers le site ni le navigateur public.
+  getPersonNotes(personId: string): Promise<string>;
+  setPersonNotes(personId: string, notes: string): Promise<void>;
   listBiographies(): Promise<Biography[]>;
   getBiography(slug: string): Promise<Biography | null>;
   saveBiography(input: BiographyInput): Promise<void>;

@@ -238,6 +238,7 @@ export async function addMouqaddam(form: FormData) {
   try {
     const id = await getStore().addMouqaddam(fields);
     await getStore().setAlsoFrom(id, await alsoFromField(form, id, fields.mouqaddamId));
+    if (form.has("notes")) await getStore().setPersonNotes(id, text(form, "notes", 20000));
     if (image) await getStore().setPersonImage(id, image);
     await savePlaceImage(form, id, false);
     await createBiographyFor(id, fields);
@@ -304,6 +305,7 @@ export async function updateMouqaddam(form: FormData) {
     async () => {
       await getStore().updateMouqaddam(personId, fields);
       await getStore().setAlsoFrom(personId, await alsoFromField(form, personId, fields.mouqaddamId));
+      if (form.has("notes")) await getStore().setPersonNotes(personId, text(form, "notes", 20000));
       if (image) await getStore().setPersonImage(personId, image);
       else if (removeImage) await getStore().setPersonImage(personId, null);
       await savePlaceImage(form, personId, Boolean(before?.placeImageVersion));
