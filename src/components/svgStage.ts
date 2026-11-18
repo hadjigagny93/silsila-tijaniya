@@ -107,8 +107,9 @@ export function createSvgStage(
     };
   }
 
-  function frame(box: Box, glide: boolean, limit = 1.6, stretch = 1) {
-    const edges = margins();
+  function frame(box: Box, glide: boolean, limit = 1.6, stretch = 1, extra = { right: 0, bottom: 0 }) {
+    const base = margins();
+    const edges = { ...base, right: base.right + extra.right, bottom: base.bottom + extra.bottom };
     const width = container.clientWidth - edges.left - edges.right;
     const height = container.clientHeight - edges.top - edges.bottom;
     // Vue d'ensemble sur téléphone : l'arbre, bien plus large que haut, deviendrait minuscule ; il peut déborder un peu sur
@@ -156,6 +157,14 @@ export function createSvgStage(
       y * view.scale;
     moved = true;
     apply(true);
+  }
+
+  // Cadre une partie du dessin (la chaîne d'une personne choisie) dans la place que laisse sa fiche :
+  // à droite sur grand écran, en bas sur téléphone. Les photos grandissent autant que la place le permet.
+  function focus(area: Box) {
+    const narrow = container.clientWidth < 768;
+    frame(area, true, Math.min(maxScale, 3), 1, narrow ? { right: 0, bottom: 120 } : { right: 440, bottom: 0 });
+    moved = true;
   }
 
   function toWorld(event: PointerEvent) {
@@ -332,6 +341,9 @@ export function createSvgStage(
     fit,
     frame,
     reveal,
+    focus,
+    // Zoom actuel : la scène règle la taille des photos de la chaîne choisie.
+    scale: () => view.scale,
     // Échelle de la vue d'ensemble, pour régler la taille des noms.
     fitted: () => fitted,
     setExploring(next: boolean) {

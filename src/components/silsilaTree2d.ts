@@ -176,6 +176,12 @@ export function createScene(options: SceneOptions): SceneApi {
     return { x: left, y: upper, width: right - left, height: Math.max(prophetY + 90, strayBottom) - upper };
   };
   let selected: ForestNode | null = null;
+  // Personnes de la chaîne affichée quand quelqu'un est choisi (vide sinon) : le cadre du zoom.
+  let shown: ForestNode[] = [];
+  // Agrandissement des photos de cette chaîne, pour qu'elles se voient à l'écran quelle que soit sa largeur.
+  let grow = 1;
+  const growing = new Set<ForestNode>();
+  const radiusOf = (node: ForestNode) => discRadius(node.person) * (growing.has(node) ? grow : 1);
   // « name » : tous les noms à la fois ; « photo » : seulement ceux qui n'ont pas de photo.
   let display: TreeDisplay = options.display ?? "photo";
   let generation = options.generation ?? null;
@@ -389,11 +395,11 @@ export function createScene(options: SceneOptions): SceneApi {
       if (node.depth < 0) continue;
       const size = (node.depth === 0 ? 19 : node.person.kind === "member" ? 12.5 : 15.5) * textScale;
       const left = node.depth > 0 && node.x < center;
-      const offset = Math.max(18 * textScale, discRadius(node.person) + 6);
+      const offset = Math.max(18 * textScale, radiusOf(node) + 6);
       // Chaînes à compléter : le nom sous le rond, centré, pour que les groupes voisins ne se gênent pas.
       const below = Boolean(node.stray);
       const x = below ? node.x : node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
-      const y = below ? node.y + discRadius(node.person) + size : node.y + 5;
+      const y = below ? node.y + radiusOf(node) + size : node.y + 5;
       const label = svg(
         "text",
         {
@@ -448,6 +454,7 @@ export function createScene(options: SceneOptions): SceneApi {
         : new Set([selected])
       : null;
     const kept = (node: ForestNode) => !up || node.depth < 0 || up.has(node) || down!.has(node);
+    shown = up ? nodes.filter((node) => node.depth >= 0 && (up.has(node) || down!.has(node))) : [];
     // Une chaîne reste si elle mène à la personne (shouyoukhs), ou si elle part d'elle ou d'un disciple (disciples).
     const linked = (master: ForestNode, node: ForestNode) =>
       !up || (lineage.masters && up.has(node)) || (lineage.disciples && down!.has(master));
@@ -527,7 +534,12 @@ export function createScene(options: SceneOptions): SceneApi {
   }
 
   function draw(now: number) {
-    marks.forEach((group, node) => group.setAttribute("transform", `translate(${node.x} ${node.y})`));
+    marks.forEach((group, node) =>
+      group.setAttribute(
+        "transform",
+        `translate(${node.x} ${node.y})${growing.has(node) && grow !== 1 ? ` scale(${grow})` : ""}`,
+      ),
+    );
     branches.forEach((path, node) => {
       const d = branchPath(node);
       path.setAttribute("d", d);
@@ -697,7 +709,8 @@ export function createScene(options: SceneOptions): SceneApi {
   function placeName() {
     if (!named) return;
     const left = named.x < center;
-    tappedName.setAttribute("x", String(left ? named.x - 16 * textScale : named.x + 16 * textScale));
+    const gap = Math.max(16 * textScale, radiusOf(named) + 6);
+    tappedName.setAttribute("x", String(left ? named.x - gap : named.x + gap));
     tappedName.setAttribute("y", String(named.y + 5));
     tappedName.setAttribute("text-anchor", left ? "end" : "start");
   }
@@ -709,12 +722,52 @@ export function createScene(options: SceneOptions): SceneApi {
     placeName();
   }
 
+  // Le cadre qui entoure la chaîne affichée, avec la place des photos.
+  function shownBox(scale = 1): Box | null {
+    if (!shown.length) return null;
+    let [minX, minY, maxX, maxY] = [Infinity, Infinity, -Infinity, -Infinity];
+    for (const node of shown) {
+      const radius = discRadius(node.person) * scale + 12;
+      minX = Math.min(minX, node.x - radius);
+      maxX = Math.max(maxX, node.x + radius);
+      minY = Math.min(minY, node.y - radius);
+      maxY = Math.max(maxY, node.y + radius);
+    }
+    // Une chaîne d'une ou deux personnes : un cadre minimal, pour ne pas zoomer sans fin sur une seule photo.
+    const width = Math.max(maxX - minX, 220);
+    const height = Math.max(maxY - minY, 160);
+    return { x: (minX + maxX - width) / 2, y: (minY + maxY - height) / 2, width, height };
+  }
+
+  // Une personne choisie : on zoome sur sa chaîne, puis on agrandit ses photos jusqu'à une taille lisible
+  // (environ 44 px sur grand écran, 34 px sur téléphone pour un mouqaddam), sans les rapetisser.
+  function focusShown() {
+    growing.clear();
+    grow = 1;
+    const first = shownBox();
+    if (!first) {
+      if (selected) stage.reveal(selected.x, selected.y);
+      return;
+    }
+    shown.forEach((node) => growing.add(node));
+    const target = stage.root.clientWidth < 768 ? 30 : 44;
+    const wanted = (scale: number) => Math.min(Math.max(target / (2 * 17 * scale), 1), 6);
+    // Les photos agrandies débordent du premier cadre : on recadre en comptant leur taille, une fois.
+    stage.focus(first);
+    grow = wanted(stage.scale());
+    stage.focus(shownBox(grow)!);
+    grow = Math.min(grow, wanted(stage.scale()));
+  }
+
   function select(personId: string | null) {
     selected = personId ? (forest?.byId.get(personId) ?? null) : null;
     nameOf(null);
+    restyle();
+    if (selected) focusShown();
+    else growing.clear();
     drawLabels();
     restyle();
-    if (selected) stage.reveal(selected.x, selected.y);
+    draw(performance.now());
   }
 
   // Les noms gardent une taille lisible quand l'arbre entier tient à l'écran.
@@ -750,6 +803,10 @@ export function createScene(options: SceneOptions): SceneApi {
     setLineage(next) {
       lineage = next;
       restyle();
+      if (selected) focusShown();
+      drawLabels();
+      restyle();
+      draw(performance.now());
     },
     setExploring: stage.setExploring,
     rearrange() {
