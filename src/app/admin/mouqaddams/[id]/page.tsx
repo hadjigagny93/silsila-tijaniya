@@ -22,7 +22,7 @@ export default async function EditMouqaddamPage({ params, searchParams }: Props)
   const { erreur, ok, cree } = await searchParams;
   const store = getStore();
   const session = await store.getSession();
-  if (!session) redirect("/connexion");
+  if (!session) redirect("/admin/connexion");
   if (!session.isAdmin) redirect("/");
 
   const [persons, biographies, notes] = await Promise.all([

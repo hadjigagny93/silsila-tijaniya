@@ -45,6 +45,7 @@ type BiographyRow = {
   sources: string;
   draft: boolean;
   cover: string | null;
+  local_only?: boolean | null;
 };
 
 function toBiography(row: BiographyRow): Biography {
@@ -55,7 +56,7 @@ function toBiography(row: BiographyRow): Biography {
     body: row.body,
     sources: row.sources.split("\n").map((line) => line.trim()).filter(Boolean),
     draft: row.draft,
-    localOnly: false,
+    localOnly: Boolean(row.local_only),
     cover: row.cover,
   };
 }
@@ -122,8 +123,19 @@ export const supabaseStore: Store = {
         (place) => [place.person_id, place],
       ),
     );
+    // Admins : les incognitos dont la photo est gardée en ligne, pour la montrer dans le formulaire de la fiche.
+    const withPhoto = new Set<string>();
+    if (rows.some((row) => row.incognito)) {
+      const admin = await supabase.rpc("is_admin");
+      if (admin.data) {
+        const ids = rows.filter((row) => row.incognito).map((row) => row.id);
+        const photos = await supabase.from("person_images").select("person_id").in("person_id", ids);
+        (photos.data ?? []).forEach((photo) => withPhoto.add(photo.person_id as string));
+      }
+    }
     return rows.map((row) => ({
       id: row.id,
+      hiddenPhoto: withPhoto.has(row.id),
       kind: row.kind,
       placeImageVersion: row.short ? null : (places.get(row.id)?.updated_at ?? null),
       placeCaption: row.short ? null : (places.get(row.id)?.caption ?? null),
@@ -190,6 +202,12 @@ export const supabaseStore: Store = {
     });
     check(error);
     return "email-sent";
+  },
+
+  async signInWithPassword(email, password) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error("identifiants");
   },
 
   async signOut() {
@@ -358,19 +376,32 @@ export const supabaseStore: Store = {
   },
 
   // Les notes ne vivent que sur le Mac et l'iPhone.
-  async getPersonNotes() {
-    return "";
+  // Notes partagées entre les admins (migration 0022) ; le public ne lit jamais la table persons.
+  async getPersonNotes(personId) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("persons").select("notes").eq("id", personId).maybeSingle();
+    if (error) return "";
+    return (data?.notes as string | null) ?? "";
   },
 
-  async setPersonNotes() {},
+  async setPersonNotes(personId, notes) {
+    const supabase = await createClient();
+    check((await supabase.from("persons").update({ notes: notes || null }).eq("id", personId)).error);
+  },
 
+  // Ligne par ligne : seuls les maîtres retirés sont effacés, seuls les nouveaux ajoutés (le Mac reprend
+  // ensuite exactement ces changements).
   async setAlsoFrom(personId, masterIds) {
     const supabase = await createClient();
-    check((await supabase.from("person_links").delete().eq("person_id", personId)).error);
-    const rows = [...new Set(masterIds)]
-      .filter((id) => id !== personId)
-      .map((masterId) => ({ person_id: personId, master_id: masterId }));
-    if (rows.length) check((await supabase.from("person_links").insert(rows)).error);
+    const wanted = new Set(masterIds.filter((id) => id && id !== personId));
+    const current = await supabase.from("person_links").select("id, master_id").eq("person_id", personId);
+    check(current.error);
+    const existing = (current.data ?? []) as { id: string; master_id: string }[];
+    const removed = existing.filter((link) => !wanted.has(link.master_id)).map((link) => link.id);
+    if (removed.length) check((await supabase.from("person_links").delete().in("id", removed)).error);
+    const known = new Set(existing.map((link) => link.master_id));
+    const added = [...wanted].filter((id) => !known.has(id)).map((masterId) => ({ person_id: personId, master_id: masterId }));
+    if (added.length) check((await supabase.from("person_links").insert(added)).error);
   },
 
   async setHidden(personId, hidden) {
@@ -392,9 +423,11 @@ export const supabaseStore: Store = {
     return data ? toBiography(data as BiographyRow) : null;
   },
 
-  async saveBiography({ personId, ...biography }) {
+  async saveBiography({ personId, localOnly, ...biography }) {
     const supabase = await createClient();
-    check((await supabase.from("biographies").upsert(biography, { onConflict: "slug" })).error);
+    check(
+      (await supabase.from("biographies").upsert({ ...biography, local_only: localOnly }, { onConflict: "slug" })).error,
+    );
     check(
       (await supabase.from("persons").update({ biography_slug: null }).eq("biography_slug", biography.slug)).error,
     );
@@ -410,9 +443,10 @@ export const supabaseStore: Store = {
     check((await supabase.from("biographies").update({ cover }).eq("slug", slug)).error);
   },
 
-  // Le site ne reçoit que les biographies publiées depuis le Mac : rien à régler ici.
-  async setBiographyLocalOnly() {
-    throw new Error("Non disponible en ligne.");
+  // Biographie gardée hors ligne : visible des admins seulement (migration 0022).
+  async setBiographyLocalOnly(slug, localOnly) {
+    const supabase = await createClient();
+    check((await supabase.from("biographies").update({ local_only: localOnly }).eq("slug", slug)).error);
   },
 
   async deleteBiography(slug) {

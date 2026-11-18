@@ -16,7 +16,7 @@ export default async function NewMouqaddamPage({ searchParams }: { searchParams:
   const { erreur } = await searchParams;
   const store = getStore();
   const session = await store.getSession();
-  if (!session) redirect("/connexion");
+  if (!session) redirect("/admin/connexion");
   if (!session.isAdmin) redirect("/");
 
   const [persons, biographies] = await Promise.all([store.listPersons(), store.listBiographies()]);

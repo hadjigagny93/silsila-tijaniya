@@ -4,10 +4,17 @@ import { useEffect, useState } from "react";
 import { t } from "@/messages/fr";
 import { Icon } from "./Icon";
 
-type Last = { at: string; persons: number; images: number; biographies: number };
+type Last = { at: string; mode?: "publication" | "synchronisation" };
+type Result = Last &
+  ({ mode?: "publication"; persons: number; images: number; biographies: number } | {
+    mode: "synchronisation";
+    pulled: number;
+    pushed: number;
+    removed: number;
+  });
 type Status = { ready: boolean; last: Last | null };
 
-// Bouton de l'app Mac : recopie la base locale sur le site en ligne. Invisible ailleurs (iPhone, site),
+// Bouton de l'app Mac : récupère ce que l'autre admin a changé sur le site, puis y envoie les changements du Mac. Invisible ailleurs (iPhone, site),
 // où la route /api/publication n'existe pas.
 export function PublishButton() {
   const [status, setStatus] = useState<Status | null>(null);
@@ -28,13 +35,19 @@ export function PublishButton() {
     setMessage(null);
     try {
       const response = await fetch("/api/publication", { method: "POST" });
-      const body = await response.json();
+      const body = (await response.json()) as Result & { error?: string };
       if (!response.ok) {
         setMessage({ ok: false, text: body.error === "missing-key" ? t.publish.missingKey : t.publish.failed });
         return;
       }
       setStatus({ ready: true, last: body });
-      setMessage({ ok: true, text: t.publish.done(body.persons, body.images, body.biographies) });
+      setMessage({
+        ok: true,
+        text:
+          body.mode === "synchronisation"
+            ? t.publish.synced(body.pulled, body.pushed, body.removed)
+            : t.publish.done(body.persons, body.images, body.biographies),
+      });
     } catch {
       setMessage({ ok: false, text: t.publish.failed });
     } finally {

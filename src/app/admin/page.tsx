@@ -15,7 +15,7 @@ export default async function AdminPage({
   const { ok, erreur } = await searchParams;
   const store = getStore();
   const session = await store.getSession();
-  if (!session) redirect("/connexion");
+  if (!session) redirect("/admin/connexion");
   if (!session.isAdmin) redirect("/");
   // Avec un seul utilisateur, il n'y a ni demande ni signalement à traiter.
   if (session.local) redirect("/admin/mouqaddams");

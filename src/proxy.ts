@@ -1,12 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const LOCAL_ONLY =
-  /^\/(suluk|echiquier|connexion|mon-compte|admin|auth|appairage)(\/|$)|^\/biographies\/(nouvelle|[^/]+\/modifier)\/?$/;
+// L'admin (et la modification des biographies) s'ouvre en ligne aux deux admins, connectés par mot de passe :
+// chaque page vérifie elle-même que la session est celle d'un admin.
+const LOCAL_ONLY = /^\/(suluk|echiquier|connexion|mon-compte|auth|appairage)(\/|$)/;
 
 export async function proxy(request: NextRequest) {
   // En ligne, le site se lit seulement : le Suluk et l'Échiquier restent dans les apps Mac et iPhone,
-  // et il n'y a pas encore de comptes (connexion, mon compte, admin, modification des biographies).
+  // et il n'y a pas de comptes de membres (connexion par lien, mon compte).
   if (!process.env.SQLITE_PATH && LOCAL_ONLY.test(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }

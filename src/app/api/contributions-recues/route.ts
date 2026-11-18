@@ -1,17 +1,24 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { isChoosableMouqaddam } from "@/lib/chain";
 import { type Contribution, splitPlace } from "@/lib/contributions";
 import { getStore } from "@/lib/data";
 import { slugify } from "@/lib/slug";
 import { t } from "@/messages/fr";
 
-// Boîte de réception des contributions, dans l'app Mac seulement : elle lit Supabase avec la clé de publication
-// (publication.json, à côté de la base) et applique ce qui est accepté à la base du Mac. Le site ne change
-// qu'à la publication suivante.
+// Boîte de réception des contributions.
+// - Dans l'app Mac : elle lit Supabase avec la clé de publication (publication.json, à côté de la base) et applique
+//   ce qui est accepté à la base du Mac ; le site suit à la synchronisation suivante.
+// - Sur le site : un admin connecté la lit avec sa propre session (règles de la migration 0022), et ce qu'il
+//   accepte s'écrit directement en ligne ; le Mac le récupère à sa synchronisation.
 
 async function supabase() {
+  if (!process.env.SQLITE_PATH) {
+    const session = await getStore().getSession();
+    return session?.isAdmin ? await createServerClient() : null;
+  }
   try {
     const found = JSON.parse(await readFile(join(dirname(process.env.SQLITE_PATH!), "publication.json"), "utf8"));
     if (!found?.url || !found?.serviceRoleKey) return null;
@@ -48,9 +55,8 @@ const toContribution = (row: Row): Contribution => ({
 });
 
 export async function GET(request: Request) {
-  if (!process.env.SQLITE_PATH) return new Response(null, { status: 404 });
   const client = await supabase();
-  if (!client) return Response.json({ error: "missing-key" }, { status: 400 });
+  if (!client) return Response.json({ error: process.env.SQLITE_PATH ? "missing-key" : "forbidden" }, { status: process.env.SQLITE_PATH ? 400 : 403 });
   // À traiter, traitées (acceptées ou marquées traitées) ou refusées.
   const tab = new URL(request.url).searchParams.get("statut");
   const query = client.from("contributions").select("*").order("created_at", { ascending: false }).limit(200);
@@ -177,9 +183,8 @@ async function acceptCorrectionPhoto(item: Contribution) {
 }
 
 export async function POST(request: Request) {
-  if (!process.env.SQLITE_PATH) return new Response(null, { status: 404 });
   const client = await supabase();
-  if (!client) return Response.json({ error: "missing-key" }, { status: 400 });
+  if (!client) return Response.json({ error: process.env.SQLITE_PATH ? "missing-key" : "forbidden" }, { status: process.env.SQLITE_PATH ? 400 : 403 });
   const { id, action } = (await request.json().catch(() => ({}))) as { id?: string; action?: string };
   if (!id || !["accept", "reject", "done"].includes(action ?? "")) return Response.json({ error: "invalid" }, { status: 400 });
 

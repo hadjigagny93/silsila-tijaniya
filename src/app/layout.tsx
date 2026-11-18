@@ -52,7 +52,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const rail = sidebarWidth === "rail";
   const width = Number(sidebarWidth);
   // Le site en ligne n'a que deux rubriques : une barre en haut suffit. Le menu latéral reste dans les apps.
-  const web = !session?.local;
+  // Les admins connectés sur le site gardent la barre latérale de l'app, avec leurs outils.
+  const web = !session?.local && !session?.isAdmin;
 
   return (
     <html
@@ -116,11 +117,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/admin/mouqaddams" icon="users">
                     {t.nav.adminMouqaddams}
                   </NavLink>
-                  {session.local && (
-                    <NavLink href="/admin/contributions" icon="upload">
-                      {t.nav.inbox}
-                    </NavLink>
-                  )}
+                  <NavLink href="/admin/contributions" icon="upload">
+                    {t.nav.inbox}
+                  </NavLink>
                   {!session.local && (
                     <NavLink href="/admin" icon="shield">
                       {t.nav.adminModeration}
@@ -139,9 +138,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 {
                   session ? (
                     <>
-                      <NavLink href="/mon-compte" icon="user">
-                        {t.nav.account}
-                      </NavLink>
+                      {session.local && (
+                        <NavLink href="/mon-compte" icon="user">
+                          {t.nav.account}
+                        </NavLink>
+                      )}
                       {!session.local && (
                         <form action={signOut}>
                           <button className="nav-link w-full cursor-pointer text-start text-muted">

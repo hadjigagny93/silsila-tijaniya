@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: t.inbox.title };
 export default async function ContributionsPage() {
   const store = getStore();
   const session = await store.getSession();
-  if (!session) redirect("/connexion");
+  if (!session) redirect("/admin/connexion");
   if (!session.isAdmin) redirect("/");
 
   return (

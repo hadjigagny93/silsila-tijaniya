@@ -34,7 +34,14 @@ if (essai) {
   process.exit(0);
 }
 
-const result = await publish(rows, createClient(url, key, { auth: { persistSession: false } }));
+const client = createClient(url, key, { auth: { persistSession: false } });
+// Deux admins (migration 0022) : la copie complète effacerait ce que l'admin du site a créé. Seul le bouton
+// « Synchroniser avec le site » de l'app Mac sait récupérer ces changements avant d'envoyer.
+if (!(await client.from("persons").select("edited_online").limit(1)).error) {
+  console.error("Le site a deux admins : utilisez « Synchroniser avec le site » dans l'app Mac. Rien n'a été envoyé.");
+  process.exit(1);
+}
+const result = await publish(rows, client);
 const { removed } = result;
 console.log(
   `Publié : ${describe(result)}. Retirés en ligne : ${removed.persons} personnes, ${removed.images} photos, ${removed.biographies} biographies.`,
