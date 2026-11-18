@@ -204,6 +204,7 @@ const PERSON_COLUMNS = [
   "qutb",
   "prophet_family",
   "wird_from_id",
+  "incognito",
   // Notes personnelles de l'admin : restent sur le Mac et l'iPhone, jamais publiées.
   "notes",
 ];
@@ -315,6 +316,7 @@ type PersonRow = {
   nicknames: string | null;
   qutb: string | null;
   prophet_family: string | null;
+  incognito?: string | null;
   wird_from_id?: string | null;
   hidden: number;
   image_version?: string | null;
@@ -386,6 +388,7 @@ function detailValues(input: NewMouqaddam): SqlValue[] {
     input.nicknames.join("\n") || null,
     input.qutb ? "1" : null,
     input.prophetFamily ? "1" : null,
+    input.incognito ? "1" : null,
     input.wirdFromId,
     input.biographySlug,
   ];
@@ -527,7 +530,9 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         prophetFamily: row.prophet_family === "1",
         wirdFromId:
           row.display_mode !== "short" && row.wird_from_id && visible.has(row.wird_from_id) ? row.wird_from_id : null,
-        hasImage: row.display_mode !== "short" && Boolean(row.image_version),
+        incognito: row.incognito === "1",
+        hasImage: row.display_mode !== "short" && row.incognito !== "1" && Boolean(row.image_version),
+        hiddenPhoto: row.incognito === "1" && Boolean(row.image_version),
         imageVersion: row.image_version,
         placeImageVersion: row.display_mode === "short" ? null : (row.place_version ?? null),
         placeCaption: row.display_mode === "short" ? null : (row.place_caption ?? null),
@@ -598,8 +603,8 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run(
         `insert into persons
            (id, kind, full_name, mouqaddam_id, birth_date, death_date, birth_city, birth_country,
-            death_city, death_country, zawiya, nicknames, qutb, prophet_family, wird_from_id, biography_slug)
-         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            death_city, death_country, zawiya, nicknames, qutb, prophet_family, incognito, wird_from_id, biography_slug)
+         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [id, input.kind, input.name, ...detailValues(input)],
       );
       return id;
@@ -612,7 +617,7 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
         `update persons set
            kind = ?, full_name = ?, mouqaddam_id = ?, birth_date = ?, death_date = ?, birth_city = ?,
            birth_country = ?, death_city = ?, death_country = ?, zawiya = ?, nicknames = ?, qutb = ?,
-           prophet_family = ?, wird_from_id = ?, biography_slug = ?
+           prophet_family = ?, incognito = ?, wird_from_id = ?, biography_slug = ?
          where id = ?`,
         [input.kind, input.name, ...detailValues(input), personId],
       );

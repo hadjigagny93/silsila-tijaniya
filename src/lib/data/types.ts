@@ -22,6 +22,10 @@ export type PublicPerson = {
   qutb: boolean;
   // Famille du Prophète ﷺ : un halo bleu entoure sa photo dans la Silsila.
   prophetFamily: boolean;
+  // Incognito : sa photo n'est montrée nulle part, un rond noir la remplace (hasImage est alors faux).
+  incognito: boolean;
+  // Incognito avec une photo gardée sur le Mac : seul le formulaire de la fiche la montre.
+  hiddenPhoto?: boolean;
   // Celui qui lui a donné le wird, quand ce n'est pas le maître de la chaîne dorée (ni d'une argentée).
   wirdFromId: string | null;
   hasImage: boolean;
@@ -79,6 +83,7 @@ export type NewMouqaddam = {
   nicknames: string[];
   qutb: boolean;
   prophetFamily: boolean;
+  incognito: boolean;
   wirdFromId: string | null;
   biographySlug: string | null;
 };

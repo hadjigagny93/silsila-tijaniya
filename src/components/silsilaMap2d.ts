@@ -122,7 +122,7 @@ export function createScene(options: SceneOptions): SceneApi {
   // Chaque personne : sa photo (ou un rond), et son nom, montré au survol.
   for (const pin of pins.values()) {
     const { person } = pin;
-    const radius = Math.max(discRadius(person), (person.kind === "member" ? 6 : 10) * (person.hasImage ? 2 : 1));
+    const radius = Math.max(discRadius(person), (person.kind === "member" ? 6 : 10) * (person.hasImage || person.incognito ? 2 : 1));
     const group = svg("g", { "data-id": person.id, class: "t-hit m-pin" }, pinLayer);
     svg("circle", { r: Math.max(radius, 12), class: "t-target" }, group);
     // Famille du Prophète ﷺ : halo bleu.
@@ -132,7 +132,7 @@ export function createScene(options: SceneOptions): SceneApi {
       "circle",
       {
         r: radius,
-        class: `t-disc t-disc-${person.kind}${person.prophetFamily ? " t-disc-family" : ""}`,
+        class: `t-disc t-disc-${person.kind}${person.prophetFamily ? " t-disc-family" : ""}${person.incognito ? " t-disc-incognito" : ""}`,
         style: `stroke:${COLOR[person.kind]}${needsFallbackImage(person) ? `;fill:url(#${id}r)` : ""}`,
       },
       group,

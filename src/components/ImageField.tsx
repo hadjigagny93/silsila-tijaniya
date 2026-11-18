@@ -42,7 +42,9 @@ export function ImageField({ person }: { person?: PublicPerson }) {
     event.target.value = "";
   }
 
-  const hasCurrent = Boolean(person?.hasImage) && !removed;
+  // Une photo cachée par l'incognito reste gérable ici : on la montre telle quelle dans le formulaire.
+  const stored = Boolean(person?.hasImage || person?.hiddenPhoto);
+  const hasCurrent = stored && !removed;
 
   return (
     <div>
@@ -62,8 +64,8 @@ export function ImageField({ person }: { person?: PublicPerson }) {
       >
         {image ? (
           <Image className="avatar" src={image} alt="" width={PREVIEW} height={PREVIEW} unoptimized />
-        ) : person && !removed && person.hasImage ? (
-          <Avatar person={person} size={PREVIEW} />
+        ) : person && hasCurrent ? (
+          <Avatar person={{ ...person, hasImage: true, incognito: false }} size={PREVIEW} />
         ) : (
           <span className="photo-empty">
             <Icon name="upload" size={22} />
@@ -83,13 +85,14 @@ export function ImageField({ person }: { person?: PublicPerson }) {
             className="text-sm font-semibold text-danger hover:underline"
             onClick={() => {
               setImage("");
-              setRemoved(Boolean(person?.hasImage));
+              setRemoved(stored);
             }}
           >
             {t.admin.imageRemove}
           </button>
         )}
       </div>
+      {person?.hiddenPhoto && hasCurrent && !image && <p className="field-help">{t.admin.incognitoPhotoKept}</p>}
       {failed && <p role="alert" className="field-help text-danger">{t.admin.imageFailed}</p>}
     </div>
   );

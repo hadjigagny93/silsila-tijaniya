@@ -49,7 +49,7 @@ export const COLOR = {
 export const FALLBACK_IMAGE = "/images/radiya.jpg";
 
 export function needsFallbackImage(person: PublicPerson) {
-  return !person.hasImage && person.kind !== "prophet";
+  return !person.hasImage && !person.incognito && person.kind !== "prophet";
 }
 
 // Motif SVG unique pour tous les ronds sans photo : une seule image, quel que soit le nombre de personnes.
@@ -74,5 +74,5 @@ export function fallbackPattern(definitions: SVGElement, id: string) {
 export function discRadius(person: PublicPerson) {
   const base = person.kind === "cheikh" ? 13 : person.kind === "mouqaddam" ? 8.5 : 5;
   // Les photos sont deux fois plus grandes, pour qu'on reconnaisse les visages ; les ronds sans photo restent discrets.
-  return person.hasImage ? base * 2 : base;
+  return person.hasImage || person.incognito ? base * 2 : base;
 }

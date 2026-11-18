@@ -8870,6 +8870,14 @@ a.suluk-next-station {
   }
 }
 
+/* Incognito : un rond noir à la place de la photo, partout (listes, profil, arbre, carte). */
+.avatar-incognito {
+  background: #0b0b0b;
+}
+.t-disc.t-disc-incognito {
+  fill: #0b0b0b;
+}
+
 /* Calligraphie à la place d'une photo manquante : fond blanc, comme l'image. */
 .avatar-radiya {
   background: #fdfdfd;

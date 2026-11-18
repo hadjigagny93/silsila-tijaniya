@@ -32,6 +32,7 @@ type PublicRow = {
   nicknames: string | null;
   qutb: boolean;
   prophet_family?: boolean | null;
+  incognito?: boolean | null;
   wird_from_id?: string | null;
   short: boolean;
 };
@@ -79,6 +80,7 @@ function personColumns(input: NewMouqaddam) {
     biography_slug: input.biographySlug,
     qutb: input.qutb,
     prophet_family: input.prophetFamily,
+    incognito: input.incognito,
     wird_from_id: input.wirdFromId,
   };
 }
@@ -94,7 +96,11 @@ export const supabaseStore: Store = {
     const supabase = await createClient();
     const columns =
       "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames, qutb, short";
-    let { data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family, wird_from_id`);
+    let { data, error } = await supabase
+      .from("public_persons")
+      .select(`${columns}, prophet_family, wird_from_id, incognito`);
+    // Migration 0021 pas encore passée : on relit sans l'incognito.
+    if (error) ({ data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family, wird_from_id`));
     // Migration 0018 pas encore passée : on relit sans « a reçu le wird de », puis sans le halo (0016).
     if (error) ({ data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family`));
     if (error) ({ data, error } = await supabase.from("public_persons").select(columns));
@@ -125,7 +131,7 @@ export const supabaseStore: Store = {
       city: row.city,
       mouqaddamId: row.mouqaddam_id,
       biographySlug: row.biography_slug,
-      hasImage: row.has_image,
+      hasImage: row.has_image && !row.incognito,
       birthDate: row.birth_date,
       deathDate: row.death_date,
       birthCity: row.birth_city,
@@ -136,6 +142,7 @@ export const supabaseStore: Store = {
       nicknames: row.nicknames?.split("\n") ?? [],
       qutb: row.qutb,
       prophetFamily: Boolean(row.prophet_family),
+      incognito: Boolean(row.incognito),
       wirdFromId: !row.short && row.wird_from_id && visible.has(row.wird_from_id) ? row.wird_from_id : null,
       alsoFrom: row.short ? [] : (alsoFrom.get(row.id) ?? []).filter((id) => id !== row.mouqaddam_id),
     }));

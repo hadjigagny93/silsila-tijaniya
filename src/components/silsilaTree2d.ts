@@ -348,7 +348,7 @@ export function createScene(options: SceneOptions): SceneApi {
         svg("circle", { r: 46, fill: `url(#${id}g)` }, group);
         star(group, 11, "var(--gold)");
       } else {
-        const family = node.person.prophetFamily ? " t-disc-family" : "";
+        const family = `${node.person.prophetFamily ? " t-disc-family" : ""}${node.person.incognito ? " t-disc-incognito" : ""}`;
         const fill = needsFallbackImage(node.person) ? `;fill:url(#${id}r)` : "";
         svg("circle", { r: radius, class: `t-disc t-disc-${kind}${family}`, style: `stroke:${COLOR[kind]}${fill}` }, group);
         if (node.person.hasImage && radius > 6) {

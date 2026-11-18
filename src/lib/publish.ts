@@ -25,6 +25,7 @@ type PersonRow = {
   nicknames: string | null;
   qutb: string | null;
   prophet_family: string | null;
+  incognito?: string | null;
   wird_from_id?: string | null;
 };
 
@@ -98,16 +99,19 @@ export async function collect(rows: Rows) {
       nicknames: row.nicknames,
       qutb: row.qutb === "1",
       prophet_family: row.prophet_family === "1",
+      incognito: row.incognito === "1",
       wird_from_id: row.wird_from_id && ids.has(row.wird_from_id) ? row.wird_from_id : null,
       // Pas de user_id : les comptes du Mac ne sont pas ceux du site.
     }));
 
+  // Incognito : la photo ne part pas sur le site (et celle déjà en ligne est retirée plus bas).
+  const incognito = new Set(local.filter((row) => row.incognito === "1").map((row) => row.id));
   const images = (
     await rows<{ person_id: string; data: Uint8Array; updated_at: string }>(
       "select person_id, data, updated_at from person_images where deleted = 0",
     )
   )
-    .filter((row) => ids.has(row.person_id))
+    .filter((row) => ids.has(row.person_id) && !incognito.has(row.person_id))
     .map((row) => ({
       person_id: row.person_id,
       data: Buffer.from(row.data).toString("base64"),
@@ -182,15 +186,18 @@ export async function publish(rows: Rows, supabase: SupabaseClient): Promise<Pub
     await supabase.from("persons").update({ biography_slug: null }).not("biography_slug", "is", null),
     "Biographies des personnes",
   );
-  // Migration 0018 pas encore passée en ligne : on publie sans « a reçu le wird de » plutôt que d'échouer.
-  let withWird = true;
-  const withoutWird = (part: typeof persons) =>
-    part.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== "wird_from_id")));
+  // Migrations 0018 (« a reçu le wird de ») ou 0021 (incognito) pas encore passées en ligne : on publie sans
+  // la colonne absente plutôt que d'échouer. La photo d'un incognito, elle, ne part jamais.
+  const missing = new Set<string>();
+  const without = (part: typeof persons) =>
+    part.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => !missing.has(key))));
   for (const part of chunks(persons, 100)) {
-    let result = await supabase.from("persons").upsert(withWird ? part : withoutWird(part));
-    if (withWird && result.error?.message.includes("wird_from_id")) {
-      withWird = false;
-      result = await supabase.from("persons").upsert(withoutWird(part));
+    let result = await supabase.from("persons").upsert(without(part));
+    for (const column of ["incognito", "wird_from_id"]) {
+      if (!missing.has(column) && result.error?.message.includes(column)) {
+        missing.add(column);
+        result = await supabase.from("persons").upsert(without(part));
+      }
     }
     check(result, "Personnes");
   }
