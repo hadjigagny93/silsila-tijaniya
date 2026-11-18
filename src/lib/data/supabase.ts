@@ -207,7 +207,8 @@ export const supabaseStore: Store = {
   async signInWithPassword(email, password) {
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error("identifiants");
+    // Le code dit pourquoi : identifiants refusés, e-mail pas encore confirmé, ou service injoignable.
+    if (error) throw new Error(error.code ?? error.message);
   },
 
   async signOut() {

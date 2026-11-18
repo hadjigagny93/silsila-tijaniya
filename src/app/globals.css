@@ -891,10 +891,12 @@ h3 {
 .signin-card {
   width: min(31rem, 100%);
   border-radius: var(--radius-lg);
-  background: #fbf8f2;
+  /* Suit le thème : en sombre, carte sombre et champs assortis (et non une carte claire aux champs noirs). */
+  border: 1px solid var(--line);
+  background: var(--surface);
   box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.55);
   padding: 2rem 2.25rem;
-  color: #1e1a15;
+  color: var(--foreground);
 }
 
 .page-title {
@@ -1051,10 +1053,12 @@ h3 {
 .signin-card {
   width: min(31rem, 100%);
   border-radius: var(--radius-lg);
-  background: #fbf8f2;
+  /* Suit le thème : en sombre, carte sombre et champs assortis (et non une carte claire aux champs noirs). */
+  border: 1px solid var(--line);
+  background: var(--surface);
   box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.55);
   padding: 2rem 2.25rem;
-  color: #1e1a15;
+  color: var(--foreground);
 }
 
 .page-title {
