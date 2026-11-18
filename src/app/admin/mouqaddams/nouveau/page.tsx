@@ -34,6 +34,7 @@ export default async function NewMouqaddamPage({ searchParams }: { searchParams:
       placements={placementsFor(persons, parents)}
       wirdCandidates={parents}
       covers={listCovers()}
+      notes={session.local ? "" : undefined}
     >
       {erreur && <Notice tone="error">{t.errors.invalid}</Notice>}
     </MouqaddamForm>
