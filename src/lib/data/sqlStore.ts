@@ -562,6 +562,9 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       return "signed-in";
     },
 
+    // Un seul utilisateur, sans connexion.
+    async signInWithPassword() {},
+
     async signOut() {},
 
     async saveProfile(userId, input) {

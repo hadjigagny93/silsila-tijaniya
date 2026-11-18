@@ -218,6 +218,8 @@ export type Store = {
   listPersons(): Promise<PublicPerson[]>;
   getSession(): Promise<Session | null>;
   signIn(email: string, redirectTo: string): Promise<SignInResult>;
+  // Admins du site : e-mail et mot de passe. Lève une erreur si les identifiants sont refusés.
+  signInWithPassword(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
   saveProfile(userId: string, input: ProfileInput): Promise<void>;
   requestMouqaddam(userId: string, name: string, city: string | null, note: string | null): Promise<void>;

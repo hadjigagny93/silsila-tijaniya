@@ -58,15 +58,17 @@ export const t = {
     offline: "Hors ligne · Administrateur",
   },
   publish: {
-    label: "Publier sur le site",
-    busy: "Publication…",
-    hint: "Recopie cette base sur le site en ligne : silsila, photos, biographies.",
-    never: "Jamais publié depuis cette app.",
+    label: "Synchroniser avec le site",
+    busy: "Synchronisation…",
+    hint: "Récupère ce qui a été modifié sur le site, puis y envoie les changements faits sur ce Mac.",
+    never: "Jamais synchronisé depuis cette app.",
     last: (date: Date) =>
-      `Dernière publication : ${date.toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`,
+      `Dernière synchronisation : ${date.toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`,
     done: (persons: number, images: number, biographies: number) =>
       `Site à jour : ${persons} personnes, ${images} photos, ${biographies} biographies.`,
-    failed: "La publication a échoué. Vérifiez la connexion internet et réessayez.",
+    synced: (pulled: number, pushed: number, removed: number) =>
+      `Site synchronisé : ${pulled} changement${pulled > 1 ? "s" : ""} récupéré${pulled > 1 ? "s" : ""}, ${pushed} envoyé${pushed > 1 ? "s" : ""}${removed ? `, ${removed} retiré${removed > 1 ? "s" : ""}` : ""}.`,
+    failed: "La synchronisation a échoué. Vérifiez la connexion internet et réessayez.",
     missingKey: "Clé de publication absente (publication.json).",
   },
   home: {
@@ -252,6 +254,15 @@ export const t = {
     dangerZone: "Zone sensible",
     formDraftHelp: "Affiche l'avertissement « premier jet en cours de relecture ».",
     removeConfirm: "Confirmer la suppression définitive",
+  },
+  adminSignIn: {
+    title: "Espace admin",
+    intro: "Réservé aux administrateurs de la Silsila.",
+    email: "Adresse e-mail",
+    password: "Mot de passe",
+    submit: "Se connecter",
+    error: "E-mail ou mot de passe incorrect.",
+    refused: "Ce compte n'a pas accès à l'espace admin.",
   },
   signIn: {
     title: "Se connecter",

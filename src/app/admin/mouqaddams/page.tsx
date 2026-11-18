@@ -17,7 +17,7 @@ export default async function AdminMouqaddamsPage({
   const { ok, erreur } = await searchParams;
   const store = getStore();
   const session = await store.getSession();
-  if (!session) redirect("/connexion");
+  if (!session) redirect("/admin/connexion");
   if (!session.isAdmin) redirect("/");
 
   const persons = await store.listPersons();

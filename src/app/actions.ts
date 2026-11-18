@@ -97,6 +97,26 @@ export async function signIn(form: FormData) {
   redirect(target);
 }
 
+// Connexion des admins sur le site : e-mail et mot de passe (comptes créés dans Supabase).
+export async function signInAdmin(form: FormData) {
+  const email = text(form, "email", 200).toLowerCase();
+  const password = String(form.get("password") ?? "");
+  if (!/^\S+@\S+\.\S+$/.test(email) || !password) redirect("/admin/connexion?erreur=1");
+
+  let target = "/admin/mouqaddams";
+  try {
+    await getStore().signInWithPassword(email, password);
+    if (!(await getStore().getSession())?.isAdmin) {
+      await getStore().signOut();
+      target = "/admin/connexion?refuse=1";
+    }
+  } catch {
+    target = "/admin/connexion?erreur=1";
+  }
+  revalidatePath("/", "layout");
+  redirect(target);
+}
+
 export async function signOut() {
   await getStore().signOut();
   revalidatePath("/", "layout");
