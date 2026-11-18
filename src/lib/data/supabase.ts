@@ -350,6 +350,13 @@ export const supabaseStore: Store = {
     check((await supabase.from("reports").update({ status: "closed" }).eq("id", id)).error);
   },
 
+  // Les notes ne vivent que sur le Mac et l'iPhone.
+  async getPersonNotes() {
+    return "";
+  },
+
+  async setPersonNotes() {},
+
   async setAlsoFrom(personId, masterIds) {
     const supabase = await createClient();
     check((await supabase.from("person_links").delete().eq("person_id", personId)).error);

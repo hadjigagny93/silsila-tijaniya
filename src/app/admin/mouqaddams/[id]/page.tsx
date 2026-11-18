@@ -25,7 +25,11 @@ export default async function EditMouqaddamPage({ params, searchParams }: Props)
   if (!session) redirect("/connexion");
   if (!session.isAdmin) redirect("/");
 
-  const [persons, biographies] = await Promise.all([store.listPersons(), store.listBiographies()]);
+  const [persons, biographies, notes] = await Promise.all([
+    store.listPersons(),
+    store.listBiographies(),
+    session.local ? store.getPersonNotes(id) : undefined,
+  ]);
   const person = persons.find((candidate) => candidate.id === id);
   if (!person || !isChoosableMouqaddam(person)) notFound();
 
@@ -50,6 +54,7 @@ export default async function EditMouqaddamPage({ params, searchParams }: Props)
       covers={listCovers()}
       disciples={childrenOf(persons).get(id)?.length ?? 0}
       isRoot={Boolean(prophet) && person.mouqaddamId === prophet?.id}
+      notes={notes}
     >
       {cree && <Notice tone="success">{t.admin.created}</Notice>}
       {ok && <Notice tone="success">{t.admin.done}</Notice>}

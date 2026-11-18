@@ -63,6 +63,7 @@ export function MouqaddamForm({
   covers,
   disciples = 0,
   isRoot = false,
+  notes,
   children,
 }: {
   person?: PublicPerson;
@@ -76,6 +77,8 @@ export function MouqaddamForm({
   covers: string[];
   disciples?: number;
   isRoot?: boolean;
+  // Notes personnelles (Mac et iPhone seulement) : sans valeur, le champ n'est pas montré.
+  notes?: string;
   // Notifications affichées sous l'en-tête.
   children?: React.ReactNode;
 }) {
@@ -252,6 +255,24 @@ export function MouqaddamForm({
                 />
               )}
             </div>
+          )}
+
+          {notes !== undefined && (
+            <>
+              <Block number="05" title={t.admin.blockNotes} />
+              <label className="block">
+                <span className="sr-only">{t.admin.blockNotes}</span>
+                <textarea
+                  name="notes"
+                  rows={6}
+                  maxLength={20000}
+                  defaultValue={notes}
+                  placeholder={t.admin.notesPlaceholder}
+                  className="field"
+                />
+                <span className="field-help">{t.admin.notesHelp}</span>
+              </label>
+            </>
           )}
 
           {person && (
