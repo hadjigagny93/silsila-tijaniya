@@ -956,6 +956,8 @@ export const t = {
     personGone: "Personne introuvable (supprimée ?)",
     acceptMouqaddam: "Créer la fiche",
     acceptBiography: "Ajouter à la biographie",
+    acceptPhoto: "Mettre la photo en profil",
+    photoBecomesProfile: "Deviendra sa photo de profil",
     openPerson: "Ouvrir la fiche",
     markDone: "Marquer traitée",
     reject: "Refuser",

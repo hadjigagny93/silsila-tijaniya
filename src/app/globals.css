@@ -7613,6 +7613,23 @@ a.suluk-next-station {
   margin-top: 0.8rem;
 }
 
+.inbox-photo-wrap {
+  display: flex;
+  width: 5.5rem;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.inbox-photo-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+}
+
 .inbox-photo {
   width: 4.5rem;
   height: 4.5rem;
