@@ -262,6 +262,9 @@ export const t = {
     password: "Mot de passe",
     submit: "Se connecter",
     error: "E-mail ou mot de passe incorrect.",
+    unconfirmed:
+      "Ce compte n'est pas encore confirmé. Dans Supabase (Authentication → Users), confirmez l'e-mail ou recréez le compte avec « Auto Confirm User ».",
+    unavailable: "Connexion impossible pour le moment. Réessayez dans un instant.",
     refused: "Ce compte n'a pas accès à l'espace admin.",
   },
   signIn: {

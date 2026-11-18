@@ -110,8 +110,15 @@ export async function signInAdmin(form: FormData) {
       await getStore().signOut();
       target = "/admin/connexion?refuse=1";
     }
-  } catch {
-    target = "/admin/connexion?erreur=1";
+  } catch (error) {
+    const code = error instanceof Error ? error.message : String(error);
+    console.error("Connexion admin refusée :", code);
+    target =
+      code === "email_not_confirmed"
+        ? "/admin/connexion?erreur=confirmation"
+        : code === "invalid_credentials"
+          ? "/admin/connexion?erreur=1"
+          : "/admin/connexion?erreur=service";
   }
   revalidatePath("/", "layout");
   redirect(target);

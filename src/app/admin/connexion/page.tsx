@@ -27,7 +27,11 @@ export default async function AdminSignInPage({
         </span>
         <h1 className="mt-3 text-center text-[36px]">{m.title}</h1>
         <p className="page-intro mt-2 text-center text-base">{m.intro}</p>
-        {erreur && <Notice tone="error">{m.error}</Notice>}
+        {erreur && (
+          <Notice tone="error">
+            {erreur === "confirmation" ? m.unconfirmed : erreur === "service" ? m.unavailable : m.error}
+          </Notice>
+        )}
         {refuse && <Notice tone="error">{m.refused}</Notice>}
 
         <form action={signInAdmin} className="mt-6 space-y-4">
