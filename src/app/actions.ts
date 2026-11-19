@@ -105,8 +105,8 @@ export async function signInAdmin(form: FormData) {
 
   let target = "/admin/mouqaddams";
   try {
-    await getStore().signInWithPassword(email, password);
-    if (!(await getStore().getSession())?.isAdmin) {
+    const { isAdmin } = await getStore().signInWithPassword(email, password);
+    if (!isAdmin) {
       await getStore().signOut();
       target = "/admin/connexion?refuse=1";
     }
@@ -114,9 +114,9 @@ export async function signInAdmin(form: FormData) {
     const code = error instanceof Error ? error.message : String(error);
     console.error("Connexion admin refusée :", code);
     target =
-      code === "email_not_confirmed"
+      code === "email_not_confirmed" || /not confirmed/i.test(code)
         ? "/admin/connexion?erreur=confirmation"
-        : code === "invalid_credentials"
+        : code === "invalid_credentials" || /invalid login credentials/i.test(code)
           ? "/admin/connexion?erreur=1"
           : "/admin/connexion?erreur=service";
   }

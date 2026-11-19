@@ -209,6 +209,10 @@ export const supabaseStore: Store = {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     // Le code dit pourquoi : identifiants refusés, e-mail pas encore confirmé, ou service injoignable.
     if (error) throw new Error(error.code ?? error.message);
+    // Même client : il porte déjà la session ouverte, alors que le cookie n'est lisible qu'à la requête suivante.
+    const admin = await supabase.rpc("is_admin");
+    if (admin.error) console.error("Vérification admin :", admin.error.message);
+    return { isAdmin: Boolean(admin.data) };
   },
 
   async signOut() {
