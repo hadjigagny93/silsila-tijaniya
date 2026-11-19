@@ -392,7 +392,8 @@ export const supabaseStore: Store = {
       .neq("kind", "prophet")
       .order("created_at", { ascending: false })
       .limit(limit);
-    if (error) return [];
+    // Sans la migration 0023, la colonne added_by n'existe pas : la page le dit au lieu d'afficher une liste vide.
+    if (error) throw new Error(`historique : ${error.message}`);
     return (data ?? []).map((row) => ({
       id: row.id as string,
       name: row.full_name as string,

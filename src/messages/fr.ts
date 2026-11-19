@@ -956,6 +956,8 @@ export const t = {
     site: "Site",
     count: (count: number) => `${count} fiche${count > 1 ? "s" : ""}`,
     empty: "Aucune fiche ajoutée pour le moment.",
+    missing:
+      "L'historique n'est pas encore installé sur le site : lancez la migration 0023_historique_ajouts.sql (puis 0024) dans l'éditeur SQL de Supabase, puis synchronisez depuis le Mac.",
     by: "Ajoutée par",
     mac: "App Mac",
     iphone: "iPhone",
