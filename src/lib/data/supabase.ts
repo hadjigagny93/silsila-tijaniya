@@ -402,6 +402,17 @@ export const supabaseStore: Store = {
     }));
   },
 
+  async myAuthors() {
+    const supabase = await createClient();
+    const { data: auth } = await supabase.auth.getUser();
+    const email = auth.user?.email?.toLowerCase();
+    if (!email) return [];
+    const { data, error } = await supabase.rpc("mac_owner_emails");
+    const owners = error ? [] : ((data ?? []) as string[]).map((value) => value.toLowerCase());
+    // Propriétaire du Mac : ses ajouts faits sur le Mac et l'iPhone, et ceux de ses autres comptes, sont aussi les siens.
+    return owners.includes(email) ? [...new Set([email, ...owners, "mac", "iphone"])] : [email];
+  },
+
   async getPersonNotes(personId) {
     const supabase = await createClient();
     const { data, error } = await supabase.from("persons").select("notes").eq("id", personId).maybeSingle();

@@ -15,7 +15,11 @@ export default async function AdditionsPage() {
   if (!session) redirect("/admin/connexion");
   if (!session.isAdmin) redirect("/");
 
-  const [additions, persons] = await Promise.all([store.listAdditions(LIMIT), store.listPersons()]);
+  const [additions, persons, mine] = await Promise.all([
+    store.listAdditions(LIMIT),
+    store.listPersons(),
+    store.myAuthors(),
+  ]);
   const byId = new Map(persons.map((person) => [person.id, person]));
 
   return (
@@ -25,6 +29,7 @@ export default async function AdditionsPage() {
       <p className="mt-2 max-w-2xl text-muted">{t.additions.lead}</p>
       <AdditionsList
         additions={additions.map((addition) => ({ ...addition, person: byId.get(addition.id) ?? null }))}
+        mine={mine}
         limit={LIMIT}
       />
     </div>
