@@ -120,6 +120,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <NavLink href="/admin/contributions" icon="upload">
                     {t.nav.inbox}
                   </NavLink>
+                  <NavLink href="/admin/ajouts" icon="clock">
+                    {t.nav.additions}
+                  </NavLink>
                   {!session.local && (
                     <NavLink href="/admin" icon="shield">
                       {t.nav.adminModeration}

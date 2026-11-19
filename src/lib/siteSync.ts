@@ -20,6 +20,16 @@ const PAGE = 1000;
 const ms = (value: unknown) => Date.parse(String(value));
 const bool = (value: unknown) => (value ? 1 : 0);
 const flag = (value: unknown) => (value ? "1" : null);
+// Heure d'ajout : SQLite la range en UTC sans fuseau (« 2026-11-19 10:30:00 »), Postgres en ISO.
+const toOnlineTime = (value: unknown) => {
+  const text = String(value ?? "");
+  if (!text) return undefined;
+  return text.includes("T") ? text : `${text.replace(" ", "T")}Z`;
+};
+const toLocalTime = (value: unknown) => {
+  const time = Date.parse(String(value ?? ""));
+  return Number.isNaN(time) ? null : new Date(time).toISOString().slice(0, 19).replace("T", " ");
+};
 const chunks = <T>(list: T[], size: number) =>
   Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size));
 
@@ -79,6 +89,9 @@ function toLocal(table: Table, row: Online): SyncRow | null {
         incognito: flag(row.incognito),
         wird_from_id: (row.wird_from_id as string) ?? null,
         notes: (row.notes as string) ?? null,
+        // Historique des ajouts (migration 0023) : qui l'a créée en ligne, et quand.
+        ...("added_by" in row ? { added_by: (row.added_by as string) ?? null } : {}),
+        ...(toLocalTime(row.created_at) ? { created_at: toLocalTime(row.created_at) } : {}),
         deleted: 0,
         sync_rev,
       };
@@ -198,8 +211,11 @@ async function pull(driver: SqlDriver, supabase: SupabaseClient) {
 
 // --- Envoyer ---------------------------------------------------------------------------------------------------
 
-async function push(driver: SqlDriver, supabase: SupabaseClient, pulled: Set<string>) {
+async function push(driver: SqlDriver, supabase: SupabaseClient, pulled: Set<string>, history: boolean) {
   const since = Number((await meta(driver, "site_pushed_rev")) ?? 0);
+  // Historique des ajouts tout juste installé en ligne : toutes les fiches repartent une fois, avec leur vraie date
+  // d'ajout et leur auteur (jusque-là, la date en ligne était celle du premier envoi).
+  const resendPersons = history && (await meta(driver, "site_history_sent")) !== "1";
   const first = since === 0;
   const startedAt = Date.now();
   let pushed = 0;
@@ -253,7 +269,11 @@ async function push(driver: SqlDriver, supabase: SupabaseClient, pulled: Set<str
 
   // Fiches : parents avant enfants, la base en ligne vérifie que chaque maître existe.
   type PersonRow = Local & { id: string; mouqaddam_id: string | null; biography_slug: string | null };
-  const persons = await changed<PersonRow>("persons");
+  const persons = resendPersons
+    ? (await driver.all<PersonRow>("select * from persons where sync_rev > ? or deleted = 0", [since])).filter(
+        (row) => !pulled.has(`persons:${row.id}`),
+      )
+    : await changed<PersonRow>("persons");
   await remove(
     "persons",
     persons.filter((row) => row.deleted).map((row) => row.id),
@@ -292,6 +312,7 @@ async function push(driver: SqlDriver, supabase: SupabaseClient, pulled: Set<str
     incognito: row.incognito === "1",
     wird_from_id: row.wird_from_id && alive.has(row.wird_from_id as string) ? row.wird_from_id : null,
     notes: row.notes ?? null,
+    ...(history ? { added_by: row.added_by ?? null, created_at: toOnlineTime(row.created_at) } : {}),
     // Pas de user_id : les comptes du Mac ne sont pas ceux du site.
   }));
   for (const part of chunks(personRows, 100)) {
@@ -397,6 +418,11 @@ async function sweep(driver: SqlDriver, supabase: SupabaseClient) {
 
 // --- Les deux à la suite ---------------------------------------------------------------------------------------
 
+// La migration 0023 (historique des ajouts) est-elle passée en ligne ?
+async function historyReady(supabase: SupabaseClient) {
+  return !(await supabase.from("persons").select("added_by").limit(1)).error;
+}
+
 export async function siteReady(supabase: SupabaseClient) {
   return !(await supabase.from("persons").select("edited_online").limit(1)).error;
 }
@@ -406,6 +432,8 @@ export async function synchronize(driver: SqlDriver, supabase: SupabaseClient): 
     return { mode: "publication", ...(await publish((sql) => driver.all(sql), supabase)) };
   }
   const { written, pulled } = await pull(driver, supabase);
-  const { pushed, removed } = await push(driver, supabase, pulled);
+  const history = await historyReady(supabase);
+  const { pushed, removed } = await push(driver, supabase, pulled, history);
+  if (history) await setMeta(driver, "site_history_sent", "1");
   return { mode: "synchronisation", pulled: written, pushed, removed };
 }

@@ -207,6 +207,8 @@ const PERSON_COLUMNS = [
   "incognito",
   // Notes personnelles de l'admin : restent sur le Mac et l'iPhone, jamais publiées.
   "notes",
+  // Qui a ajouté la fiche : « mac », « iphone », ou l'e-mail de l'admin qui l'a créée sur le site.
+  "added_by",
 ];
 
 async function columnsOf(driver: SqlDriver, table: string) {
@@ -414,9 +416,11 @@ export type SqlStoreOptions = {
   // Première ouverture d'une base vide : faut-il y mettre les personnes et biographies de départ ?
   // Oui sur le Mac ; non sur l'iPhone, qui reçoit tout du Mac à l'appairage.
   seedWhenEmpty: boolean;
+  // L'appareil, noté sur chaque fiche ajoutée ici (historique des ajouts).
+  device?: "mac" | "iphone";
 };
 
-export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStoreOptions) {
+export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty, device }: SqlStoreOptions) {
   let ready: Promise<SqlDriver> | null = null;
 
   const db = () =>
@@ -608,9 +612,10 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
       await run(
         `insert into persons
            (id, kind, full_name, mouqaddam_id, birth_date, death_date, birth_city, birth_country,
-            death_city, death_country, zawiya, nicknames, qutb, prophet_family, incognito, wird_from_id, biography_slug)
-         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [id, input.kind, input.name, ...detailValues(input)],
+            death_city, death_country, zawiya, nicknames, qutb, prophet_family, incognito, wird_from_id, biography_slug,
+            added_by)
+         values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [id, input.kind, input.name, ...detailValues(input), device ?? null],
       );
       return id;
     },
@@ -724,6 +729,24 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty }: SqlStor
     async getPersonNotes(personId) {
       const row = await get<{ notes: string | null }>("select notes from persons where id = ? and deleted = 0", [personId]);
       return row?.notes ?? "";
+    },
+
+    async listAdditions(limit) {
+      // Les fiches des membres inscrits ne sont pas des ajouts d'admin.
+      const rows = await all<{ id: string; full_name: string; kind: PersonKind; created_at: string; added_by: string | null }>(
+        `select id, full_name, kind, created_at, added_by from persons
+          where deleted = 0 and user_id is null and kind <> 'prophet'
+          order by created_at desc, rowid desc limit ?`,
+        [limit],
+      );
+      return rows.map((row) => ({
+        id: row.id,
+        name: row.full_name,
+        kind: row.kind,
+        // SQLite range l'heure UTC sans fuseau : « 2026-11-19 10:30:00 ».
+        createdAt: `${row.created_at.replace(" ", "T")}${row.created_at.includes("T") ? "" : "Z"}`,
+        addedBy: row.added_by,
+      }));
     },
 
     async setPersonNotes(personId, notes) {
