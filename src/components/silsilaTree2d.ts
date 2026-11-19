@@ -441,23 +441,24 @@ export function createScene(options: SceneOptions): SceneApi {
   }
 
   function restyle() {
-    // Une personne choisie : on ne garde que ses shouyoukhs (les chaînes qui viennent à elle), ses disciples
+    // Une personne choisie : on ne garde que ses shouyoukhs (les chaînes qui viennent à elle), ses disciples directs
     // (celles qui partent d'elle), ou les deux, selon les boutons de sa fiche. Le reste disparaît.
     const up = selected
       ? lineage.masters
         ? spread(selected, (node) => [node.parent, ...(silverMasters.get(node) ?? [])])
         : new Set([selected])
       : null;
+    // Disciples : seulement ceux qui ont pris directement d'elle, pas les disciples de ses disciples.
     const down = selected
       ? lineage.disciples
-        ? spread(selected, (node) => [...node.children, ...(silverDisciples.get(node) ?? [])])
+        ? new Set([selected, ...selected.children, ...(silverDisciples.get(selected) ?? [])])
         : new Set([selected])
       : null;
     const kept = (node: ForestNode) => !up || node.depth < 0 || up.has(node) || down!.has(node);
     shown = up ? nodes.filter((node) => node.depth >= 0 && (up.has(node) || down!.has(node))) : [];
-    // Une chaîne reste si elle mène à la personne (shouyoukhs), ou si elle part d'elle ou d'un disciple (disciples).
+    // Une chaîne reste si elle mène à la personne (shouyoukhs), ou si elle part d'elle (disciples).
     const linked = (master: ForestNode, node: ForestNode) =>
-      !up || (lineage.masters && up.has(node)) || (lineage.disciples && down!.has(master));
+      !up || (lineage.masters && up.has(node)) || (lineage.disciples && master === selected);
     const show = (element: SVGElement, on: boolean) => (element.style.display = on ? "" : "none");
     const opacity = (node: ForestNode) =>
       generation !== null && !selected ? (node.depth === generation && !node.stray ? 1 : 0.2) : 1;
