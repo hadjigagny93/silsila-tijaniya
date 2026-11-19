@@ -7,4 +7,5 @@ const globalState = globalThis as unknown as { silsilaStore?: ReturnType<typeof 
 
 export const sqliteStore = (globalState.silsilaStore ??= createSqlStore(() => nodeDriver(process.env.SQLITE_PATH!), {
   seedWhenEmpty: true,
+  device: "mac",
 }));

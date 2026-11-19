@@ -212,6 +212,10 @@ export type StationMoment = { id: string; station: string; day: string; text: st
 
 export type StationFocus = { station: string; start: string; days: number };
 
+// Une fiche ajoutée, pour l'historique des admins : quand, et par qui (e-mail de l'admin en ligne,
+// « mac » ou « iphone » depuis les apps ; vide pour les fiches d'avant l'historique, toutes faites sur le Mac).
+export type Addition = { id: string; name: string; kind: PersonKind; createdAt: string; addedBy: string | null };
+
 export type SignInResult = "signed-in" | "email-sent";
 
 export type Store = {
@@ -249,6 +253,7 @@ export type Store = {
   setAlsoFrom(personId: string, masterIds: string[]): Promise<void>;
   // Notes personnelles sur une fiche : hors de PublicPerson pour ne jamais partir vers le site ni le navigateur public.
   getPersonNotes(personId: string): Promise<string>;
+  listAdditions(limit: number): Promise<Addition[]>;
   setPersonNotes(personId: string, notes: string): Promise<void>;
   listBiographies(): Promise<Biography[]>;
   getBiography(slug: string): Promise<Biography | null>;

@@ -8,6 +8,7 @@ import { sqlJsDriver } from "./drivers/sqljs";
 // Pas de données de départ : tout arrive du Mac au premier échange.
 export const mobileStore = createSqlStore(() => (Capacitor.isNativePlatform() ? capacitorDriver() : sqlJsDriver()), {
   seedWhenEmpty: false,
+  device: "iphone",
 });
 
 export function getStore(): Store {

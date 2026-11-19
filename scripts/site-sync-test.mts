@@ -105,7 +105,9 @@ function fake(role: "service" | "admin"): SupabaseClient {
         },
         insert(rows: Row | Row[]) {
           for (const row of [rows].flat()) {
-            const full = { ...row, [key]: row[key] ?? crypto.randomUUID() };
+            // Comme la migration 0023 : l'e-mail de l'admin connecté est noté sur la fiche qu'il crée.
+            const author = table === "persons" && role === "admin" ? { added_by: "autre@exemple.fr", created_at: now() } : {};
+            const full = { ...author, ...row, [key]: row[key] ?? crypto.randomUUID() };
             db[table].set(String(full[key]), touch(full));
           }
           return Promise.resolve({ data: null, error: null });
@@ -162,6 +164,8 @@ check("première : toutes les fiches en ligne", db.persons.size === livePersons)
 check("première : toutes les biographies en ligne (vides et brouillons compris)", db.biographies.size === liveBios);
 check("première : toutes les photos en ligne", db.person_images.size === liveImages);
 check("première : l'ancienne fiche absente du Mac est retirée", !db.persons.has("seed"));
+const anyLocal = await driver.get<Row>("select id, created_at from persons where deleted = 0 limit 1");
+check("historique : la vraie date d'ajout part en ligne", db.persons.get(String(anyLocal!.id))?.created_at === `${String(anyLocal!.created_at).replace(" ", "T")}Z`);
 const empty = await driver.get<Row>("select slug from biographies where deleted = 0 and trim(body) = '' limit 1");
 check("une biographie vide est cachée au public", !empty || db.biographies.get(String(empty.slug))?.local_only === true);
 
@@ -185,6 +189,9 @@ await admin.from("persons").insert({ id: created, kind: "mouqaddam", full_name: 
 await sync();
 check("création en ligne récupérée", (await local(created))?.full_name === "Créé en ligne");
 check("création en ligne pas effacée", db.persons.has(created));
+check("historique : l'auteur en ligne arrive sur le Mac", (await local(created))?.added_by === "autre@exemple.fr");
+const additions = await store.listAdditions(5);
+check("historique : la création en ligne en tête des derniers ajouts", additions[0]?.id === created && additions[0]?.addedBy === "autre@exemple.fr");
 
 // 5. L'admin du site supprime une fiche : supprimée sur le Mac aussi.
 await admin.from("persons").delete().eq("id", y);

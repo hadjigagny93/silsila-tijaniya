@@ -382,6 +382,26 @@ export const supabaseStore: Store = {
 
   // Les notes ne vivent que sur le Mac et l'iPhone.
   // Notes partagées entre les admins (migration 0022) ; le public ne lit jamais la table persons.
+  async listAdditions(limit) {
+    // Réservé aux admins : la table persons n'est lisible en entier que par eux (added_by porte leur e-mail).
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("persons")
+      .select("id, full_name, kind, created_at, added_by")
+      .is("user_id", null)
+      .neq("kind", "prophet")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) return [];
+    return (data ?? []).map((row) => ({
+      id: row.id as string,
+      name: row.full_name as string,
+      kind: row.kind as PersonKind,
+      createdAt: row.created_at as string,
+      addedBy: (row.added_by as string | null) ?? null,
+    }));
+  },
+
   async getPersonNotes(personId) {
     const supabase = await createClient();
     const { data, error } = await supabase.from("persons").select("notes").eq("id", personId).maybeSingle();
