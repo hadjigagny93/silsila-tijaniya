@@ -236,16 +236,9 @@ export function createScene(options: SceneOptions): SceneApi {
       }
     }
     if (selected && lineage.disciples) {
-      const descend = [selected];
-      down.clear();
-      while (descend.length) {
-        const current = descend.pop()!;
-        if (down.has(current)) continue;
-        down.add(current);
-        descend.push(
-          ...[...(children.get(current) ?? []), ...(silverDisciples.get(current) ?? [])].map((person) => person.id),
-        );
-      }
+      // Seulement ceux qui ont pris directement d'elle, pas les disciples de ses disciples.
+      for (const person of [...(children.get(selected) ?? []), ...(silverDisciples.get(selected) ?? [])])
+        down.add(person.id);
     }
     const linked = new Set([...up, ...down]);
     const shown = (personId: string) =>
@@ -259,7 +252,7 @@ export function createScene(options: SceneOptions): SceneApi {
       const on =
         Boolean(selected) &&
         ((lineage.masters && up.has(from.person.id) && up.has(to.person.id)) ||
-          (lineage.disciples && down.has(from.person.id) && down.has(to.person.id)));
+          (lineage.disciples && from.person.id === selected && down.has(to.person.id)));
       path.style.display = on ? "" : "none";
     }
   }
