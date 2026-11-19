@@ -749,6 +749,16 @@ export function createSqlStore(open: () => SqlDriver, { seedWhenEmpty, device }:
       }));
     },
 
+    async myAuthors() {
+      // Le Mac et l'iPhone sont au propriétaire du Mac ; ses e-mails d'admin arrivent du site à chaque synchronisation.
+      const row = await get<{ value: string }>("select value from sync_meta where key = 'owner_emails'");
+      let emails: string[] = [];
+      try {
+        emails = row ? (JSON.parse(row.value) as string[]) : [];
+      } catch {}
+      return ["mac", "iphone", ...emails];
+    },
+
     async setPersonNotes(personId, notes) {
       await findPerson(personId);
       await run("update persons set notes = ? where id = ? and coalesce(notes, '') <> ?", [notes || null, personId, notes]);

@@ -254,6 +254,8 @@ export type Store = {
   // Notes personnelles sur une fiche : hors de PublicPerson pour ne jamais partir vers le site ni le navigateur public.
   getPersonNotes(personId: string): Promise<string>;
   listAdditions(limit: number): Promise<Addition[]>;
+  // Les auteurs qui sont « moi » dans l'historique : mon e-mail, et « mac » / « iphone » si le Mac est le mien.
+  myAuthors(): Promise<string[]>;
   setPersonNotes(personId: string, notes: string): Promise<void>;
   listBiographies(): Promise<Biography[]>;
   getBiography(slug: string): Promise<Biography | null>;

@@ -435,5 +435,12 @@ export async function synchronize(driver: SqlDriver, supabase: SupabaseClient): 
   const history = await historyReady(supabase);
   const { pushed, removed } = await push(driver, supabase, pulled, history);
   if (history) await setMeta(driver, "site_history_sent", "1");
+  // Les e-mails d'admin du propriétaire du Mac (migration 0024) : ses ajouts faits en ligne comptent comme les siens.
+  try {
+    const { data, error } = await supabase.rpc("mac_owner_emails");
+    if (!error && Array.isArray(data)) {
+      await setMeta(driver, "owner_emails", JSON.stringify((data as string[]).map((value) => value.toLowerCase())));
+    }
+  } catch {}
   return { mode: "synchronisation", pulled: written, pushed, removed };
 }

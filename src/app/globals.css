@@ -9027,50 +9027,53 @@ a.suluk-next-station {
   font-weight: 600;
 }
 
-/* Derniers ajouts : filtres par auteur, puis les fiches jour par jour. */
-.additions-filters {
+/* Derniers ajouts : les miens et ceux des autres admins, côte à côte, puis ceux d'avant l'historique. */
+.additions-columns {
+  display: grid;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1100px) {
+  .additions-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.additions-column > h2,
+.additions-before > summary {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 24px;
 }
 
-.additions-filters button {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  gap: 0.45rem;
-  padding-inline: 0.85rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
+.additions-column > h2 small,
+.additions-before > summary small,
+.additions-day h3 small {
   color: var(--muted);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.additions-filters button:hover {
-  border-color: var(--gold);
-  color: var(--foreground);
-}
-
-.additions-filters button[aria-pressed="true"] {
-  border-color: var(--gold);
-  background: color-mix(in srgb, var(--gold) 16%, var(--surface));
-  color: var(--foreground);
-}
-
-.additions-filters small,
-.additions-day h2 small {
-  color: var(--muted);
+  font-family: var(--font-sans, inherit);
+  font-size: 13px;
   font-weight: 500;
 }
 
-.additions-day {
-  margin-top: 2rem;
+.additions-before {
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
 }
 
-.additions-day h2 {
+.additions-before > summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-family: var(--font-serif, inherit);
+  font-size: 20px;
+}
+
+.additions-day {
+  margin-top: 1.5rem;
+}
+
+.additions-day h3 {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
@@ -9079,13 +9082,8 @@ a.suluk-next-station {
   font-size: 20px;
 }
 
-.additions-day h2::first-letter {
+.additions-day h3::first-letter {
   text-transform: uppercase;
-}
-
-.additions-day h2 small {
-  font-family: var(--font-sans, inherit);
-  font-size: 13px;
 }
 
 .additions-row {
@@ -9130,6 +9128,11 @@ a.suluk-next-station {
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.additions-author.is-mine {
+  background: color-mix(in srgb, var(--gold) 14%, var(--surface));
+  color: var(--foreground);
 }
 
 .additions-author.is-before {
