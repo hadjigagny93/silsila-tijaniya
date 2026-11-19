@@ -106,7 +106,7 @@ function fake(role: "service" | "admin"): SupabaseClient {
         insert(rows: Row | Row[]) {
           for (const row of [rows].flat()) {
             // Comme la migration 0023 : l'e-mail de l'admin connecté est noté sur la fiche qu'il crée.
-            const author = table === "persons" && role === "admin" ? { added_by: "autre@exemple.fr", created_at: now() } : {};
+            const author: Row = table === "persons" && role === "admin" ? { added_by: "autre@exemple.fr", created_at: now() } : {};
             const full = { ...author, ...row, [key]: row[key] ?? crypto.randomUUID() };
             db[table].set(String(full[key]), touch(full));
           }
