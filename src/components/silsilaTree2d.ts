@@ -182,6 +182,11 @@ export function createScene(options: SceneOptions): SceneApi {
   let grow = 1;
   const growing = new Set<ForestNode>();
   const radiusOf = (node: ForestNode) => discRadius(node.person) * (growing.has(node) ? grow : 1);
+  // Disciples directs écartés en éventail autour de la personne choisie : leur place dans l'arbre, à rendre ensuite.
+  const apart = new Map<ForestNode, { x: number; y: number }>();
+  // Les shouyoukhs affichés : ils gardent leur place, seuls les disciples s'écartent.
+  let masters = new Set<ForestNode>();
+  const upOf = (node: ForestNode) => masters.has(node);
   // « name » : tous les noms à la fois ; « photo » : seulement ceux qui n'ont pas de photo.
   let display: TreeDisplay = options.display ?? "photo";
   let generation = options.generation ?? null;
@@ -397,7 +402,8 @@ export function createScene(options: SceneOptions): SceneApi {
       const left = node.depth > 0 && node.x < center;
       const offset = Math.max(18 * textScale, radiusOf(node) + 6);
       // Chaînes à compléter : le nom sous le rond, centré, pour que les groupes voisins ne se gênent pas.
-      const below = Boolean(node.stray);
+      // Disciples en éventail au-dessus de la personne choisie : son nom passe dessous.
+      const below = Boolean(node.stray) || (node === selected && apart.size > 0);
       const x = below ? node.x : node.depth === 0 ? node.x + 18 : left ? node.x - offset : node.x + offset;
       const y = below ? node.y + radiusOf(node) + size : node.y + 5;
       const label = svg(
@@ -456,6 +462,7 @@ export function createScene(options: SceneOptions): SceneApi {
       : null;
     const kept = (node: ForestNode) => !up || node.depth < 0 || up.has(node) || down!.has(node);
     shown = up ? nodes.filter((node) => node.depth >= 0 && (up.has(node) || down!.has(node))) : [];
+    masters = up && lineage.masters ? up : new Set();
     // Une chaîne reste si elle mène à la personne (shouyoukhs), ou si elle part d'elle (disciples).
     const linked = (master: ForestNode, node: ForestNode) =>
       !up || (lineage.masters && up.has(node)) || (lineage.disciples && master === selected);
@@ -615,7 +622,8 @@ export function createScene(options: SceneOptions): SceneApi {
     }
     for (const node of moving) {
       const push = motion.get(node)!;
-      if (anchored(node)) {
+      // L'éventail ouvert reste en place : la personne choisie et ses disciples écartés ne bougent plus.
+      if (anchored(node) || apart.has(node) || (apart.size > 0 && node === selected)) {
         push.vx = 0;
         push.vy = 0;
         continue;
@@ -663,6 +671,8 @@ export function createScene(options: SceneOptions): SceneApi {
     const node = forest?.byId.get(personId);
     if (!node || node.depth < 1 || node.stray) return null;
     const branch = [...subtreeOf(node)];
+    // On déplace l'éventail : il devient la nouvelle place de chacun.
+    apart.clear();
     let last = { x, y };
     pinned.add(node);
     return {
@@ -756,11 +766,97 @@ export function createScene(options: SceneOptions): SceneApi {
     // Les photos agrandies débordent du premier cadre : on recadre en comptant leur taille, une fois.
     stage.focus(first);
     grow = wanted(stage.scale());
+    // Les disciples s'écartent assez pour que leurs photos agrandies ne se touchent pas ; l'écart dépend du zoom,
+    // qui dépend lui-même de l'écart : quelques allers-retours suffisent à le stabiliser.
+    for (let round = 0; round < 3 && spreadDisciples(grow, stage.scale()); round++) {
+      stage.focus(shownBox(grow)!);
+      grow = wanted(stage.scale());
+    }
     stage.focus(shownBox(grow)!);
     grow = Math.min(grow, wanted(stage.scale()));
   }
 
+  // Rend aux disciples écartés leur place dans l'arbre.
+  function gather() {
+    apart.forEach((point, node) => {
+      node.x = point.x;
+      node.y = point.y;
+    });
+    apart.clear();
+  }
+
+  // Les disciples directs de la personne choisie, en éventail au-dessus d'elle (dans le sens de sa branche),
+  // sur un ou plusieurs arcs, dans leur ordre de gauche à droite. Renvoie faux s'il n'y a rien à écarter.
+  function spreadDisciples(scale: number, zoom: number) {
+    gather();
+    if (!selected || !lineage.disciples) return false;
+    const center = selected;
+    const disciples = shown.filter((node) => node !== center && !node.stray && node.depth >= 1 && !upOf(node));
+    if (disciples.length < 2) return false;
+    const widest = Math.max(...disciples.map((node) => discRadius(node.person)), discRadius(center.person));
+    // Deux photos voisines : leurs rayons agrandis, plus une marge d'environ 14 px à l'écran.
+    const gap = 2 * widest * scale + 14 / zoom;
+    // Vers le haut, comme l'arbre pousse : le bas reste à ses shouyoukhs.
+    const facing = -Math.PI / 2;
+    const angleOf = (node: ForestNode) => Math.atan2(node.y - center.y, node.x - center.x) - facing;
+    const ordered = [...disciples].sort((a, b) => {
+      const turn = (angle: number) => ((angle + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+      return turn(angleOf(a)) - turn(angleOf(b));
+    });
+    // Des arcs de 170° : autant d'arcs qu'il faut, et sur chacun des disciples espacés pareil (plus sur les grands).
+    const span = (Math.PI * 170) / 180;
+    const first = discRadius(center.person) * scale + gap * 1.3;
+    const radii: number[] = [];
+    let room = 0;
+    while (room < ordered.length) {
+      const radius = first + radii.length * gap;
+      radii.push(radius);
+      room += Math.floor((span * radius) / gap) + 1;
+    }
+    const total = radii.reduce((sum, radius) => sum + radius, 0);
+    let index = 0;
+    radii.forEach((radius, ring) => {
+      const count =
+        ring === radii.length - 1
+          ? ordered.length - index
+          : Math.min(Math.round((ordered.length * radius) / total), Math.floor((span * radius) / gap) + 1);
+      ordered.slice(index, index + count).forEach((node, place) => {
+        const angle = facing + (count > 1 ? -span / 2 + (span * place) / (count - 1) : 0);
+        apart.set(node, { x: node.x, y: node.y });
+        node.x = center.x + Math.cos(angle) * radius;
+        node.y = Math.min(center.y + Math.sin(angle) * radius, base - 24);
+      });
+      index += count;
+    });
+    return true;
+  }
+
+  // Les personnes qui ont changé de place (éventail ouvert ou refermé) y glissent au lieu d'y sauter.
+  const positions = () => new Map(nodes.map((node) => [node, { x: node.x, y: node.y }]));
+  let gliding = 0;
+  function glide(before: Map<ForestNode, { x: number; y: number }>) {
+    cancelAnimationFrame(gliding);
+    const moves = nodes
+      .map((node) => ({ node, from: before.get(node)!, to: { x: node.x, y: node.y } }))
+      .filter(({ from, to }) => Math.abs(from.x - to.x) + Math.abs(from.y - to.y) > 0.5);
+    if (!moves.length || calm) return;
+    const start = performance.now();
+    const frame = (now: number) => {
+      const t = Math.min((now - start) / 420, 1);
+      const ease = 1 - (1 - t) ** 3;
+      for (const { node, from, to } of moves) {
+        node.x = from.x + (to.x - from.x) * ease;
+        node.y = from.y + (to.y - from.y) * ease;
+      }
+      draw(now);
+      if (t < 1) gliding = requestAnimationFrame(frame);
+    };
+    frame(start);
+  }
+
   function select(personId: string | null) {
+    const before = positions();
+    gather();
     selected = personId ? (forest?.byId.get(personId) ?? null) : null;
     nameOf(null);
     restyle();
@@ -769,6 +865,7 @@ export function createScene(options: SceneOptions): SceneApi {
     drawLabels();
     restyle();
     draw(performance.now());
+    glide(before);
   }
 
   // Les noms gardent une taille lisible quand l'arbre entier tient à l'écran.
@@ -803,14 +900,18 @@ export function createScene(options: SceneOptions): SceneApi {
     },
     setLineage(next) {
       lineage = next;
+      const before = positions();
+      gather();
       restyle();
       if (selected) focusShown();
       drawLabels();
       restyle();
       draw(performance.now());
+      glide(before);
     },
     setExploring: stage.setExploring,
     rearrange() {
+      apart.clear();
       pinned.clear();
       origin.forEach((point, node) => {
         home.set(node, { ...point });
@@ -829,6 +930,7 @@ export function createScene(options: SceneOptions): SceneApi {
     },
     dispose() {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(gliding);
       detachLoupe();
       stage.dispose();
     },
