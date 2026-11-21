@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useOptimistic, useState, useTransition } from "react";
 import { setWird } from "@/app/actions";
 import { EXERCISE_COLORS, exerciseKey, exercisesOf, exerciseSpan, isOnDial } from "@/lib/exercises";

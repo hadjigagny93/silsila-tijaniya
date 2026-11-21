@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";

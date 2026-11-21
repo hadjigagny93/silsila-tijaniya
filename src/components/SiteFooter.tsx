@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { X_HANDLE, X_URL } from "@/lib/social";
 import { t } from "@/messages/fr";
 import { Star } from "./Icon";

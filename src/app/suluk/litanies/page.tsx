@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { redirect } from "next/navigation";
 import { deleteGroup } from "@/app/actions";
 import { ConfirmButton } from "@/components/ConfirmButton";

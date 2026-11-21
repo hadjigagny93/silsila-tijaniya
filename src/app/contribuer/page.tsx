@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { Icon } from "@/components/Icon";
 import { CONTRIBUTION_KINDS, CONTRIBUTION_PATHS } from "@/lib/contributions";
 import { t } from "@/messages/fr";

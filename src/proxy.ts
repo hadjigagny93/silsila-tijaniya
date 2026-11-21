@@ -11,6 +11,9 @@ export async function proxy(request: NextRequest) {
   if (!process.env.SQLITE_PATH && LOCAL_ONLY.test(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
+  // Visiteur sans session : rien à rafraîchir, on ne réveille pas Supabase (le calcul est compté par Vercel).
+  const signedIn = request.cookies.getAll().some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"));
+  if (!signedIn) return NextResponse.next();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return NextResponse.next();
@@ -35,5 +38,8 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Ni les photos (elles vérifient elles-mêmes la session) ni les fichiers statiques.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api/personnes/|images/|images-cover/|images-stations/|cover-suluk/|videos/|.*\\.(?:svg|png|jpg|jpeg|webp|gif|mp4|webm|ico|txt|xml)$).*)",
+  ],
 };

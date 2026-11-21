@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { PublicPerson } from "@/lib/data/types";
 import { personImageUrl } from "./Avatar";
 

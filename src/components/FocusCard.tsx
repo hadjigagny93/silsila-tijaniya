@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { DegreeThirds } from "@/components/DegreeThirds";
 import { Icon } from "@/components/Icon";
 import { StationVerse } from "@/components/StationVerse";

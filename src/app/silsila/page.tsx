@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { SilsilaTree } from "@/components/SilsilaTree";
 import { childrenOf } from "@/lib/chain";
 import { getStore } from "@/lib/data";

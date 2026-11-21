@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useMemo, useRef, useState } from "react";
 import type { PublicPerson } from "@/lib/data/types";
 import { yearLabel } from "@/lib/dates";

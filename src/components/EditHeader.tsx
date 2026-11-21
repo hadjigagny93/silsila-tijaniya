@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { t } from "@/messages/fr";
 import { Icon } from "./Icon";
 
