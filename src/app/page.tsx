@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { Avatar } from "@/components/Avatar";
 import { CountUp } from "@/components/CountUp";
 import { FacesBand } from "@/components/FacesBand";

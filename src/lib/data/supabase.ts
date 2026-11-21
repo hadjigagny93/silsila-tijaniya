@@ -1,4 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createAnonClient, type SupabaseClient } from "@supabase/supabase-js";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { cache } from "react";
+import { PUBLIC_DATA_TAG } from "@/lib/publicCache";
+import { createClient, hasAuthCookie } from "@/lib/supabase/server";
 import { groupRow, toGroup, type GroupRow } from "./litanyRows";
 import type {
   Biography,
@@ -11,6 +15,7 @@ import type {
   StationFocus,
   StationMoment,
   StationState,
+  Session,
   Store,
 } from "./types";
 
@@ -92,107 +97,148 @@ async function releaseBiography(slug: string) {
   check((await supabase.from("persons").update({ biography_slug: null }).eq("biography_slug", slug)).error);
 }
 
-export const supabaseStore: Store = {
-  async listPersons() {
-    const supabase = await createClient();
-    const columns =
-      "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames, qutb, short";
-    let { data, error } = await supabase
-      .from("public_persons")
-      .select(`${columns}, prophet_family, wird_from_id, incognito`);
-    // Migration 0021 pas encore passée : on relit sans l'incognito.
-    if (error) ({ data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family, wird_from_id`));
-    // Migration 0018 pas encore passée : on relit sans « a reçu le wird de », puis sans le halo (0016).
-    if (error) ({ data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family`));
-    if (error) ({ data, error } = await supabase.from("public_persons").select(columns));
-    check(error);
-    const rows = (data ?? []) as PublicRow[];
-    // Chaînes argentées : seulement vers des maîtres visibles, et pas pour une personne en affichage court.
-    const links = await supabase.from("person_links").select("person_id, master_id").order("created_at");
-    check(links.error);
-    const visible = new Set(rows.map((row) => row.id));
-    const alsoFrom = new Map<string, string[]>();
-    for (const link of (links.data ?? []) as { person_id: string; master_id: string }[]) {
-      if (!visible.has(link.master_id)) continue;
-      alsoFrom.set(link.person_id, [...(alsoFrom.get(link.person_id) ?? []), link.master_id]);
+// Toutes les fiches visibles, avec leurs chaînes argentées et leurs images de lieu.
+async function loadPersons(supabase: SupabaseClient) {
+  const columns =
+    "id, kind, display_name, city, mouqaddam_id, biography_slug, has_image, birth_date, death_date, birth_city, birth_country, death_city, death_country, zawiya, nicknames, qutb, short";
+  let { data, error } = await supabase
+    .from("public_persons")
+    .select(`${columns}, prophet_family, wird_from_id, incognito`);
+  // Migration 0021 pas encore passée : on relit sans l'incognito.
+  if (error) ({ data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family, wird_from_id`));
+  // Migration 0018 pas encore passée : on relit sans « a reçu le wird de », puis sans le halo (0016).
+  if (error) ({ data, error } = await supabase.from("public_persons").select(`${columns}, prophet_family`));
+  if (error) ({ data, error } = await supabase.from("public_persons").select(columns));
+  check(error);
+  const rows = (data ?? []) as PublicRow[];
+  // Chaînes argentées : seulement vers des maîtres visibles, et pas pour une personne en affichage court.
+  const links = await supabase.from("person_links").select("person_id, master_id").order("created_at");
+  check(links.error);
+  const visible = new Set(rows.map((row) => row.id));
+  const alsoFrom = new Map<string, string[]>();
+  for (const link of (links.data ?? []) as { person_id: string; master_id: string }[]) {
+    if (!visible.has(link.master_id)) continue;
+    alsoFrom.set(link.person_id, [...(alsoFrom.get(link.person_id) ?? []), link.master_id]);
+  }
+  // Images de lieu : migration 0019 pas encore passée, on s'en passe.
+  const placesResult = await supabase.from("place_images").select("person_id, caption, updated_at");
+  const places = new Map(
+    ((placesResult.error ? [] : placesResult.data) as { person_id: string; caption: string | null; updated_at: string }[]).map(
+      (place) => [place.person_id, place],
+    ),
+  );
+  // Admins : les incognitos dont la photo est gardée en ligne, pour la montrer dans le formulaire de la fiche.
+  const withPhoto = new Set<string>();
+  if (rows.some((row) => row.incognito)) {
+    const admin = await supabase.rpc("is_admin");
+    if (admin.data) {
+      const ids = rows.filter((row) => row.incognito).map((row) => row.id);
+      const photos = await supabase.from("person_images").select("person_id").in("person_id", ids);
+      (photos.data ?? []).forEach((photo) => withPhoto.add(photo.person_id as string));
     }
-    // Images de lieu : migration 0019 pas encore passée, on s'en passe.
-    const placesResult = await supabase.from("place_images").select("person_id, caption, updated_at");
-    const places = new Map(
-      ((placesResult.error ? [] : placesResult.data) as { person_id: string; caption: string | null; updated_at: string }[]).map(
-        (place) => [place.person_id, place],
-      ),
-    );
-    // Admins : les incognitos dont la photo est gardée en ligne, pour la montrer dans le formulaire de la fiche.
-    const withPhoto = new Set<string>();
-    if (rows.some((row) => row.incognito)) {
-      const admin = await supabase.rpc("is_admin");
-      if (admin.data) {
-        const ids = rows.filter((row) => row.incognito).map((row) => row.id);
-        const photos = await supabase.from("person_images").select("person_id").in("person_id", ids);
-        (photos.data ?? []).forEach((photo) => withPhoto.add(photo.person_id as string));
-      }
-    }
-    return rows.map((row) => ({
-      id: row.id,
-      hiddenPhoto: withPhoto.has(row.id),
-      kind: row.kind,
-      placeImageVersion: row.short ? null : (places.get(row.id)?.updated_at ?? null),
-      placeCaption: row.short ? null : (places.get(row.id)?.caption ?? null),
-      displayName: row.display_name,
-      city: row.city,
-      mouqaddamId: row.mouqaddam_id,
-      biographySlug: row.biography_slug,
-      hasImage: row.has_image && !row.incognito,
-      birthDate: row.birth_date,
-      deathDate: row.death_date,
-      birthCity: row.birth_city,
-      birthCountry: row.birth_country,
-      deathCity: row.death_city,
-      deathCountry: row.death_country,
-      zawiya: row.zawiya,
-      nicknames: row.nicknames?.split("\n") ?? [],
-      qutb: row.qutb,
-      prophetFamily: Boolean(row.prophet_family),
-      incognito: Boolean(row.incognito),
-      wirdFromId: !row.short && row.wird_from_id && visible.has(row.wird_from_id) ? row.wird_from_id : null,
-      alsoFrom: row.short ? [] : (alsoFrom.get(row.id) ?? []).filter((id) => id !== row.mouqaddam_id),
-    }));
-  },
+  }
+  return rows.map((row) => ({
+    id: row.id,
+    hiddenPhoto: withPhoto.has(row.id),
+    kind: row.kind,
+    placeImageVersion: row.short ? null : (places.get(row.id)?.updated_at ?? null),
+    placeCaption: row.short ? null : (places.get(row.id)?.caption ?? null),
+    displayName: row.display_name,
+    city: row.city,
+    mouqaddamId: row.mouqaddam_id,
+    biographySlug: row.biography_slug,
+    hasImage: row.has_image && !row.incognito,
+    birthDate: row.birth_date,
+    deathDate: row.death_date,
+    birthCity: row.birth_city,
+    birthCountry: row.birth_country,
+    deathCity: row.death_city,
+    deathCountry: row.death_country,
+    zawiya: row.zawiya,
+    nicknames: row.nicknames?.split("\n") ?? [],
+    qutb: row.qutb,
+    prophetFamily: Boolean(row.prophet_family),
+    incognito: Boolean(row.incognito),
+    wirdFromId: !row.short && row.wird_from_id && visible.has(row.wird_from_id) ? row.wird_from_id : null,
+    alsoFrom: row.short ? [] : (alsoFrom.get(row.id) ?? []).filter((id) => id !== row.mouqaddam_id),
+  }));
+}
 
-  async getSession() {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return null;
+// Client sans cookies, pour ce que tout visiteur peut lire : utilisable dans le cache partagé.
+const anonClient = () =>
+  createAnonClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
-    const [{ data: row, error: rowError }, { data: isAdmin, error: adminError }] = await Promise.all([
-      supabase
-        .from("persons")
-        .select("id, full_name, display_mode, city, mouqaddam_id")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase.rpc("is_admin"),
-    ]);
-    check(rowError);
-    check(adminError);
+// Visiteurs non connectés : les fiches publiques, lues une fois pour tous et gardées cinq minutes
+// (le calcul est compté par Vercel). Les admins connectés lisent toujours la base à jour.
+const publicPersons = unstable_cache(
+  async () => loadPersons(anonClient()),
+  ["public-persons"],
+  { revalidate: 300, tags: [PUBLIC_DATA_TAG] },
+);
 
-    return {
-      userId: user.id,
-      email: user.email ?? "",
-      isAdmin: Boolean(isAdmin),
-      profile: row
-        ? {
-            id: row.id as string,
-            fullName: row.full_name as string,
-            displayMode: row.display_mode as DisplayMode,
-            city: row.city as string | null,
-            mouqaddamId: row.mouqaddam_id as string | null,
-          }
-        : null,
-    };
-  },
+// Une seule lecture par page, même si la mise en page et la page la demandent toutes les deux.
+const personsForRequest = cache(async () =>
+  (await hasAuthCookie()) ? loadPersons((await createClient()) as unknown as SupabaseClient) : publicPersons(),
+);
+
+// La session de l'admin connecté, lue une fois par page ; un visiteur sans cookie de connexion n'en a pas,
+// sans même interroger Supabase.
+const sessionForRequest = cache(async (): Promise<Session | null> => {
+  if (!(await hasAuthCookie())) return null;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const [{ data: row, error: rowError }, { data: isAdmin, error: adminError }] = await Promise.all([
+    supabase
+      .from("persons")
+      .select("id, full_name, display_mode, city, mouqaddam_id")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase.rpc("is_admin"),
+  ]);
+  check(rowError);
+  check(adminError);
+
+  return {
+    userId: user.id,
+    email: user.email ?? "",
+    isAdmin: Boolean(isAdmin),
+    profile: row
+      ? {
+          id: row.id as string,
+          fullName: row.full_name as string,
+          displayMode: row.display_mode as DisplayMode,
+          city: row.city as string | null,
+          mouqaddamId: row.mouqaddam_id as string | null,
+        }
+      : null,
+  };
+});
+
+async function loadBiographies(supabase: SupabaseClient) {
+  const { data, error } = await supabase.from("biographies").select("*").order("name");
+  check(error);
+  return ((data ?? []) as BiographyRow[]).map(toBiography);
+}
+
+// Comme les fiches : les biographies publiques gardées cinq minutes pour les visiteurs.
+const publicBiographies = unstable_cache(async () => loadBiographies(anonClient()), ["public-biographies"], {
+  revalidate: 300,
+  tags: [PUBLIC_DATA_TAG],
+});
+const biographiesForRequest = cache(async () =>
+  (await hasAuthCookie()) ? loadBiographies((await createClient()) as unknown as SupabaseClient) : publicBiographies(),
+);
+
+const store: Store = {
+  listPersons: () => personsForRequest(),
+
+  getSession: () => sessionForRequest(),
 
   async signIn(email, redirectTo) {
     const supabase = await createClient();
@@ -445,14 +491,11 @@ export const supabaseStore: Store = {
     check((await supabase.from("persons").update({ hidden }).eq("id", personId)).error);
   },
 
-  async listBiographies() {
-    const supabase = await createClient();
-    const { data, error } = await supabase.from("biographies").select("*").order("name");
-    check(error);
-    return ((data ?? []) as BiographyRow[]).map(toBiography);
-  },
+  listBiographies: () => biographiesForRequest(),
 
   async getBiography(slug) {
+    // Visiteur : la biographie est prise dans la liste gardée en cache, sans nouvelle lecture.
+    if (!(await hasAuthCookie())) return (await biographiesForRequest()).find((biography) => biography.slug === slug) ?? null;
     const supabase = await createClient();
     const { data, error } = await supabase.from("biographies").select("*").eq("slug", slug).maybeSingle();
     check(error);
@@ -683,3 +726,32 @@ export const supabaseStore: Store = {
     check((await supabase.from("wird_log").delete().match(row)).error);
   },
 };
+
+// Un admin connecté qui modifie une fiche, une photo ou une biographie : le cache des visiteurs est vidé aussitôt.
+const PUBLIC_WRITES = [
+  "saveProfile",
+  "addMouqaddam",
+  "updateMouqaddam",
+  "deleteMouqaddam",
+  "setPersonImage",
+  "setPlaceImage",
+  "linkMouqaddam",
+  "setPlace",
+  "resolveRequest",
+  "setAlsoFrom",
+  "setHidden",
+  "saveBiography",
+  "setBiographyCover",
+  "setBiographyLocalOnly",
+  "deleteBiography",
+] as const satisfies readonly (keyof Store)[];
+
+export const supabaseStore: Store = { ...store };
+for (const name of PUBLIC_WRITES) {
+  const write = store[name] as (...args: unknown[]) => Promise<unknown>;
+  (supabaseStore as Record<string, unknown>)[name] = async (...args: unknown[]) => {
+    const result = await write(...args);
+    revalidateTag(PUBLIC_DATA_TAG, { expire: 0 });
+    return result;
+  };
+}

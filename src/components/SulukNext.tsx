@@ -15,7 +15,7 @@ import {
   prayerTimes,
 } from "@/lib/suluk";
 import { t } from "@/messages/fr";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useNow } from "./useNow";
 
 type Item = { name: string; detail: string; start: number; end: number; color: string };

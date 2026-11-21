@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import type { Addition, PublicPerson } from "@/lib/data/types";
 import { t } from "@/messages/fr";
 import { Avatar } from "./Avatar";

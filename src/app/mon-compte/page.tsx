@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { redirect } from "next/navigation";
 import { requestMouqaddam, saveProfile } from "@/app/actions";
 import { Icon } from "@/components/Icon";

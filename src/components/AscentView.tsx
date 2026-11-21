@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useEffect, useRef, useState } from "react";
 import { t } from "@/messages/fr";
 import { BigFlame } from "./BigFlame";

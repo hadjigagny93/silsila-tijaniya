@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { redirect } from "next/navigation";
 import { FocusCard } from "@/components/FocusCard";
 import { Icon } from "@/components/Icon";

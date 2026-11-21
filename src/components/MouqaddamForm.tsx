@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 import { addMouqaddam, createPersonBiography, deleteBiography, deleteMouqaddam, updateMouqaddam } from "@/app/actions";
 import { coverUrl, shownCover } from "@/lib/coverUrl";
 import type { Biography, PublicPerson } from "@/lib/data/types";

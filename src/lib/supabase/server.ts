@@ -23,3 +23,8 @@ export async function createClient() {
     },
   );
 }
+
+// Un cookie de session Supabase (sb-…-auth-token, parfois coupé en .0, .1) : sans lui, personne n'est connecté.
+export async function hasAuthCookie() {
+  return (await cookies()).getAll().some((cookie) => cookie.name.startsWith("sb-") && cookie.name.includes("-auth-token"));
+}
