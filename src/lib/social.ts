@@ -6,8 +6,9 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://silsila-ti
 export const X_HANDLE = "silsilatijani";
 export const X_URL = `https://x.com/${X_HANDLE}`;
 
-// Image par défaut des aperçus (WhatsApp, X, Facebook) : l'arbre de la silsila.
-export const DEFAULT_SHARE_IMAGE = "/videos/arbre-silsila.jpg";
+// Image par défaut des aperçus (WhatsApp, X, Facebook) : la ruelle bleue, en version légère (WhatsApp ignore
+// les images trop lourdes, au-delà de 300 Ko environ).
+export const DEFAULT_SHARE_IMAGE = { url: "/apercu.jpg", width: 1200, height: 675, alt: t.site.name };
 
 export function siteUrl(path: string) {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
@@ -26,7 +27,7 @@ export function shareMetadata({
   path: string;
   image?: string | null;
 }): Metadata {
-  const images = [image || DEFAULT_SHARE_IMAGE];
+  const images = [image ? image : DEFAULT_SHARE_IMAGE];
   return {
     title,
     description,
