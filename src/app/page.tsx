@@ -65,7 +65,9 @@ export default async function Home() {
             <p className="home-arabic" lang="ar" dir="rtl">
               {t.home.arabic}
             </p>
-            <h1 className="home-title">{t.home.title}</h1>
+            <h1 className="home-title">
+              <span className="home-title-band">{t.home.title}</span>
+            </h1>
             <p className="home-intro">{t.home.intro}</p>
             <div className="home-actions">
               <Link href="/silsila" className="button home-primary">
