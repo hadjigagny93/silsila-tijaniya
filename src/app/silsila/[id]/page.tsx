@@ -47,9 +47,7 @@ export default async function PersonPage({ params, searchParams }: Props) {
         <h1>{person.displayName}</h1>
       </div>
       <p className="mt-1 text-muted">
-        {[t.kinds[person.kind], person.kind === "member" && person.city]
-          .filter(Boolean)
-          .join(" · ")}
+        {person.kind === "member" && person.city}
       </p>
       <p className="mt-3 flex flex-wrap gap-x-4">
         <Link href={`/silsila?personne=${person.id}`} className="text-accent underline">
@@ -90,7 +88,6 @@ export default async function PersonPage({ params, searchParams }: Props) {
               <Avatar person={link} />
               {link.displayName}
             </Link>
-            {t.kinds[link.kind] && <span className="block text-sm text-muted">{t.kinds[link.kind]}</span>}
           </li>
         ))}
       </ol>

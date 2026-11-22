@@ -174,7 +174,8 @@ export function SilsilaTree({
 
   const describe = (person: PublicPerson) => {
     const rank = generations.get(person.id);
-    return [t.kinds[person.kind], rank && t.silsila.generationShort(rank)].filter(Boolean).join(" · ");
+    // Le rôle (cheikh, mouqaddam, disciple) reste en base sans être affiché.
+    return rank ? t.silsila.generationShort(rank) : "";
   };
 
   const matches = useMemo(() => {
@@ -232,12 +233,6 @@ export function SilsilaTree({
     if (event.key === "Enter" && matches[active]) choose(matches[active].id);
     if (event.key === "Escape") setQuery("");
   }
-
-  const legend: { label: string; className: string }[] = [
-    { label: t.kinds.cheikh, className: "legend-cheikh" },
-    { label: t.kinds.mouqaddam, className: "legend-mouqaddam" },
-    { label: t.kinds.member, className: "legend-member" },
-  ];
 
   return (
     <section
@@ -299,7 +294,7 @@ export function SilsilaTree({
                             <span className="picker-name">
                               <Highlighted name={match.displayName} query={query.trim()} />
                             </span>
-                            <span className="picker-detail">{describe(match)}</span>
+                            {describe(match) && <span className="picker-detail">{describe(match)}</span>}
                           </span>
                         </button>
                       </li>
@@ -517,7 +512,7 @@ export function SilsilaTree({
                               {item.displayName}
                             </span>
                             <span className="picker-detail">
-                              {[t.kinds[item.kind], t.admin.disciples(tree.get(item.id)?.length ?? 0)].join(" · ")}
+                              {t.admin.disciples(tree.get(item.id)?.length ?? 0)}
                             </span>
                           </span>
                           {placing !== item.id &&
@@ -628,15 +623,8 @@ export function SilsilaTree({
         <p className="bar-legend">
           {exploring ? (
             <span>{t.silsila.exploreHelp}</span>
-          ) : generation !== null ? (
-            <span>{t.silsila.generationCount(generation, generationSize)}</span>
           ) : (
-            legend.map((item) => (
-              <span key={item.label}>
-                <i className={item.className} aria-hidden />
-                {item.label}
-              </span>
-            ))
+            generation !== null && <span>{t.silsila.generationCount(generation, generationSize)}</span>
           )}
         </p>
       </div>
