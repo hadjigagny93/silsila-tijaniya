@@ -6110,8 +6110,18 @@ a.suluk-next-station {
   font-family: var(--font-display);
   font-size: clamp(40px, 6vw, 68px);
   font-weight: 400;
-  line-height: 1.05;
+  line-height: 1.32;
   text-wrap: balance;
+}
+
+/* Bandeau vert d'eau derrière chaque ligne du titre, comme un surlignage. */
+.home-title-band {
+  padding: 0.02em 0.14em 0.1em;
+  margin-left: -0.14em;
+  background: #93d6bf;
+  color: #10201a;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .home-intro {
