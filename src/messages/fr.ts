@@ -68,7 +68,7 @@ export const t = {
     done: (persons: number, images: number, biographies: number) =>
       `Site à jour : ${persons} personnes, ${images} photos, ${biographies} biographies.`,
     synced: (pulled: number, pushed: number, removed: number) =>
-      `Site synchronisé : ${pulled} changement${pulled > 1 ? "s" : ""} récupéré${pulled > 1 ? "s" : ""}, ${pushed} envoyé${pushed > 1 ? "s" : ""}${removed ? `, ${removed} retiré${removed > 1 ? "s" : ""}` : ""}.`,
+      `Site synchronisé : ${pulled} changement${pulled > 1 ? "s" : ""} récupéré${pulled > 1 ? "s" : ""}, ${pushed} envoyé${pushed > 1 ? "s" : ""}${removed ? `, ${removed} retiré${removed > 1 ? "s" : ""}` : ""}.${pushed || removed ? " Visible par tous sur le site d'ici une minute." : ""}`,
     failed: "La synchronisation a échoué. Vérifiez la connexion internet et réessayez.",
     missingKey: "Clé de publication absente (publication.json).",
   },

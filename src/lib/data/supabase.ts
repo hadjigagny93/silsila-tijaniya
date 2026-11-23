@@ -170,12 +170,14 @@ const anonClient = () =>
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-// Visiteurs non connectés : les fiches publiques, lues une fois pour tous et gardées cinq minutes
-// (le calcul est compté par Vercel). Les admins connectés lisent toujours la base à jour.
+// Visiteurs non connectés : les fiches publiques, lues une fois pour tous et gardées une minute
+// (le calcul est compté par Vercel). Une synchronisation depuis le Mac, qui écrit directement dans
+// Supabase, est donc visible au plus une minute après. Les admins connectés lisent toujours la base à jour.
+const PUBLIC_CACHE_SECONDS = 60;
 const publicPersons = unstable_cache(
   async () => loadPersons(anonClient()),
   ["public-persons"],
-  { revalidate: 300, tags: [PUBLIC_DATA_TAG] },
+  { revalidate: PUBLIC_CACHE_SECONDS, tags: [PUBLIC_DATA_TAG] },
 );
 
 // Une seule lecture par page, même si la mise en page et la page la demandent toutes les deux.
@@ -226,9 +228,9 @@ async function loadBiographies(supabase: SupabaseClient) {
   return ((data ?? []) as BiographyRow[]).map(toBiography);
 }
 
-// Comme les fiches : les biographies publiques gardées cinq minutes pour les visiteurs.
+// Comme les fiches : les biographies publiques gardées une minute pour les visiteurs.
 const publicBiographies = unstable_cache(async () => loadBiographies(anonClient()), ["public-biographies"], {
-  revalidate: 300,
+  revalidate: PUBLIC_CACHE_SECONDS,
   tags: [PUBLIC_DATA_TAG],
 });
 const biographiesForRequest = cache(async () =>
